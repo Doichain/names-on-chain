@@ -5,6 +5,7 @@ on:
     branches: [main, 'lesson*']
   pull_request:
     branches: [main, 'lesson*']
+  workflow_dispatch:
 
 jobs:
   test-and-build:
