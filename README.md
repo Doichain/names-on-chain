@@ -14,13 +14,12 @@ Live demo of this lesson: https://doichain.github.io/names-on-chain/lesson01/
 2. Validate name to be registered in src/lib/components/pricing.svelte
    - is name already registered? 
    - if yes - which address?
-3. Build project and add to local ipfs node
+3. Build the project and add it to your local IPFS node ([how](docs/ipfs.md))
 ```
 npm run build
-mv public lesson01 
-ipfs add lesson01/
+ipfs add -r -Q --cid-version=1 public
 ```
-4. Run Brave browser and open ipfs url: ipfs://{cid of your ipfs add command} or
+4. Open http://localhost:8080/ipfs/{CID}/ with the CID that `ipfs add` printed, or
    see our version: https://doichain.github.io/names-on-chain/lesson01/
 5. Checkout branch lesson02)
 
