@@ -2,6 +2,10 @@ import { nameShow } from "$lib/doichain/nameShow.js";
 import { describeNameBytes } from "$lib/doichain/nameBytes.js";
 import { NAME_MAX_LENGTH } from "$lib/doichain/getNameOPStackScript.js";
 import { getScriptPubKeyAddress } from "$lib/doichain/scriptPubKeyAddress.js";
+import { latestNameOperation, nameExpiry } from "$lib/doichain/nameExpiry.js";
+import { electrumBlockchainBlockHeadersSubscribe, network } from "$lib/doichain/doichain-store.js";
+import { normalizeName } from "$lib/doichain/nameBytes.js";
+import { get } from "svelte/store";
 import { t } from "$lib/i18n/index.js";
 import sb from "satoshi-bitcoin";
 import { debounce } from 'lodash';
@@ -44,24 +48,33 @@ export async function _checkName(electrumClient, _name, totalUtxoValue, totalAmo
     }
     if (_name.length > 3) {
         const res = await nameShow(electrumClient, _name);
-        if (res.length > 0) {
-            for (let utxo of res) {
-                const scriptPubKey = utxo.scriptPubKey;
-                if (scriptPubKey && scriptPubKey.nameOp) {
-                    currentNameAddress = getScriptPubKeyAddress(scriptPubKey);
-                }
+        // the newest name operation decides: who holds the name, and until which block
+        const latest = latestNameOperation(res, normalizeName(_name));
+        const expiry = latest ? nameExpiry(latest.height, get(electrumBlockchainBlockHeadersSubscribe)?.height, get(network)) : undefined;
+        let nameNotice = '';
+        if (res.length > 0 && !expiry?.expired) {
+            currentNameAddress = latest ? getScriptPubKeyAddress(latest.scriptPubKey) : '';
+            if (expiry && !expiry.confirmed) {
+                nameErrorMessage = t('name.errors.pending', { name: _name, address: currentNameAddress });
+            } else if (expiry?.blocksLeft !== undefined) {
+                nameErrorMessage = t('name.errors.takenUntil', { name: _name, address: currentNameAddress, expiresAt: expiry.expiresAt, blocksLeft: expiry.blocksLeft });
+            } else {
+                nameErrorMessage = t('name.errors.taken', { name: _name, address: currentNameAddress });
             }
-            nameErrorMessage = t('name.errors.taken', { name: _name, address: currentNameAddress });
             isNameValid = false;
             return { currentNameAddress, nameErrorMessage, utxoErrorMessage, isNameValid, isUTXOAddressValid }
         }
-        else if(totalUtxoValue <= sb.toSatoshi(totalAmount)){
+        else if (expiry?.expired) {
+            // an expired name is free again, anybody may register it
+            nameNotice = t('name.expired', { expiresAt: expiry.expiresAt });
+        }
+        if(totalUtxoValue <= sb.toSatoshi(totalAmount)){
             utxoErrorMessage = t('funds.insufficient', { address: currentNameAddress });
             isUTXOAddressValid = false;
-            return { nameErrorMessage, utxoErrorMessage, isNameValid, isUTXOAddressValid }
+            return { nameErrorMessage, nameNotice, utxoErrorMessage, isNameValid, isUTXOAddressValid }
         }
         else {
-            return { nameErrorMessage, utxoErrorMessage, isNameValid, isUTXOAddressValid }
+            return { nameErrorMessage, nameNotice, utxoErrorMessage, isNameValid, isUTXOAddressValid }
         }
     } else {
         nameErrorMessage = t('name.errors.tooShort', { name: _name });

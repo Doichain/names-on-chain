@@ -31,13 +31,16 @@
 		"placeholder": "name",
 		"address": "Address: {address}",
 		"checking": "Checking \"{name}\" …",
-		"available": "\"{name}\" is still available.",
+		"available": "\"{name}\" is available.",
+		"expired": "It was registered before and expired at block {expiresAt}, so it can be registered again.",
 		"errors": {
 			"empty": "Please enter a name.",
 			"space": "A name must not contain spaces.",
 			"tooShort": "The name \"{name}\" is too short.",
 			"tooLong": "The name is {bytes} bytes long; Doichain allows at most {max} bytes.",
 			"taken": "The name \"{name}\" is already registered to the address {address}.",
+			"takenUntil": "The name \"{name}\" belongs to the address {address} until block {expiresAt}, {blocksLeft} blocks from now.",
+			"pending": "The name \"{name}\" is just being registered to the address {address}; the transaction is not in a block yet.",
 			"lookupFailed": "Could not check \"{name}\": {error}"
 		},
 		"warnings": {

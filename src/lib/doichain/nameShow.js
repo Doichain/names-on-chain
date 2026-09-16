@@ -32,6 +32,8 @@ export const nameShow = async (electrumClient, nameToCheck) => {
 
 	for (const item of result) {
 		const detailResults = await getNameOpUTXOsOfTxHash(electrumClient,item.tx_hash);
+		// the block height tells which operation is the newest and when the name expires
+		for (const output of detailResults) output.height = item.height;
 		results = [...detailResults, ...results];
 	}
 	return results
