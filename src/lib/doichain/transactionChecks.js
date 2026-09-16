@@ -23,6 +23,48 @@ export const isNameScript = (script) => NAME_OPCODES.includes(script?.[0]);
 export const isP2WPKHScript = (script) => script?.length === 22 && script[0] === 0x00 && script[1] === 0x14;
 
 /**
+ * Takes a name script apart:
+ *   <name opcode> <name> <value> OP_2DROP OP_DROP <owner's output script>
+ * Pushes are read with their real length, so empty and 1-byte values work.
+ *
+ * @param {Buffer} script
+ * @returns {{op: number, name: Buffer, value: Buffer, ownerScript: Buffer}}
+ * @throws {Error} if the script does not have this shape
+ */
+export function parseNameScript(script) {
+	let position = 1;
+	const readPush = () => {
+		const opcode = script[position++];
+		let length;
+		if (opcode === undefined) throw new Error('name script ends early');
+		if (opcode < 0x4c) {
+			length = opcode;
+		} else if (opcode === 0x4c) {
+			length = script[position];
+			position += 1;
+		} else if (opcode === 0x4d) {
+			length = script.readUInt16LE(position);
+			position += 2;
+		} else if (opcode === 0x4e) {
+			length = script.readUInt32LE(position);
+			position += 4;
+		} else {
+			throw new Error(`opcode ${opcode} in a name script is not a push`);
+		}
+		const data = script.subarray(position, position + length);
+		if (data.length !== length) throw new Error('name script ends early');
+		position += length;
+		return data;
+	};
+	const name = readPush();
+	const value = readPush();
+	if (script[position] !== 0x6d || script[position + 1] !== 0x75) {
+		throw new Error('name script lacks OP_2DROP OP_DROP');
+	}
+	return { op: script[0], name, value, ownerScript: script.subarray(position + 2) };
+}
+
+/**
  * The output a UTXO points to, read from the raw transaction instead of the
  * server's JSON. The hash of the raw transaction must be the txid the input
  * spends, so the server cannot make up an amount: a wallet signing a legacy

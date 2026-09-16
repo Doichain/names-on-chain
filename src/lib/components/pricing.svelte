@@ -14,6 +14,7 @@
     import sb from "satoshi-bitcoin";
     import { onDestroy } from "svelte";
     import { generateAtomicNameTradingPSBT } from "$lib/doichain/atomicNameTrading.js";
+    import { parseDoiAmount } from "$lib/doichain/doiAmount.js";
 
     /** @type {string} - The name currently typed in the name input */
     let name = ''
@@ -21,8 +22,8 @@
     /** @type {boolean} - Indicates if the name input is valid */
     let isNameValid = true;
 
-    /** @type {boolean} - Indicates if the name already exists on the blockchain */
-    let isNameExists = true
+    /** @type {boolean} - Indicates if the name already exists on the blockchain (and has not expired) */
+    let isNameExists = false
 
     /** @type {string} - Error message if there's an issue with the name */
     let nameErrorMessage = '';
@@ -99,21 +100,27 @@
     /** @type {Object} - Current name UTXO details */
     let currentNameUtxo;
 
-    /** @type {string} - Address used for funding UTXOs */
-    let fundingUTXOAddress = localStorage.getItem('fundingUTXOAddress') || 'N8YtTBMRqMq9E45VMT9KVbfwt5X5oLD4vt';
-    $:localStorage.setItem('fundingUTXOAddress',fundingUTXOAddress)
+    /** @type {string} - The buyer's address: it pays for a taken name and receives it. No default: money only moves to addresses the user entered. */
+    let fundingUTXOAddress = '';
+    try {
+        fundingUTXOAddress = localStorage.getItem('fundingUTXOAddress') || '';
+    } catch (e) {
+        console.error('Failed to access localStorage:', e);
+    }
+    $: if (isFundingAddressValid) localStorage.setItem('fundingUTXOAddress', fundingUTXOAddress)
+    $: if (fundingUTXOAddress && cleanAddressInput(fundingUTXOAddress) !== fundingUTXOAddress) fundingUTXOAddress = cleanAddressInput(fundingUTXOAddress);
+
+    /** @type {boolean} - Is fundingUTXOAddress a valid address of the current network? */
+    $: isFundingAddressValid = isAddressOf($network, fundingUTXOAddress);
 
     /** @type {boolean} - Indicates if connected to the network */
     let isConnected = false;
 
-    /** @type {boolean} - Indicates if the funding UTXO address is valid */
-    let isFundingUTXOAddressValid = true;
+    /** @type {string} - The price for the name as typed, in DOI ("1.5" or "1,5") */
+    let priceText = '';
 
-    /** @type {number} - Price for transferring the name */
-    let transferPrice = 1;
-
-    /** @type {number} - Total amount needed for funding */
-    let fundingTotalAmount = 0;
+    /** @type {number|undefined} - The price in swartz; undefined while the text is no amount */
+    $: price = parseDoiAmount(priceText);
 
     /** @type {number} - Total value of funding UTXOs */
     let fundingTotalUtxoValue = 0;
@@ -121,12 +128,13 @@
     /** @type {Array<Object>} - Array of funding UTXO addresses */
     let fundingUtxoAddresses = [];
 
-    /** @type {boolean} - Indicates if the buy offer is valid */
-    let isBuyOfferValid = false;
+    /** @type {{address: string, error: string}|undefined} - Why the coins of the buyer's address could not be read */
+    let fundingError;
 
-    /** @type {number} - Reactive calculation of total funding amount */
-    $: fundingTotalAmount = transferPrice + DEFAULT_STORAGE_FEE;
+    /** @type {string} - The address the funding UTXOs belong to, once they are loaded */
+    let fundingLoadedFor = '';
 
+    $: fundingLooksWrong = Boolean(fundingUTXOAddress) && (!isFundingAddressValid || Boolean(fundingError));
 
     /**
      * Check a name, debounce every keyboard typing, return local variables by callback
@@ -226,12 +234,25 @@
      * - Multiple NameOp UTXOs are possible (their values are burned and un spendable
      */
     $: {
-        if(isConnected && fundingUTXOAddress){
-            getUtxosAndNamesOfAddress($electrumClient, fundingUTXOAddress).then((retObj) => {
-                console.log("getUtxosAndNamesOfAddress of fundingUTXOAddress",retObj)
-                fundingTotalUtxoValue = retObj.totalUtxoValue
+        if(isConnected && isFundingAddressValid){
+            const requestedAddress = fundingUTXOAddress
+            fundingError = undefined
+            getUtxosAndNamesOfAddress($electrumClient, requestedAddress).then((retObj) => {
+                if (requestedAddress !== fundingUTXOAddress) return // the user has moved on to another address
+                fundingTotalUtxoValue = retObj.utxoAddresses.reduce((sum, utxo) => sum + utxo.value, 0)
                 fundingUtxoAddresses = retObj.utxoAddresses
+                fundingLoadedFor = requestedAddress
+            }).catch((error) => {
+                if (requestedAddress !== fundingUTXOAddress) return
+                fundingUtxoAddresses = []
+                fundingTotalUtxoValue = 0
+                fundingLoadedFor = ''
+                fundingError = { address: requestedAddress, error: error?.message ?? String(error) }
             })
+        } else {
+            fundingUtxoAddresses = []
+            fundingTotalUtxoValue = 0
+            fundingLoadedFor = ''
         }
     }
 
@@ -271,13 +292,6 @@
     let bbqr = false
 
     /**
-     * @type {boolean} ownerOfName - If the current name is already on chain, it could be the user is the owner of it.
-     * If he is the owner he can create a PSPT-part (1) to sell the name.
-     * If he is NOT the owner he, could create a PSBT-part to buy the name (only if Part 1 is known)
-     */
-    let ownerOfName = false
-
-    /**
      * Reactive block for handling name registration transaction and QR code generation.
      */
     $: {
@@ -312,9 +326,9 @@
      * Generates either a BBQR or BCUR QR code for the transaction.
      */
     function createPsbt() {
-        const requested = psbtBaseText;
+        const requested = shownPsbt;
         if (!requested) return;
-        const stillCurrent = () => requested === psbtBaseText;
+        const stillCurrent = () => requested === shownPsbt;
         if(bbqr)
             renderBBQR(requested).then(imgurl => { if (stillCurrent()) qrCodeData = imgurl })
         else
@@ -368,23 +382,31 @@
     });
 
     $: totalUtxoValue = utxoAddresses.reduce((sum, utxo) => sum + utxo.value, 0);
-    $: if (name && isNameExists && (ownerOfName || fundingUtxoAddresses.length > 0)) {
-        generateAtomicNameTradingPSBT(name, fundingUtxoAddresses, currentNameUtxo?[currentNameUtxo]:[], ownerOfName, isNameExists, transferPrice, DEFAULT_STORAGE_FEE, $network).then( (_psbtBaseText) => {
-            psbtBaseText = _psbtBaseText;
-            if(bbqr)
-                renderBBQR(_psbtBaseText).then(imgurl => qrCodeData = imgurl)
-            else
-                renderBCUR(_psbtBaseText).then(_qr => {
-                    if(!_qr) return
-                    qrCodeData = _qr;
-                    isBuyOfferValid = true
-                    displayQrCodes();
-                }).catch(error => {
-                    console.error('Error generating QR code:', error);
-                    qrCodeData = undefined;
-                })
-        });
+
+    /**
+     * The purchase of a taken name (lesson 5). Like the registration it is built
+     * again on every change, and nothing from the previous input stays on screen.
+     * Sell offers are not built: DoiWallet signs only with SIGHASH_ALL.
+     */
+    let trade;
+    $: {
+        trade = undefined;
+        qrCodeData = undefined;
+        qrCode = undefined;
+        if (name && !isCheckingName && isNameExists && currentNameUtxo && isFundingAddressValid && fundingLoadedFor === fundingUTXOAddress && priceText) {
+            $locale; // rebuild when the language changes, so an error message follows it
+            trade = generateAtomicNameTradingPSBT(name, fundingUtxoAddresses, currentNameUtxo, fundingUTXOAddress, price, DEFAULT_STORAGE_FEE, $network);
+        }
     }
+    $: tradeReady = Boolean(trade && !trade.error);
+
+    /** The PSBT on screen: the purchase of a taken name, or the registration of a free one */
+    $: shownPsbt = isNameExists ? (tradeReady ? trade.psbtBase64 : undefined) : psbtBaseText;
+
+    /** What the fee box shows, for the purchase or for the registration */
+    $: feeView = isNameExists
+        ? { mining: tradeReady ? trade.transactionFee : 0, fromCoins: tradeReady ? trade.fromCoins : 0, change: tradeReady ? trade.changeAmount : 0 }
+        : { mining: transactionFee, fromCoins: totalAmount, change: changeAmount };
 
     function handleQRCodeClick() {
         if (qrCodeData && qrCodeData.length > 0) {
@@ -515,62 +537,57 @@
                             </div>
                         </div>
                         <p>&nbsp;</p>
-                        {#if isNameExists}
-                            <div class="flex items-center justify-between">
-                              <span class="flex flex-grow flex-col">
-                                <span class="text-sm font-medium leading-6 text-gray-900" id="availability-label">{ownerOfName ? $_('trade.seller') : $_('trade.buyer')}</span>
-                                <span class="text-sm text-gray-500" id="availability-description">{ownerOfName ? $_('trade.sellerHint') : $_('trade.buyerHint')}</span>
-                              </span>
-                                <button on:click={() => ownerOfName=!ownerOfName} type="button" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent {ownerOfName?'bg-indigo-600':'bg-gray-200'} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2" role="switch" aria-checked="false" aria-labelledby="availability-label" aria-describedby="availability-description">
-                                  <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 {ownerOfName?'translate-x-5':'translate-x-0'} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
-                                </button>
-                            </div>
-                            <p>&nbsp;</p>
-                            {#if ownerOfName}
-                                {$_('trade.sellerExplanation')}
-                            {/if}
-                            {#if !ownerOfName}
-                                <label for="email" class="block text-sm font-medium leading-6 text-gray-900">{$_('trade.fundingLabel')}</label>
+                        {#if isNameExists && !isCheckingName}
+                            <div class="border-t border-gray-100 pt-6">
+                                <h3 class="text-base font-semibold leading-7 text-gray-900">{$_('trade.heading')}</h3>
+                                <p class="mt-2 text-sm leading-6 text-gray-600">{$_('trade.intro', { values: { seller: currentNameAddress } })}</p>
+                                <p class="mt-2 text-sm leading-6 text-gray-500">{$_('trade.sellOfferOff')}</p>
+
+                                <label for="fundingUTXOAddress" class="mt-6 block text-sm font-medium leading-6 text-gray-900">{$_('trade.fundingLabel')}</label>
                                 <div class="relative mt-2 rounded-md shadow-sm flex items-center">
                                     <input bind:value={fundingUTXOAddress}
-                                           type="fundingUTXOAddress" name="fundingUTXOAddress" id="fundingUTXOAddress"
-                                           on:change={() => checkName($electrumClient, fundingUTXOAddress, name, fundingTotalUtxoValue, fundingTotalAmount,
-                                           (result) => {
-                                               console.log("fundingResult",result)
-                                               isFundingUTXOAddressValid=result.isUTXOAddressValid
-                                           })}
-                                           class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"
+                                           type="text" name="fundingUTXOAddress" id="fundingUTXOAddress" autocomplete="off" autocapitalize="off" spellcheck="false"
+                                           class="{!fundingLooksWrong?'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}"
                                            placeholder={$_('address.placeholder')}
-                                           aria-invalid="{isFundingUTXOAddressValid}"
-                                           aria-describedby="name-error">
-
-                                            {#if !isFundingUTXOAddressValid}
-                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                                    <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-                                                    </svg>
-                                                </div>
-                                            {/if}
-
+                                           aria-invalid={fundingLooksWrong}
+                                           aria-describedby="funding-status">
+                                    {#if fundingLooksWrong}
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                                            <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    {/if}
                                     <button type="button" aria-label={$_('trade.fundingScan')} title={$_('trade.fundingScan')} on:click={ () => { scanOpenFunding = true }} class="ml-2"><svg class="h-8 w-8 text-orange-600"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />  <path d="M4 17v1a2 2 0 0 0 2 2h2" />  <path d="M16 4h2a2 2 0 0 1 2 2v1" />  <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />  <line x1="5" y1="12" x2="19" y2="12" /></svg></button>
                                 </div>
-                                {#if !isFundingUTXOAddressValid}
-                                    <p class="mt-2 text-sm text-red-600" id="name-error"><b>{$_('trade.fundingTotal', { values: { amount: sb.toBitcoin(fundingTotalUtxoValue) } })}</b> {$_('trade.fundingInvalid')}</p>
-                                {:else}
-                                    <p class="mt-2 text-sm text-gray red-600" id="name-error">{$_('trade.fundingTotal', { values: { amount: sb.toBitcoin(fundingTotalUtxoValue) } })}</p>
-                                {/if}
-                            {/if}
-                            <p>&nbsp;</p>
-                            <div>
-                                <label for="price" class="block text-sm font-medium leading-6 text-gray-900">{$_('trade.priceLabel')}</label>
+                                <div id="funding-status" aria-live="polite">
+                                    {#if fundingUTXOAddress && !isFundingAddressValid}
+                                        <p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
+                                    {:else if fundingError}
+                                        <p class="mt-2 text-sm text-red-600">{$_('address.errors.lookupFailed', { values: fundingError })}</p>
+                                    {:else if fundingLoadedFor && fundingLoadedFor === fundingUTXOAddress}
+                                        <p class="mt-2 text-sm {fundingUtxoAddresses.length > 0 ? 'text-gray-600' : 'text-red-600'}">
+                                            {$_('trade.fundingTotal', { values: { amount: sb.toBitcoin(fundingTotalUtxoValue) } })}
+                                            {#if fundingUtxoAddresses.length === 0}{$_('trade.fundingInvalid')}{/if}
+                                        </p>
+                                    {/if}
+                                </div>
+
+                                <label for="price" class="mt-6 block text-sm font-medium leading-6 text-gray-900">{$_('trade.priceLabel')}</label>
                                 <div class="relative mt-2 rounded-md shadow-sm">
-                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                        <span class="text-gray-500 sm:text-sm">&#8383</span>
-                                    </div>
-                                    <input type="text" bind:value={transferPrice} name="price" id="price" class="block w-full rounded-md border-0 py-1.5 pl-7 pr-12 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="0.00" aria-describedby="price-currency">
+                                    <input type="text" inputmode="decimal" bind:value={priceText} name="price" id="price" autocomplete="off"
+                                           class="{priceText && price === undefined ? 'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6' : 'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6'} pr-12"
+                                           placeholder="1.5"
+                                           aria-invalid={Boolean(priceText) && price === undefined}
+                                           aria-describedby="price-currency trade-status">
                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                         <span class="text-gray-500 sm:text-sm" id="price-currency">DOI</span>
                                     </div>
+                                </div>
+                                <div id="trade-status" aria-live="polite">
+                                    {#if trade?.error}
+                                        <p class="mt-2 text-sm text-red-600">{trade.error}</p>
+                                    {/if}
                                 </div>
                             </div>
                         {/if}
@@ -585,44 +602,56 @@
                         </div>
                         <div class="flex justify-between mt-2">
                             <span class="text-sm font-bold tracking-tight text-gray-900">{$_('fees.mining')}</span>
-                            <span class="text-sm font-semibold leading-6 tracking-wide text-gray-600">{sb.toBitcoin(transactionFee)} DOI</span>
+                            <span class="text-sm font-semibold leading-6 tracking-wide text-gray-600">{sb.toBitcoin(feeView.mining)} DOI</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-sm font-bold tracking-tight text-gray-900">{$_('fees.total')}</span>
-                            <span class="text-sm font-semibold leading-6 tracking-wide text-gray-600">{sb.toBitcoin(totalAmount)} DOI</span>
+                            <span class="text-sm font-semibold leading-6 tracking-wide text-gray-600">{sb.toBitcoin(feeView.fromCoins)} DOI</span>
                         </div>
                         <div class="flex justify-between mt-2">
                             <span class="text-sm font-bold tracking-tight text-gray-900">{$_('fees.change')}</span>
-                            <span class="text-sm font-semibold leading-6 tracking-wide text-gray-600">{sb.toBitcoin(changeAmount)} DOI</span>
+                            <span class="text-sm font-semibold leading-6 tracking-wide text-gray-600">{sb.toBitcoin(feeView.change)} DOI</span>
                         </div>
                     </div>
-                    {#if psbtBaseText && !isNameExists}
+                    {#if isNameExists && tradeReady}
+                        <p class="mt-6 text-sm leading-6 text-gray-800">{$_('trade.summary', { values: { price: sb.toBitcoin(price), seller: trade.sellerAddress, fee: sb.toBitcoin(trade.transactionFee), buyer: fundingUTXOAddress, locked: sb.toBitcoin(DEFAULT_STORAGE_FEE), change: sb.toBitcoin(trade.changeAmount) } })}</p>
+                        {#if trade.surplus > 0}
+                            <p class="mt-2 text-sm leading-6 text-gray-600">{$_('trade.surplus', { values: { surplus: sb.toBitcoin(trade.surplus) } })}</p>
+                        {/if}
+                        {#if trade.dust > 0}
+                            <p class="mt-2 text-sm leading-6 text-gray-600">{$_('fees.dust', { values: { amount: sb.toBitcoin(trade.dust) } })}</p>
+                        {/if}
+                    {:else if psbtBaseText && !isNameExists}
                         <p class="mt-6 text-sm leading-6 text-gray-800">{$_('fees.summary', { values: { fee: sb.toBitcoin(transactionFee), locked: sb.toBitcoin(DEFAULT_STORAGE_FEE), change: sb.toBitcoin(changeAmount) } })}</p>
                         {#if dust > 0}
                             <p class="mt-2 text-sm leading-6 text-gray-600">{$_('fees.dust', { values: { amount: sb.toBitcoin(dust) } })}</p>
                         {/if}
                     {/if}
                     <div id="qr-container"></div>
-                    {#if psbtBaseText && !qrCodeData}
+                    {#if shownPsbt && !qrCodeData}
                         <button type="button" on:click={createPsbt}
                                 class="mt-6 w-full rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{$_('psbt.create')}</button>
                     {/if}
-                    {#if qrCodeData && psbtBaseText}
+                    {#if qrCodeData && shownPsbt}
                         {@html qrCode}
                         <button type="button" on:click={handleQRCodeClick} class="mt-2 text-sm text-gray-600 underline">
                             {$_('psbt.frame', { values: { current: currentSvgIndex + 1, total: qrCodeData.length } })}
                         </button>
-                        {#if !isNameExists}
-                            <ol class="mt-4 list-decimal space-y-1 pl-5 text-sm leading-6 text-gray-800">
+                        <ol class="mt-4 list-decimal space-y-1 pl-5 text-sm leading-6 text-gray-800">
+                            {#if isNameExists && tradeReady}
+                                <li>{$_('trade.steps.scan')}</li>
+                                <li>{$_('trade.steps.check', { values: { price: sb.toBitcoin(trade.sellerReceives), seller: trade.sellerAddress, change: sb.toBitcoin(trade.changeAmount), buyer: fundingUTXOAddress } })}</li>
+                                <li>{$_('trade.steps.handOver')}</li>
+                            {:else}
                                 <li>{$_('psbt.steps.scan')}</li>
                                 <li>{$_('psbt.steps.check', { values: { locked: sb.toBitcoin(DEFAULT_STORAGE_FEE), change: sb.toBitcoin(changeAmount), address: doichainAddress } })}</li>
                                 <li>{$_('psbt.steps.send')}</li>
-                            </ol>
-                        {/if}
+                            {/if}
+                        </ol>
                         <div class="mt-4">
                             <label for="psbt" class="block text-sm font-medium leading-6 text-gray-900">{$_('psbt.label')}</label>
                             <div class="relative mt-2 rounded-md shadow-sm">
-                                <textarea value={psbtBaseText} readonly rows="4" name="psbt" id="psbt"
+                                <textarea value={shownPsbt} readonly rows="4" name="psbt" id="psbt"
                                       class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
                                       placeholder={$_('psbt.placeholder')}></textarea>
                             </div>
