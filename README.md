@@ -103,66 +103,29 @@ ipfs add -r lesson02
 
 ### Lesson 5) Marketplace
 
-The marketplace allows users to buy and sell Doichain names in a decentralized way using atomic transactions. This trading approach was first introduced by [Namecoin's atomic name trading protocol](https://github.com/namecoin/proposals/blob/master/atomic-trading/atomic-trading.mediawiki), which Doichain has extended to use modern PSBT (Partially Signed Bitcoin Transaction) files and QR codes for improved usability. This ensures that trades are executed safely without requiring trust between parties.
+A name can change hands between people who do not trust each other: one transaction pays the seller and moves the name to the buyer, so either both happen or nothing does. Namecoin calls this [atomic name trading](https://www.namecoin.org/docs/name-owners/atomic-name-trading/). This lesson builds such a transaction as a PSBT and hands it to the wallet as a QR code.
 
-For the implementation, we forked the open-source BlueWallet project to create DoiWallet, leveraging its robust PSBT scanning capabilities. We then extended both DoiWallet and the underlying bitcoinjs-lib library to support Namecoin-style NameOp transactions, enabling seamless atomic name trading through a mobile-first interface.
+The app uses the original bitcoinjs-lib. The PSBTs are signed in DoiWallet, a fork of BlueWallet whose bitcoinjs-lib fork understands name scripts.
 
-#### Overview
-- Trading names using atomic transactions
-- Creating sell offers
-- Creating buy offers
-- Completing trades
-- Understanding PSBT (Partially Signed Bitcoin Transactions)
+#### How a purchase works
 
-#### Key Concepts
+1. Enter a name. If it is taken, the app shows its owner and the block until which it is theirs.
+2. Enter your address and a price in DOI. Your address pays, and it receives the name and your change.
+3. The app builds one transaction:
+   - inputs: your coins and the output that holds the name today
+   - outputs: the price to the owner (plus whatever the old name output held beyond the locked 0.01 DOI), the name with its current value and 0.01 DOI locked to you, your change
+4. You sign your inputs in DoiWallet. Then the owner signs the name input and sends the transaction.
 
-1. **Atomic Name Trading**
-   - Atomic transactions ensure that either both parties get what they want, or neither does
-   - Uses PSBT (Partially Signed Bitcoin Transaction) format
-   - No intermediaries or escrow required
+Nothing that decides where money goes comes from the ElectrumX server: your address is the one you typed, the owner's address is read from the name script, and every amount is read from raw transactions whose hashes match their txids.
 
-2. **Sell Offers**
-   - Current name owner creates Part 1 of PSBT
-   - Sets desired price in DOI
-   - Signs their name input
-   - Shares PSBT with potential buyers
+#### Sell offers are switched off
 
-3. **Buy Offers**
-   - Buyer receives Part 1 of PSBT
-   - Adds funding inputs and outputs
-   - Signs their inputs
-   - Returns completed PSBT to seller
+A seller could sign first with SIGHASH_SINGLE|ANYONECANPAY and pass the half-signed transaction around as an offer. DoiWallet signs only with SIGHASH_ALL, and an offer signed that way cannot be completed by a buyer, so the app builds purchases only.
 
-4. **Trade Completion**
-   - Seller verifies and signs completed PSBT
-   - Transaction is broadcast to network
-   - Name ownership transfers when transaction confirms
+#### Practice exercise
 
-#### Practice Exercise
-
-1. Create a sell offer for a name you own:
-   - Set a reasonable price
-   - Generate and share the PSBT
-   - Verify the PSBT contains your signed name input
-
-2. Create a buy offer for someone else's name:
-   - Get their sell offer PSBT
-   - Add your funding inputs
-   - Sign your inputs
-   - Return the completed PSBT
-
-3. Complete a trade:
-   - As the seller, verify the completed PSBT
-   - Sign any remaining inputs
-   - Broadcast the transaction
-   - Monitor for confirmation
-
-#### Key Takeaways
-
-- Atomic transactions provide trustless trading of names
-- PSBTs enable multi-step transaction construction
-- Both parties must sign their respective inputs
-- Transaction only completes when fully signed
+- Pick a taken name and build a purchase PSBT for it.
+- Before signing, find each output in DoiWallet: the price for the owner, the name for you, your change.
 
 #### Additional Resources
 
