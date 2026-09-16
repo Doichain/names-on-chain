@@ -30,12 +30,22 @@
 		"label": "Name to register",
 		"placeholder": "name",
 		"address": "Address: {address}",
+		"checking": "Checking \"{name}\" …",
+		"available": "\"{name}\" is available.",
+		"expired": "It was registered before and expired at block {expiresAt}, so it can be registered again.",
 		"errors": {
 			"empty": "Please enter a name.",
 			"space": "A name must not contain spaces.",
 			"tooShort": "The name \"{name}\" is too short.",
+			"tooLong": "The name is {bytes} bytes long; Doichain allows at most {max} bytes.",
 			"taken": "The name \"{name}\" is already registered to the address {address}.",
+			"takenUntil": "The name \"{name}\" belongs to the address {address} until block {expiresAt}, {blocksLeft} blocks from now.",
+			"pending": "The name \"{name}\" is just being registered to the address {address}; the transaction is not in a block yet.",
 			"lookupFailed": "Could not check \"{name}\": {error}"
+		},
+		"warnings": {
+			"nonAscii": "This name contains characters beyond ASCII. On chain it is stored as the bytes {hex}; names that look the same can consist of different bytes.",
+			"mixedScripts": "This name mixes alphabets, for example Latin and Cyrillic letters that look alike. On chain it is stored as the bytes {hex}."
 		}
 	},
 	"funds": {
@@ -49,7 +59,14 @@
 		"scan": "Scan the QR code of an address",
 		"total": "Total UTXO value: {amount}",
 		"names": "Names registered to this address:",
-		"expires": "{name} (expires at block {height})"
+		"expires": "{name} (expires at block {height})",
+		"nameValidUntil": "{name} (valid until block {height}, {blocksLeft} blocks left)",
+		"nameExpired": "{name} (expired at block {height})",
+		"namePending": "{name} (not in a block yet)",
+		"errors": {
+			"invalid": "This is not a valid Doichain address.",
+			"lookupFailed": "Could not read the coins of {address}: {error}"
+		}
 	},
 	"features": {
 		"title": "Features:",
@@ -66,14 +83,27 @@
 		"heading": "Register a Doichain name for 36,000 blocks (about 250 days)",
 		"locked": "Locked amount:",
 		"mining": "Mining fee:",
-		"total": "Total:",
-		"change": "Change:"
+		"total": "From your coins:",
+		"change": "Change:",
+		"summary": "You pay {fee} DOI mining fee. {locked} DOI stay locked in the name output, which belongs to you, and {change} DOI come back to you as change.",
+		"dust": "The {amount} DOI left over are too little for a change output and go to the miners."
 	},
 	"psbt": {
 		"label": "PSBT (Base64)",
 		"placeholder": "PSBT",
 		"frame": "QR code frame {current} of {total}",
-		"utxosToSign": "UTXOs to sign: {count}"
+		"utxosToSign": "UTXOs to sign: {count}",
+		"create": "Create PSBT",
+		"steps": {
+			"scan": "Scan the QR code with DoiWallet, or copy the PSBT below.",
+			"check": "Check the outputs in your wallet: {locked} DOI with the name and {change} DOI change go to {address}.",
+			"send": "Sign and send only if every output is what you expect."
+		},
+		"errors": {
+			"nameScript": "No transaction was built, the name output failed: {error}",
+			"prevout": "No transaction was built: the server sent data for {txid} that does not match that transaction.",
+			"nameInput": "No transaction was built: output {txid}:{n} holds a name and cannot pay for a registration."
+		}
 	},
 	"trade": {
 		"seller": "I own this name and want to make a sell offer.",
