@@ -108,6 +108,7 @@
 		"heading": "Diesen Namen kaufen",
 		"intro": "Eine einzige Transaktion zahlt den Preis an den bisherigen Besitzer {seller} und überträgt den Namen an Ihre Adresse. Sie signieren Ihre Coins, danach signiert der Besitzer den Namens-Input – so geschieht entweder beides oder nichts.",
 		"sellOfferOff": "Verkaufsangebote sind vorerst abgeschaltet: DoiWallet signiert nur mit SIGHASH_ALL, und ein so signiertes Angebot kann kein Käufer vervollständigen.",
+		"segwitName": "Dieser Name liegt an einer SegWit-Adresse ({address}). DoiWallet 7.0.4 kann einen Namens-Input an einer solchen Adresse derzeit nicht gültig signieren – auf Regtest geprüft –, der Besitzer könnte den Kauf mit DoiWallet also nicht abschließen.",
 		"fundingLabel": "Ihre Doichain-Adresse: Sie bezahlt den Namen und erhält ihn",
 		"fundingScan": "QR-Code der Kaufadresse scannen",
 		"fundingTotal": "Gesamtwert der UTXOs der Kaufadresse: {amount}",
