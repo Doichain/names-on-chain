@@ -2,6 +2,7 @@
     import { getConnectionStatus } from "../doichain/connectElectrum.js"
     import { checkName } from "$lib/doichain/nameValidation.js";
     import { electrumClient, connectedServer } from "../doichain/doichain-store.js";
+    import { _, locale } from "$lib/i18n/index.js";
 
     /**
      * The name currently typed in the name input
@@ -50,31 +51,46 @@
     $: ({ isConnected, serverName } = getConnectionStatus($connectedServer));
 
     /**
+     * The connection status in words: the server URL once connected,
+     * otherwise the status the connection store reports, translated.
+     */
+    function describeServer(server, translate) {
+        if (server === 'offline') return translate('status.offline');
+        const retry = /^retrying \((\d+)(?: - (.+))?\)$/.exec(server || '');
+        if (retry) return translate('status.retrying', { values: { attempt: retry[1], host: retry[2] ?? '' } });
+        return server;
+    }
+    $: serverText = describeServer(serverName, $_);
+
+    /**
      * Check a name, debounce every keyboard typing, return local variables by callback
      */
-    $: name ? checkName($electrumClient, name, totalUtxoValue, totalAmount, nameCheckCallback) : null;
+    $: if (name) {
+        $locale; // check again when the language changes, so the message follows it
+        checkName($electrumClient, name, totalUtxoValue, totalAmount, nameCheckCallback);
+    }
 
 </script>
 
 <div class="bg-white py-24 sm:py-32">
     <div class="mx-auto max-w-7xl px-6 lg:px-8">
         <div class="mx-auto max-w-2xl sm:text-center">
-            <h2  class="text-3xl font-bold tracking-tight sm:text-4xl fade-red-to-green {isConnected ? 'connected' : ''}">Names-On-Chain</h2>
-            <h2  class="font-bold tracking-tight sm:text-1xl fade-red-to-green {isConnected ? 'connected' : ''}">A Doichain Name Registration Transaction Generator</h2>
-            <h3 class="text-sm font-semibold tracking-tight fade-red-to-green {isConnected ? 'connected' : 'blinking'} ">{serverName}</h3>
+            <h2  class="text-3xl font-bold tracking-tight sm:text-4xl fade-red-to-green {isConnected ? 'connected' : ''}">{$_('app.title')}</h2>
+            <h2  class="font-bold tracking-tight sm:text-1xl fade-red-to-green {isConnected ? 'connected' : ''}">{$_('app.subtitle')}</h2>
+            <h3 class="text-sm font-semibold tracking-tight fade-red-to-green {isConnected ? 'connected' : 'blinking'} ">{serverText}</h3>
         </div>
         <div class="mx-auto mt-16 max-w-2xl rounded-3xl ring-1 ring-gray-200 sm:mt-20 lg:mx-0 lg:flex lg:max-w-none">
             <div class="p-8 sm:p-10 lg:flex-auto">
-                <p class="mt-6 text-base leading-7 text-gray-600">Register your favourite Doichain name!</p>
+                <p class="mt-6 text-base leading-7 text-gray-600">{$_('name.intro')}</p>
                 {#if isConnected}
                 <p>&nbsp;</p>
                 <div>
-                    <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Name to be registered</label>
+                    <label for="name" class="block text-sm font-medium leading-6 text-gray-900">{$_('name.label')}</label>
                     <div class="relative mt-2 rounded-md shadow-sm">
                         <input bind:value={name} name="name" id="name"
                                type="text"
                                class="{isNameValid?'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}"
-                               placeholder="name"
+                               placeholder={$_('name.placeholder')}
                                aria-invalid="{isNameValid}"
                                aria-describedby="name-error"/>
 
@@ -95,11 +111,11 @@
                     {#if !isNameValid}
                         <p class="mt-2 text-sm text-red-600" id="name-error">{nameErrorMessage}</p>
                     {:else if name}
-                        <p class="mt-2 text-sm text-green-600" id="name-success">Address: {doichainAddress}</p>
+                        <p class="mt-2 text-sm text-green-600" id="name-success">{$_('name.address', { values: { address: doichainAddress } })}</p>
                     {/if}
                 </div>
                     {:else}
-                    <p class="mt-2 text-sm text-red-600" id="name-error">offline - please check internet connection or reload browser</p>
+                    <p class="mt-2 text-sm text-red-600" id="name-error">{$_('status.offlineHelp')}</p>
                 {/if}
             </div>
         </div>

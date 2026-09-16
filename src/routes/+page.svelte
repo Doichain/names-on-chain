@@ -2,9 +2,10 @@
    import "../app.css"
    import Pricing from "$lib/components/pricing.svelte"
    import { onMount } from "svelte";
+   import { _ } from "$lib/i18n/index.js";
 
-   let title = `Names-On-Chain`
-   let description = "A name registration service for Doichain";
+   $: title = $_('app.title')
+   $: description = $_('app.description')
    const url = "ipns://name-on-chain.com"
    let image = "/nasa-Q1p7bh3SHj8-unsplash.jpg"
    const favicon = "./favicon.ico"
@@ -39,7 +40,7 @@
             <div class="flex items-center justify-between">
                <button type="button" class="-m-2.5 rounded-md p-2.5 text-gray-700"
                        on:click={() => menuOpen = !menuOpen}>
-                  <span class="sr-only">Close menu</span>
+                  <span class="sr-only">{$_('page.closeMenu')}</span>
                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
