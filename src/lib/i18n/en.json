@@ -92,7 +92,6 @@
 		"label": "PSBT (Base64)",
 		"placeholder": "PSBT",
 		"frame": "QR code frame {current} of {total}",
-		"utxosToSign": "UTXOs to sign: {count}",
 		"create": "Create PSBT",
 		"steps": {
 			"scan": "Scan the QR code with DoiWallet, or copy the PSBT below.",
@@ -106,16 +105,30 @@
 		}
 	},
 	"trade": {
-		"seller": "I own this name and want to make a sell offer.",
-		"buyer": "I don't own this name and want to make a buy offer.",
-		"sellerHint": "Creates part 1 of the PSBT to sell the name.",
-		"buyerHint": "Creates the PSBT part to buy the name (only if part 1 is known).",
-		"sellerExplanation": "If you own this name, you only need to enter the transfer price. The app adds an output with this price to the address that holds the name; you sign the name input in your wallet.",
-		"fundingLabel": "Doichain address with the funds to buy the name",
+		"heading": "Buy this name",
+		"intro": "One transaction pays the price to the current owner {seller} and moves the name to your address. You sign your coins, then the owner signs the name input – so either both happen or nothing does.",
+		"sellOfferOff": "Sell offers are switched off for now: DoiWallet signs only with SIGHASH_ALL, and an offer signed that way cannot be completed by a buyer.",
+		"fundingLabel": "Your Doichain address: it pays for the name and receives it",
 		"fundingScan": "Scan the QR code of the funding address",
 		"fundingTotal": "Total UTXO value of the funding address: {amount}",
 		"fundingInvalid": "The funding address has no usable UTXOs.",
-		"priceLabel": "Transfer price"
+		"priceLabel": "Price",
+		"summary": "You pay {price} DOI to {seller} and {fee} DOI mining fee. The name moves to {buyer} with {locked} DOI locked in it, and {change} DOI come back to you as change.",
+		"surplus": "The name output holds {surplus} DOI more than the locked amount; they go back to the seller.",
+		"steps": {
+			"scan": "Scan the QR code with DoiWallet and sign your inputs.",
+			"check": "Check before signing: {price} DOI go to {seller}; the name and {change} DOI change go to {buyer}.",
+			"handOver": "Hand the signed PSBT to the owner, who signs the name input and sends the transaction."
+		},
+		"errors": {
+			"price": "Enter the price in DOI, for example 1.5.",
+			"priceTooLow": "The seller would receive less than {minimum} DOI, too little for an output.",
+			"ownName": "This name already belongs to {address}; there is nothing to buy.",
+			"nameOperation": "This name was last written with another operation than name_doi. Lesson 5 only trades names written with name_doi.",
+			"nameMismatch": "The output the server named as holder does not hold \"{name}\".",
+			"unconfirmed": "The name is not in a block yet; it can be traded once its transaction is confirmed.",
+			"insufficient": "The coins on {address} do not cover price and mining fee."
+		}
 	},
 	"scan": {
 		"title": "Scan a QR code",
