@@ -59,7 +59,14 @@
 		"scan": "QR-Code einer Adresse scannen",
 		"total": "Gesamtwert der UTXOs: {amount}",
 		"names": "Auf diese Adresse registrierte Namen:",
-		"expires": "{name} (läuft bei Block {height} ab)"
+		"expires": "{name} (läuft bei Block {height} ab)",
+		"nameValidUntil": "{name} (gültig bis Block {height}, noch {blocksLeft} Blöcke)",
+		"nameExpired": "{name} (abgelaufen bei Block {height})",
+		"namePending": "{name} (noch in keinem Block)",
+		"errors": {
+			"invalid": "Das ist keine gültige Doichain-Adresse.",
+			"lookupFailed": "Die Coins von {address} konnten nicht gelesen werden: {error}"
+		}
 	},
 	"features": {
 		"title": "Funktionen:",
