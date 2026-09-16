@@ -1,12 +1,14 @@
 <script>
     import { getConnectionStatus } from "../doichain/connectElectrum.js"
-    import { _, locale } from "$lib/i18n/index.js";
+    import { _, locale, t } from "$lib/i18n/index.js";
     import { checkName } from "$lib/doichain/nameValidation.js";
     import { getUtxosAndNamesOfAddress } from "$lib/doichain/utxoHelpers.js";
-    import { electrumClient, connectedServer, scanOpen } from "../doichain/doichain-store.js";
+    import { electrumClient, connectedServer, scanOpen, network, electrumBlockchainBlockHeadersSubscribe } from "../doichain/doichain-store.js";
     import { renderBBQR, renderBCUR } from "$lib/doichain/renderQR.js";
     import ScanModal from "$lib/doichain/ScanModal.svelte";
-    import { DOICHAIN } from "$lib/doichain/doichain.js";
+    import { describeNameBytes } from "$lib/doichain/nameBytes.js";
+    import { cleanAddressInput, isAddressOf } from "$lib/doichain/addressValidation.js";
+    import { nameExpiry } from "$lib/doichain/nameExpiry.js";
     import { signTransaction } from "$lib/doichain/signTransaction.js";
     import sb from "satoshi-bitcoin";
     import { onDestroy } from "svelte";
@@ -25,6 +27,11 @@
      * If there is an issue with the name, this variable contains the error
      */
     let nameErrorMessage = '';
+
+    /**
+     * Something worth knowing about a free name, e.g. that it expired
+     */
+    let nameNotice = '';
 
     /**
      * The address which will be used to look for
@@ -55,6 +62,33 @@
      */
     let utxoErrorMessage = '';
 
+    /**
+     * Why the coins of the address could not be read: { address, error }
+     */
+    let addressError;
+
+    /**
+     * The address a taken name belongs to. Kept apart from doichainAddress:
+     * the name check must never write into the address the user entered.
+     */
+    let currentNameAddress = '';
+
+    /**
+     * The name the last answer of the name check belongs to
+     */
+    let checkedName = '';
+
+    /**
+     * True from the moment the name changes until its check has answered.
+     * Meanwhile the name is shown neither as free nor as taken.
+     */
+    $: isCheckingName = Boolean(name) && name !== checkedName;
+
+    /**
+     * The address the UTXOs in utxoAddresses belong to, once they are loaded
+     */
+    let utxosLoadedFor = '';
+
     let utxoAddresses = [];
     let psbtBaseText;
 
@@ -63,9 +97,13 @@
      * @param result
      */
     export async function nameCheckCallback(result) {
-        doichainAddress = result.currentNameAddress
+        // an answer for a name typed earlier arrives too late to matter
+        if (result.name !== name) return
+        checkedName = result.name
+        currentNameAddress = result.currentNameAddress ?? ''
         isNameValid = result.isNameValid
         nameErrorMessage  = result.nameErrorMessage
+        nameNotice = result.nameNotice ?? ''
     }
 
     /**
@@ -97,19 +135,59 @@
     }
 
     /**
+     * An empty name has nothing to check and nothing to complain about
+     */
+    $: if (!name) {
+        checkedName = '';
+        isNameValid = true;
+        nameErrorMessage = '';
+        nameNotice = '';
+    }
+
+    /**
+     * The bytes the name is stored as, to warn about look-alike names
+     */
+    $: nameBytes = describeNameBytes(name);
+
+    /**
      * If we have a connection to Electrumx and a doichainAddress get UTXOs without and with NameOps.
      * - UTXOs, we need to calculate the total amount of all inputs to spend
      * - Multiple NameOp UTXOs are possible (their values are burned and un spendable
      */
     $: {
-        if(name && isConnected && doichainAddress){
-            getUtxosAndNamesOfAddress($electrumClient, doichainAddress).then((retObj) => {
+        if(isConnected && isAddressValid){
+            const requestedAddress = doichainAddress
+            addressError = undefined
+            getUtxosAndNamesOfAddress($electrumClient, requestedAddress).then((retObj) => {
+                if (requestedAddress !== doichainAddress) return // the user has moved on to another address
                 nameOpTxs = retObj.nameOpTxs
                 totalUtxoValue = retObj.totalUtxoValue
                 utxoAddresses = retObj.utxoAddresses
+                utxosLoadedFor = requestedAddress
+            }).catch((error) => {
+                if (requestedAddress !== doichainAddress) return
+                nameOpTxs = []
+                utxoAddresses = []
+                utxosLoadedFor = ''
+                addressError = { address: requestedAddress, error: error?.message ?? String(error) }
             })
+        } else {
+            nameOpTxs = []
+            utxoAddresses = []
+            utxosLoadedFor = ''
         }
     }
+
+    /**
+     * A scanned "doichain:" URI or an address pasted with spaces becomes the bare address
+     */
+    $: if (doichainAddress && cleanAddressInput(doichainAddress) !== doichainAddress) doichainAddress = cleanAddressInput(doichainAddress);
+
+    /**
+     * Only a valid address of the current network is used to look for coins
+     */
+    $: isAddressValid = isAddressOf($network, doichainAddress);
+    $: addressLooksWrong = Boolean(doichainAddress) && (!isAddressValid || Boolean(addressError));
 
     /**
      * @type {number} storageFee - The fee for storing the name on the Doichain network, in swartz. Default is 1,000,000 (0.01 DOI).
@@ -127,6 +205,11 @@
     let changeAmount = 0;
 
     /**
+     * @type {number} dust - Change too small for an output, added to the mining fee, in swartz.
+     */
+    let dust = 0;
+
+    /**
      * @type {string|string[]} qrCodeData - The data to be encoded in the QR code. Can be a string for a single QR code or an array of strings for animated QR codes.
      */
     let qrCodeData;
@@ -142,57 +225,65 @@
     let bbqr = false
     
     /**
-     * Reactive block for handling name registration transaction and QR code generation.
-     * 
-     * This block is triggered whenever `name` or `isNameValid` changes.
-     * It performs the following actions:
-     * 1. Calls `signTransaction` to create a PSBT (Partially Signed Bitcoin Transaction).
-     * 2. Updates transaction details (fees, amounts) based on the result.
-     * 3. Generates either a BBQR or BCUR QR code for the transaction.
-     * 
-     * @reactive
-     * @depends {string} name - The name to be registered.
-     * @depends {boolean} isNameValid - Whether the name is valid for registration.
-     * @depends {Array<Object>} utxoAddresses - UTXO addresses for the transaction.
-     * @depends {Object} DOICHAIN - Doichain network configuration.
-     * @depends {number} storageFee - Fee for storing the name on the network.
-     * @depends {string} doichainAddress - The Doichain address for the transaction.
-     * @depends {boolean} bbqr - Flag to determine QR code format (BBQR or BCUR).
-     * 
+     * Reactive block for the name registration transaction.
+     *
+     * Runs whenever name, address, their checks or the UTXOs change. It first
+     * clears everything computed for the previous input – fees, PSBT and QR
+     * code – so nothing stale stays on screen, then builds the transaction for
+     * a checked name and a loaded address. The QR code only appears once the
+     * user asks for it with the button (createPsbt).
+     *
      * @affects {string} utxoErrorMessage - Error message if transaction creation fails.
      * @affects {string} psbtBaseText - Base64 encoded PSBT.
      * @affects {number} transactionFee - Calculated transaction fee.
      * @affects {number} changeAmount - Calculated change amount.
      * @affects {number} totalAmount - Total transaction amount.
-     * @affects {string|string[]} qrCodeData - Generated QR code data.
-     * 
-     * @throws {Error} Logs error to console if QR code generation fails.
      */
     $: {
-        if(name && isNameValid) {
+        psbtBaseText = undefined;
+        qrCodeData = undefined;
+        qrCode = undefined;
+        transactionFee = 0;
+        changeAmount = 0;
+        dust = 0;
+        totalAmount = 0;
+        utxoErrorMessage = '';
+        if(name && !isCheckingName && isNameValid && isAddressValid && utxosLoadedFor === doichainAddress) {
             $locale; // rebuild when the language changes, so an error message follows it
-            const result = signTransaction(utxoAddresses, name, DOICHAIN, storageFee, doichainAddress, doichainAddress, doichainAddress);
+            const result = utxoAddresses.length === 0
+                ? { error: t('funds.insufficientForTransaction', { address: doichainAddress }) }
+                : signTransaction(utxoAddresses, name, $network, storageFee, doichainAddress, doichainAddress, doichainAddress);
             if (result.error) {
                 utxoErrorMessage = result.error;
-                qrCodeData = undefined;
             } else {
                 psbtBaseText = result.psbtBase64;
                 transactionFee = result.transactionFee;
                 changeAmount = result.changeAmount;
+                dust = result.dust;
                 totalAmount = result.totalAmount;
-
-                if(bbqr)
-                    renderBBQR(psbtBaseText).then(imgurl => qrCodeData = imgurl)
-                else
-                    renderBCUR(psbtBaseText).then(_qr => {
-                        qrCodeData = _qr;
-                        displayQrCodes();
-                    }).catch(error => {
-                        console.error('Error generating QR code:', error);
-                        qrCodeData = undefined;
-                    });
             }
         }
+    }
+
+    /**
+     * Renders the QR code for the PSBT that is on screen right now.
+     * Generates either a BBQR or BCUR QR code for the transaction.
+     */
+    function createPsbt() {
+        const requested = psbtBaseText;
+        if (!requested) return;
+        const stillCurrent = () => requested === psbtBaseText;
+        if(bbqr)
+            renderBBQR(requested).then(imgurl => { if (stillCurrent()) qrCodeData = imgurl })
+        else
+            renderBCUR(requested).then(_qr => {
+                if (!stillCurrent()) return;
+                qrCodeData = _qr;
+                displayQrCodes();
+            }).catch(error => {
+                console.error('Error generating QR code:', error);
+                qrCodeData = undefined;
+            });
     }
 
     /**
@@ -255,13 +346,15 @@
                             <label for="name" class="block text-sm font-medium leading-6 text-gray-900">{$_('name.label')}</label>
                             <div class="relative mt-2 rounded-md shadow-sm">
                                 <input bind:value={name} name="name" id="name"
-                                       type="text"
-                                       class="{isNameValid?'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}"
+                                       type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+                                       class="{isCheckingName || isNameValid?'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}"
                                        placeholder={$_('name.placeholder')}
-                                       aria-invalid="{isNameValid}"
-                                       aria-describedby="name-error"/>
+                                       aria-invalid={!isCheckingName && !isNameValid}
+                                       aria-describedby="name-status"/>
 
-                                        {#if !isNameValid}
+                                        {#if isCheckingName}
+                                            <!-- no verdict while the check runs -->
+                                        {:else if !isNameValid}
                                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                                 <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
@@ -275,26 +368,39 @@
                                             </div>
                                         {/if}
                             </div>
-                            {#if !isNameValid}
-                                <p class="mt-2 text-sm text-red-600" id="name-error">{nameErrorMessage}</p>
-                            {:else if name}
-                                <p class="mt-2 text-sm text-green-600" id="name-success">{$_('name.address', { values: { address: doichainAddress } })}</p>
-                            {/if}
+                            <div id="name-status" aria-live="polite">
+                                {#if !name}
+                                    <!-- nothing to say yet -->
+                                {:else if isCheckingName}
+                                    <p class="mt-2 text-sm text-gray-600">{$_('name.checking', { values: { name } })}</p>
+                                {:else if !isNameValid}
+                                    <p class="mt-2 text-sm text-red-600">{nameErrorMessage}</p>
+                                {:else}
+                                    <p class="mt-2 text-sm text-green-700">{$_('name.available', { values: { name } })} {nameNotice}</p>
+                                    {#if doichainAddress}
+                                        <p class="mt-1 text-sm text-gray-600">{$_('name.address', { values: { address: doichainAddress } })}</p>
+                                    {/if}
+                                {/if}
+                                {#if name && nameBytes.mixesScripts}
+                                    <p class="mt-2 text-sm text-amber-800">{$_('name.warnings.mixedScripts', { values: { hex: nameBytes.hex } })}</p>
+                                {:else if name && !nameBytes.isAscii}
+                                    <p class="mt-2 text-sm text-amber-800">{$_('name.warnings.nonAscii', { values: { hex: nameBytes.hex } })}</p>
+                                {/if}
+                            </div>
                         </div>
                             {:else}
-                            <p class="mt-2 text-sm text-red-600" id="name-error">{$_('status.offlineHelp')}</p>
+                            <p class="mt-2 text-sm text-red-600" id="connection-status">{$_('status.offlineHelp')}</p>
                         {/if}
                         <div>
-                            <label for="email" class="block text-sm font-medium leading-6 text-gray-900">{$_('address.label')}</label>
+                            <label for="address" class="block text-sm font-medium leading-6 text-gray-900">{$_('address.label')}</label>
                             <div class="relative mt-2 rounded-md shadow-sm flex items-center">
                                 <input bind:value={doichainAddress}
-                                       on:change={() => checkName($electrumClient, doichainAddress, name, totalUtxoValue, totalAmount, nameCheckCallback)}
-                                       type="address" name="address" id="address"
-                                       class="{isNameValid?'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}"
+                                       type="text" name="address" id="address" autocomplete="off" autocapitalize="off" spellcheck="false"
+                                       class="{!addressLooksWrong?'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}"
                                        placeholder={$_('address.placeholder')}
-                                       aria-invalid="{isUTXOAddressValid}"
-                                       aria-describedby="name-error">
-                                {#if !isUTXOAddressValid}
+                                       aria-invalid={addressLooksWrong}
+                                       aria-describedby="address-status">
+                                {#if addressLooksWrong}
                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                         <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
@@ -304,23 +410,38 @@
                                 <button type="button" aria-label={$_('address.scan')} title={$_('address.scan')} on:click={ () => { $scanOpen = true }} class="ml-2"><svg class="h-8 w-8 text-orange-600"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />  <path d="M4 17v1a2 2 0 0 0 2 2h2" />  <path d="M16 4h2a2 2 0 0 1 2 2v1" />  <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />  <line x1="5" y1="12" x2="19" y2="12" /></svg></button>
                             </div>
 
-                            {#if !isUTXOAddressValid}
-                                <p class="mt-2 text-sm text-red-600" id="name-error"><b>{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}</b> {utxoErrorMessage}</p>
+                            <div id="address-status" aria-live="polite">
+                            {#if doichainAddress && !isAddressValid}
+                                <p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
+                            {:else if addressError}
+                                <p class="mt-2 text-sm text-red-600">{$_('address.errors.lookupFailed', { values: addressError })}</p>
+                            {:else if utxoErrorMessage}
+                                <p class="mt-2 text-sm text-red-600"><b>{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}</b> {utxoErrorMessage}</p>
                             {:else}
-                                <p class="mt-2 text-sm text-gray red-600" id="name-error">{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}</p>
+                                <p class="mt-2 text-sm text-gray-600">{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}</p>
                                 {#if nameOpTxs.length > 0}
                                     <div class="mt-4">
                                         <h4 class="text-sm font-medium text-gray-900 mb-2">{$_('address.names')}</h4>
                                         <div class="flex flex-wrap gap-2">
                                             {#each nameOpTxs as nameOp}
-                                                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
-                                                    {$_('address.expires', { values: { name: nameOp.name, height: nameOp.expires } })}
+                                                {@const expiry = nameExpiry(nameOp.height, $electrumBlockchainBlockHeadersSubscribe?.height, $network)}
+                                                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium {expiry.expired ? 'bg-gray-100 text-gray-700' : 'bg-blue-100 text-blue-800'}">
+                                                    {#if !expiry.confirmed}
+                                                        {$_('address.namePending', { values: { name: nameOp.name } })}
+                                                    {:else if expiry.expired}
+                                                        {$_('address.nameExpired', { values: { name: nameOp.name, height: expiry.expiresAt } })}
+                                                    {:else if expiry.blocksLeft !== undefined}
+                                                        {$_('address.nameValidUntil', { values: { name: nameOp.name, height: expiry.expiresAt, blocksLeft: expiry.blocksLeft } })}
+                                                    {:else}
+                                                        {$_('address.expires', { values: { name: nameOp.name, height: expiry.expiresAt } })}
+                                                    {/if}
                                                 </span>
                                             {/each}
                                         </div>
                                     </div>
                                 {/if}
                             {/if}
+                            </div>
                         </div>
                         <p>&nbsp;</p>
                         <div class="mt-10 flex items-center gap-x-4">
@@ -383,28 +504,31 @@
                             <span class="text-sm font-semibold leading-6 tracking-wide text-gray-600">{sb.toBitcoin(changeAmount)} DOI</span>
                         </div>
                     </div>
+                    {#if psbtBaseText}
+                        <p class="mt-6 text-sm leading-6 text-gray-800">{$_('fees.summary', { values: { fee: sb.toBitcoin(transactionFee), locked: sb.toBitcoin(storageFee), change: sb.toBitcoin(changeAmount) } })}</p>
+                        {#if dust > 0}
+                            <p class="mt-2 text-sm leading-6 text-gray-600">{$_('fees.dust', { values: { amount: sb.toBitcoin(dust) } })}</p>
+                        {/if}
+                    {/if}
                     <div id="qr-container"></div>
-                    {#if qrCodeData && psbtBaseText && isNameValid}
+                    {#if psbtBaseText && !qrCodeData}
+                        <button type="button" on:click={createPsbt}
+                                class="mt-6 w-full rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{$_('psbt.create')}</button>
+                    {/if}
+                    {#if qrCodeData && psbtBaseText}
                         {@html qrCode}
+                        <ol class="mt-4 list-decimal space-y-1 pl-5 text-sm leading-6 text-gray-800">
+                            <li>{$_('psbt.steps.scan')}</li>
+                            <li>{$_('psbt.steps.check', { values: { locked: sb.toBitcoin(storageFee), change: sb.toBitcoin(changeAmount), address: doichainAddress } })}</li>
+                            <li>{$_('psbt.steps.send')}</li>
+                        </ol>
                         <div class="mt-4">
-                            <label for="name" class="block text-sm font-medium leading-6 text-gray-900">{$_('psbt.label')}</label>
+                            <label for="psbt" class="block text-sm font-medium leading-6 text-gray-900">{$_('psbt.label')}</label>
                             <div class="relative mt-2 rounded-md shadow-sm">
-                                <textarea bind:value={psbtBaseText} rows="4" name="comment" id="comment"
-                                      class="{isNameValid?'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}"
-                                      placeholder={$_('psbt.placeholder')}
-                                      aria-invalid="{!psbtBaseText}"
-                                      aria-describedby="name-error"/>
-                                        {#if !psbtBaseText}
-                                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                                <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-                                                </svg>
-                                            </div>
-                                        {/if}
+                                <textarea value={psbtBaseText} readonly rows="4" name="psbt" id="psbt"
+                                      class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
+                                      placeholder={$_('psbt.placeholder')}></textarea>
                             </div>
-                            {#if !psbtBaseText}
-                                <p class="mt-2 text-sm text-red-600" id="name-error">{nameErrorMessage}</p>
-                            {/if}
                         </div>
                     {/if}
                 </div>
