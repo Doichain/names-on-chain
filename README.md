@@ -2,10 +2,9 @@
 # A Doichain - PSBT Workshop
 
 ## Description
-This 4-step workshop is intended to showcase how you can register and show Doichain names
-and how to create and sign NameOp transactions via PSBT-QR-Codes and PSBT-Files.
-PSBTs can be scanned and broadcasted by DoiWallet or via file import into the ElectrumDOI wallet.
-No private key necessary in the browser.
+This workshop in five lessons shows how to look up, register and trade Doichain names.
+The app builds the NameOp transactions as PSBTs and hands them over as animated QR codes;
+DoiWallet signs and sends them. No private key is needed in the browser.
 
 Live demo of this lesson: https://doichain.github.io/names-on-chain/lesson04/
 
@@ -63,7 +62,7 @@ ipfs add -r lesson02
 ### Lesson 3)
 1. Adding a feature box
    - src/lib/components/pricing.svelte
-2. Adding a transaction calculation box (storage fee, mining fee, change amount, total amount)
+2. Adding a transaction calculation box (locked amount, mining fee, what leaves your coins, change)
    - src/lib/components/pricing.svelte
 3. Generating a PSBT (partially signed Bitcoin transaction)
    - src/lib/components/pricing.svelte
