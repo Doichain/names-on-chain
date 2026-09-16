@@ -1,10 +1,14 @@
 import { nameShow } from "$lib/doichain/nameShow.js";
+import { getScriptPubKeyAddress } from "$lib/doichain/scriptPubKeyAddress.js";
 import sb from "satoshi-bitcoin";
 import { debounce } from 'lodash';
 
 export const checkName = debounce((electrumClient, name, totalUtxoValue, totalAmount, callback) => {
     _checkName(electrumClient, name, totalUtxoValue, totalAmount).then(result => {
         callback(result);
+    }).catch(error => {
+        // a failed lookup must not leave the previous result on screen
+        callback({ nameErrorMessage: `Could not check "${name}": ${error?.message ?? error}`, isNameValid: false });
     });
 }, 300);
 
@@ -32,7 +36,7 @@ export async function _checkName(electrumClient, _name, totalUtxoValue, totalAmo
             for (let utxo of res) {
                 const scriptPubKey = utxo.scriptPubKey;
                 if (scriptPubKey && scriptPubKey.nameOp) {
-                    currentNameAddress = scriptPubKey.addresses[0];
+                    currentNameAddress = getScriptPubKeyAddress(scriptPubKey);
                 }
             }
             nameErrorMessage = `Name "${_name}" already registered under address ${currentNameAddress}`;
@@ -45,7 +49,7 @@ export async function _checkName(electrumClient, _name, totalUtxoValue, totalAmo
             return { nameErrorMessage, utxoErrorMessage, isNameValid, isUTXOAddressValid }
         }
         else {
-           return
+            return { nameErrorMessage, utxoErrorMessage, isNameValid, isUTXOAddressValid }
         }
     } else {
         nameErrorMessage = `Name "${_name}" is too short`;

@@ -1,4 +1,5 @@
 import { getUTXOSFromAddress } from "./nameDoi.js";
+import { getScriptPubKeyAddress } from "./scriptPubKeyAddress.js";
 
 export async function getUtxosAndNamesOfAddress(electrumClient, doichainAddress) {
     let nameOpTxs = []
@@ -15,7 +16,7 @@ export async function getUtxosAndNamesOfAddress(electrumClient, doichainAddress)
                 hash: utxo.tx_hash,
                 n: utxo.fullTx.n,
                 value: utxo.value,
-                address: utxo.fullTx.scriptPubKey.addresses[0]})
+                address: getScriptPubKeyAddress(utxo.fullTx.scriptPubKey)})
         } else {
             nameOpTxs.push(scriptPubKey.nameOp.name)
         }
