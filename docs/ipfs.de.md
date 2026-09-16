@@ -23,9 +23,10 @@ behält. Dieses Behalten heißt Pinnen.
 3. Öffnen Sie `http://localhost:8080/ipfs/<CID>/`. Ihr Knoten leitet auf
    `http://<CID>.ipfs.localhost:8080/` weiter und liefert die App von dort aus.
 
-Ihr Knoten antwortet nur, solange er läuft. Damit andere die Seite öffnen
-können, pinnen Sie die CID auf einem Server, der online bleibt, und geben Sie
-dessen Adresse weiter. Dieses Repository macht das mit Aleph, siehe
+Ihr Knoten antwortet nur, solange er läuft. Damit die Seite erreichbar bleibt,
+pinnen Sie die CID auf einem Knoten, der online bleibt. Andere öffnen sie mit
+ihrem eigenen IPFS-Knoten, IPFS Desktop oder Kubo, der sie über libp2p holt.
+Dieses Repository pinnt die Lektionen über Aleph, siehe
 [unten](#so-veröffentlicht-dieses-repository-die-lektionen).
 
 ## Details
@@ -65,10 +66,10 @@ dessen Adresse weiter. Dieses Repository macht das mit Aleph, siehe
    [Aleph](https://aleph.cloud), mit der Action `aleph-site-publish` aus
    [NiKrause/relay-button](https://github.com/NiKrause/relay-button). Die Action
    packt den Ordner in eine CAR-Datei, lädt sie zusammen mit einer signierten
-   Aleph-`STORE`-Nachricht hoch, wartet, bis Aleph die Nachricht verarbeitet hat,
-   und prüft, dass `https://<CID>.ipfs.aleph.sh/` den Ordner ausliefert. Die
-   Job-Zusammenfassung nennt die CID, die Deployments-Seite des Repositorys
-   verlinkt unter `ipfs` die neueste Version.
+   Aleph-`STORE`-Nachricht hoch und wartet, bis Aleph die Nachricht verarbeitet
+   hat. Danach holt ein Helia-Knoten jeden Block des Ordners über libp2p aus dem
+   IPFS-Netz; ein HTTP-Gateway wird dabei nicht gefragt. Die
+   Job-Zusammenfassung nennt die CID.
    Der Job läuft nur, wenn das Repository-Secret `ALEPH_PRIVATE_KEY` gesetzt ist:
    der private Schlüssel einer Ethereum-Adresse, deren Aleph-Credits den Speicher
    bezahlen. Der Schlüssel signiert jeden Upload; laden Sie seine Adresse deshalb
@@ -89,7 +90,6 @@ Legen Sie zuerst drei DNS-Einträge an, hier für `names.example.org`:
 
 Aleph liefert die Domain nur aus, wenn `_control` die Adresse nennt, die die
 Verknüpfung signiert. Setzen Sie danach `ALEPH_SITE_DOMAIN` und starten Sie den
-Workflow erneut (Actions → GitHub Pages → Run workflow). `link-domain` schlägt
-fehl, wenn die Domain die neue CID nicht innerhalb von etwa fünf Minuten
-ausliefert. Ein falscher Pfad liefert 404 statt der Übersicht; öffnen Sie
-deshalb einmal `https://names.example.org/lesson01/`.
+Workflow erneut (Actions → GitHub Pages → Run workflow). `link-domain` liest den
+DNSLink-Eintrag der Domain und schlägt fehl, wenn er nicht innerhalb von etwa
+fünf Minuten die neue CID nennt.
