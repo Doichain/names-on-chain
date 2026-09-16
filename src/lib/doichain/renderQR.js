@@ -27,11 +27,14 @@ function base64ToHex(base64) {
  * @returns {Promise<void>}
  */
 export const renderBCUR = async (qrData) => {
+
 	if (!qrData) {
+        console.error("No QR data provided");
         return;
     }
-	console.log("qrData",qrData)
-	const maxFragmentLength = 50
+	// bytes per animated frame: 50 made a registration with 25 coins 161 frames long;
+	// 120 still gives QR codes that phone cameras read from a laptop screen
+	const maxFragmentLength = 120
 	// not account. lets try psbt
 	const parts = [];
 	try {
@@ -50,7 +53,10 @@ export const renderBCUR = async (qrData) => {
 	const qrSvgs = parts.map(part => {
 		const qrSvg = vkQr.createQR(part, {
 			qrSize: 256,
-			isShowLogo: false
+			isShowLogo: false,
+			isShowBackground: true, // dark modules on white, whatever lies behind
+			backgroundColor: '#ffffff',
+			foregroundColor: '#000000'
 		});
 		// console.log("qrSvg", qrSvg);
 		return qrSvg;
