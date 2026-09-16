@@ -20,10 +20,10 @@ that is online keeps a copy. Keeping that copy is called pinning.
 3. Open `http://localhost:8080/ipfs/<CID>/`. Your node redirects to
    `http://<CID>.ipfs.localhost:8080/` and serves the app from there.
 
-Your node answers only while it runs. For a page that others can open, pin the
-CID on a server that stays online and share that server's address. This
-repository does that with Aleph, see
-[below](#how-this-repository-publishes-the-lessons).
+Your node answers only while it runs. To keep the page available, pin the CID
+on a node that stays online. Others open it with their own IPFS node, IPFS
+Desktop or Kubo, which fetches it over libp2p. This repository pins the lessons
+through Aleph, see [below](#how-this-repository-publishes-the-lessons).
 
 ## Details
 
@@ -63,10 +63,9 @@ repository does that with Aleph, see
    [Aleph](https://aleph.cloud), with the `aleph-site-publish` action from
    [NiKrause/relay-button](https://github.com/NiKrause/relay-button). The action
    packs the folder into a CAR file, uploads it together with a signed Aleph
-   `STORE` message, waits until Aleph has processed the message and checks that
-   `https://<CID>.ipfs.aleph.sh/` serves the folder. The job summary shows the
-   CID, and the repository's Deployments page links the newest version under
-   `ipfs`.
+   `STORE` message and waits until Aleph has processed the message. Then a
+   Helia node fetches every block of the folder from the IPFS network over
+   libp2p; no HTTP gateway is asked. The job summary shows the CID.
    The job runs only when the repository secret `ALEPH_PRIVATE_KEY` is set: the
    private key of an Ethereum address whose Aleph credits pay for the storage.
    The key signs every upload, so give its address only the credits the site
@@ -86,6 +85,5 @@ Create three DNS records first, here for `names.example.org`:
 
 Aleph serves the domain only when `_control` names the address that signs the
 link. Then set `ALEPH_SITE_DOMAIN` and run the workflow again (Actions → GitHub
-Pages → Run workflow). `link-domain` fails if the domain does not serve the new
-CID within about five minutes. A wrong path returns 404 instead of the
-overview, so open `https://names.example.org/lesson01/` once to check.
+Pages → Run workflow). `link-domain` reads the domain's DNSLink record and fails
+if it does not name the new CID within about five minutes.
