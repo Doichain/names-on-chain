@@ -92,7 +92,6 @@
 		"label": "PSBT (Base64)",
 		"placeholder": "PSBT",
 		"frame": "QR-Code-Bild {current} von {total}",
-		"utxosToSign": "Zu signierende UTXOs: {count}",
 		"create": "PSBT erstellen",
 		"steps": {
 			"scan": "Scannen Sie den QR-Code mit DoiWallet oder kopieren Sie das PSBT unten.",
@@ -106,16 +105,30 @@
 		}
 	},
 	"trade": {
-		"seller": "Dieser Name gehört mir, ich erstelle ein Verkaufsangebot.",
-		"buyer": "Dieser Name gehört mir nicht, ich erstelle ein Kaufangebot.",
-		"sellerHint": "Erstellt Teil 1 des PSBT, um den Namen zu verkaufen.",
-		"buyerHint": "Erstellt den PSBT-Teil, um den Namen zu kaufen (nur wenn Teil 1 bekannt ist).",
-		"sellerExplanation": "Wenn Ihnen dieser Name gehört, geben Sie nur den Übertragungspreis ein. Die App fügt eine Ausgabe über diesen Preis an die Adresse hinzu, auf der der Name liegt; den Namens-Input signieren Sie in Ihrer Wallet.",
-		"fundingLabel": "Doichain-Adresse mit dem Guthaben für den Kauf",
+		"heading": "Diesen Namen kaufen",
+		"intro": "Eine einzige Transaktion zahlt den Preis an den bisherigen Besitzer {seller} und überträgt den Namen an Ihre Adresse. Sie signieren Ihre Coins, danach signiert der Besitzer den Namens-Input – so geschieht entweder beides oder nichts.",
+		"sellOfferOff": "Verkaufsangebote sind vorerst abgeschaltet: DoiWallet signiert nur mit SIGHASH_ALL, und ein so signiertes Angebot kann kein Käufer vervollständigen.",
+		"fundingLabel": "Ihre Doichain-Adresse: Sie bezahlt den Namen und erhält ihn",
 		"fundingScan": "QR-Code der Kaufadresse scannen",
 		"fundingTotal": "Gesamtwert der UTXOs der Kaufadresse: {amount}",
 		"fundingInvalid": "Die Kaufadresse hat keine verwendbaren UTXOs.",
-		"priceLabel": "Übertragungspreis"
+		"priceLabel": "Preis",
+		"summary": "Sie zahlen {price} DOI an {seller} und {fee} DOI Mining-Gebühr. Der Name geht mit {locked} DOI gebundenem Betrag an {buyer}, und {change} DOI kommen als Wechselgeld zu Ihnen zurück.",
+		"surplus": "Der Namens-Output enthält {surplus} DOI mehr als den gebundenen Betrag; dieser Rest geht an den Verkäufer zurück.",
+		"steps": {
+			"scan": "Scannen Sie den QR-Code mit DoiWallet und signieren Sie Ihre Inputs.",
+			"check": "Prüfen Sie vor dem Signieren: {price} DOI gehen an {seller}; der Name und {change} DOI Wechselgeld gehen an {buyer}.",
+			"handOver": "Geben Sie das signierte PSBT dem Besitzer; er signiert den Namens-Input und sendet die Transaktion."
+		},
+		"errors": {
+			"price": "Geben Sie den Preis in DOI an, zum Beispiel 1,5.",
+			"priceTooLow": "Der Verkäufer bekäme weniger als {minimum} DOI – zu wenig für einen Output.",
+			"ownName": "Dieser Name gehört bereits {address}; es gibt nichts zu kaufen.",
+			"nameOperation": "Dieser Name wurde zuletzt mit einer anderen Operation als name_doi geschrieben. Lektion 5 handelt nur Namen, die mit name_doi geschrieben wurden.",
+			"nameMismatch": "Der Output, den der Server als Halter nennt, enthält nicht „{name}“.",
+			"unconfirmed": "Der Name steckt noch in keinem Block; handeln lässt er sich erst nach der Bestätigung.",
+			"insufficient": "Die Coins auf {address} decken Preis und Mining-Gebühr nicht."
+		}
 	},
 	"scan": {
 		"title": "QR-Code scannen",
