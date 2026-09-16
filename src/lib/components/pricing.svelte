@@ -190,11 +190,14 @@
     let storageFee = 1000000;
     let transactionFee = 0;
     let changeAmount = 0;
+    /** change too small for an output, added to the mining fee */
+    let dust = 0;
     $:{
         // nothing from an earlier name or address may stay on screen
         psbtBaseText = undefined;
         transactionFee = 0;
         changeAmount = 0;
+        dust = 0;
         totalAmount = 0;
         utxoErrorMessage = '';
         if(name && !isCheckingName && isNameValid && isAddressValid && utxosLoadedFor === doichainAddress) {
@@ -208,6 +211,7 @@
                 psbtBaseText = result.psbtBase64;
                 transactionFee = result.transactionFee;
                 changeAmount = result.changeAmount;
+                dust = result.dust;
                 totalAmount = result.totalAmount;
             }
         }
@@ -400,6 +404,12 @@
                                 <span class="text-sm font-semibold leading-6 tracking-wide text-gray-600">{sb.toBitcoin(changeAmount)} DOI</span>
                             </div>
                         </div>
+                        {#if psbtBaseText}
+                            <p class="mt-6 text-sm leading-6 text-gray-800">{$_('fees.summary', { values: { fee: sb.toBitcoin(transactionFee), locked: sb.toBitcoin(storageFee), change: sb.toBitcoin(changeAmount) } })}</p>
+                            {#if dust > 0}
+                                <p class="mt-2 text-sm leading-6 text-gray-600">{$_('fees.dust', { values: { amount: sb.toBitcoin(dust) } })}</p>
+                            {/if}
+                        {/if}
                         <div id="qr-container"></div>
                     </div>
                 </div>
