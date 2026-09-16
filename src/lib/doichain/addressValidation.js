@@ -20,6 +20,23 @@ export function isAddressOf(network, candidate) {
 }
 
 /**
+ * Is this a P2WPKH (native SegWit) address of the given network, like dc1q…?
+ *
+ * @param {object} network - DOICHAIN, DOICHAIN_REGTEST, ...
+ * @param {string} candidate
+ * @returns {boolean}
+ */
+export function isP2WPKHAddress(network, candidate) {
+	if (!candidate || !network) return false;
+	try {
+		const output = address.toOutputScript(candidate, network);
+		return output.length === 22 && output[0] === 0x00 && output[1] === 0x14;
+	} catch {
+		return false;
+	}
+}
+
+/**
  * An address as typed, pasted or scanned: without surrounding spaces and
  * without a "doichain:" payment URI around it.
  *
