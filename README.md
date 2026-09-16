@@ -52,7 +52,7 @@ npm run build
 mv public lesson02
 ipfs add -r lesson02
 ```
-4. Run Brave browser and open ipfs url: ipfs://{cid of your ipfs add command} (or: ipfs://QmWnDdeb1oWgYZKuyfJm49Bp9G7FwjCTkYiCXoD2Skfsz9)
+4. Run Brave browser and open ipfs url: ipfs://{cid of your ipfs add command} (or see our version: https://nikrause.github.io/names-on-chain/lesson02/)
 5. Checkout branch lesson03)
 
 ## Goal of this lesson
