@@ -51,6 +51,7 @@
 	"funds": {
 		"insufficient": "The funds on {address} are not enough for this Doichain name.",
 		"insufficientForTransaction": "The funds on {address} are not enough to build the transaction for this name.",
+		"tooFragmented": "The coins on {address} are split into too many small amounts: this would need more than {max} of them. Send them to yourself in DoiWallet to combine them, then try again.",
 		"missingParameters": "Some required information is missing."
 	},
 	"address": {
@@ -86,7 +87,8 @@
 		"total": "From your coins:",
 		"change": "Change:",
 		"summary": "You pay {fee} DOI mining fee. {locked} DOI stay locked in the name output, which belongs to you, and {change} DOI come back to you as change.",
-		"dust": "The {amount} DOI left over are too little for a change output and go to the miners."
+		"dust": "The {amount} DOI left over are too little for a change output and go to the miners.",
+		"details": "{rate} swartz per vbyte for about {vsize} vbytes, using {used} of {available} coins."
 	},
 	"psbt": {
 		"label": "PSBT (Base64)",
@@ -102,7 +104,17 @@
 			"nameScript": "No transaction was built, the name output failed: {error}",
 			"prevout": "No transaction was built: the server sent data for {txid} that does not match that transaction.",
 			"nameInput": "No transaction was built: output {txid}:{n} holds a name and cannot pay for a registration."
-		}
+		},
+		"pause": "Pause",
+		"play": "Play",
+		"previous": "Previous frame",
+		"next": "Next frame",
+		"copy": "Copy PSBT",
+		"copied": "Copied",
+		"copyFailed": "Copying failed; select the text below instead.",
+		"download": "Download .psbt",
+		"share": "Share",
+		"controls": "QR code controls"
 	},
 	"trade": {
 		"heading": "Buy this name",
