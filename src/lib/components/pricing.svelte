@@ -5,7 +5,7 @@
     import { getUtxosAndNamesOfAddress } from "$lib/doichain/utxoHelpers.js";
     import {electrumClient, connectedServer, scanOpen, network, electrumBlockchainBlockHeadersSubscribe} from "../doichain/doichain-store.js";
     import { describeNameBytes } from "$lib/doichain/nameBytes.js";
-    import { cleanAddressInput, isAddressOf } from "$lib/doichain/addressValidation.js";
+    import { cleanAddressInput, isAddressOf, isP2WPKHAddress } from "$lib/doichain/addressValidation.js";
     import { nameExpiry } from "$lib/doichain/nameExpiry.js";
     import { renderBBQR, renderBCUR } from "$lib/doichain/renderQR.js";
     import ScanModal from "$lib/doichain/ScanModal.svelte";
@@ -399,6 +399,12 @@
     }
     $: tradeReady = Boolean(trade && !trade.error);
 
+    /**
+     * DoiWallet 7.0.4 signs a name input at a P2WPKH address like a legacy input, and the network
+     * refuses the transaction (proven on regtest). The owner of such a name could not complete a purchase.
+     */
+    $: nameHeldBySegwit = isNameExists && isP2WPKHAddress($network, currentNameAddress);
+
     /** The PSBT on screen: the purchase of a taken name, or the registration of a free one */
     $: shownPsbt = isNameExists ? (tradeReady ? trade.psbtBase64 : undefined) : psbtBaseText;
 
@@ -541,6 +547,9 @@
                                 <h3 class="text-base font-semibold leading-7 text-gray-900">{$_('trade.heading')}</h3>
                                 <p class="mt-2 text-sm leading-6 text-gray-600">{$_('trade.intro', { values: { seller: currentNameAddress } })}</p>
                                 <p class="mt-2 text-sm leading-6 text-gray-500">{$_('trade.sellOfferOff')}</p>
+                                {#if nameHeldBySegwit}
+                                    <p class="mt-3 rounded-md bg-amber-50 p-3 text-sm leading-6 text-amber-900" role="note">{$_('trade.segwitName', { values: { address: currentNameAddress } })}</p>
+                                {/if}
 
                                 <label for="fundingUTXOAddress" class="mt-6 block text-sm font-medium leading-6 text-gray-900">{$_('trade.fundingLabel')}</label>
                                 <div class="relative mt-2 rounded-md shadow-sm flex items-center">

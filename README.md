@@ -117,6 +117,10 @@ The app uses the original bitcoinjs-lib. The PSBTs are signed in DoiWallet, a fo
 
 Nothing that decides where money goes comes from the ElectrumX server: your address is the one you typed, the owner's address is read from the name script, and every amount is read from raw transactions whose hashes match their txids.
 
+#### Names at SegWit addresses
+
+On regtest, DoiWallet 7.0.4 signs a name input at a P2WPKH address (`dc1q…`) like a legacy input, and Doichain Core refuses the transaction. Names at P2PKH addresses can be bought as described; for a name at a SegWit address the app shows a warning, because its owner could not complete the purchase with DoiWallet.
+
 #### Sell offers are switched off
 
 A seller could sign first with SIGHASH_SINGLE|ANYONECANPAY and pass the half-signed transaction around as an offer. DoiWallet signs only with SIGHASH_ALL, and an offer signed that way cannot be completed by a buyer, so the app builds purchases only.
