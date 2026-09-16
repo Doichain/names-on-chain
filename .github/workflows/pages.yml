@@ -1,7 +1,7 @@
 name: GitHub Pages
 
 # Builds every lesson branch and publishes each one under its own path:
-#   https://nikrause.github.io/names-on-chain/lesson01/ ... /lesson05/
+#   https://doichain.github.io/names-on-chain/lesson01/ ... /lesson05/
 # Fixes reach main through the forward merges (lesson01 -> ... -> main), so a
 # push to main rebuilds all lessons from the current heads of their branches.
 
@@ -105,7 +105,7 @@ jobs:
                   <a href="https://play.google.com/store/apps/details?id=org.doichain.doiwallet">Google Play (Android)</a> ·
                   <a href="https://apps.apple.com/app/doiwallet/id1579900361">App Store (iPhone)</a> ·
                   <a href="https://github.com/davidreband/DoiWallet" data-i18n="walletSource">Source code</a></p>
-                <p><a href="https://github.com/NiKrause/names-on-chain" data-i18n="source">Source code, lesson texts and known issues</a></p>
+                <p><a href="https://github.com/Doichain/names-on-chain" data-i18n="source">Source code, lesson texts and known issues</a></p>
               </main>
               <script>
                 // Same storage key as the lesson apps, so a choice made here carries over.
