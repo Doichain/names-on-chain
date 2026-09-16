@@ -7,7 +7,7 @@ and how to create and sign NameOp transactions via PSBT-QR-Codes and PSBT-Files.
 PSBTs can be scanned and broadcasted by DoiWallet or via file import into the ElectrumDOI wallet.
 No private key necessary in the browser.
 
-See: ipfs://QmZmvtgcxNof3QvKgC73SmbDawHCwxTnkMpWukTLokcgHS/
+Live demo of this lesson: https://nikrause.github.io/names-on-chain/lesson01/
 
 ## Lesson 1)
 0. Clone this repo and run ```npm i``` 
@@ -22,7 +22,7 @@ mv public lesson01
 ipfs add lesson01/
 ```
 4. Run Brave browser and open ipfs url: ipfs://{cid of your ipfs add command} or
-   see our version: ipfs://QmZmvtgcxNof3QvKgC73SmbDawHCwxTnkMpWukTLokcgHS/ 
+   see our version: https://nikrause.github.io/names-on-chain/lesson01/
 5. Checkout branch lesson02)
 
 ## Goal of this lesson
