@@ -1,9 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
-import { payments, Psbt } from 'bitcoinjs-lib';
+import { address, payments, Psbt, Transaction } from 'bitcoinjs-lib';
 import { DOICHAIN, VERSION } from './doichain.js';
 import { getNameOPStackScript } from './getNameOPStackScript.js';
 import { signTransaction } from './signTransaction.js';
 import { DUST_LIMIT, isNameScript } from './transactionChecks.js';
+import { MAX_INPUTS, MIN_RELAY_FEE_RATE } from './fees.js';
 import { getUtxosAndNamesOfAddress } from './utxoHelpers.js';
 import { fakeElectrumClient, fixture } from './__fixtures__/fakeElectrumClient.js';
 
@@ -79,5 +80,40 @@ describe('registration PSBT', () => {
 		const psbt = Psbt.fromBase64(result.psbtBase64, { network: DOICHAIN });
 		expect(psbt.txOutputs).toHaveLength(1);
 		expect(result.transactionFee).toBe(transactionFee + leftOver);
+	});
+
+	describe('coins and fee', () => {
+		/** coins of the funded address, in one made-up but well-formed transaction */
+		function coinsWorth(values) {
+			const tx = new Transaction();
+			tx.addInput(Buffer.alloc(32, 7), 0);
+			for (const value of values) tx.addOutput(address.toOutputScript(fixture.fundedAddress, DOICHAIN), value);
+			return values.map((value, n) => ({ hash: tx.getId(), n, value, height: 431000, hex: tx.toHex() }));
+		}
+
+		it('spends only the coins it needs, the largest first', () => {
+			const result = register(coinsWorth([100_000, 3_000_000, 50_000, 800_000, 20_000]));
+			expect(result.error).toBeUndefined();
+			expect(result.coinsUsed).toBe(1);
+			expect(result.coinsAvailable).toBe(5);
+			expect(result.totalInputAmount).toBe(3_000_000);
+		});
+
+		it('pays at least the minimum relay fee for the transaction it builds', () => {
+			const coins = coinsWorth(Array.from({ length: 12 }, () => 100_000));
+			const result = register(coins);
+			expect(result.error).toBeUndefined();
+			expect(result.coinsUsed).toBe(12);
+			expect(result.transactionFee).toBeGreaterThanOrEqual(MIN_RELAY_FEE_RATE * result.vsize);
+			const faster = signTransaction(coinsWorth(Array.from({ length: 12 }, () => 200_000)), 'noc-test-name', DOICHAIN, STORAGE_FEE, fixture.fundedAddress, fixture.fundedAddress, fixture.fundedAddress, 300);
+			expect(faster.error).toBeUndefined();
+			expect(faster.transactionFee).toBeGreaterThanOrEqual(300 * faster.vsize);
+		});
+
+		it('refuses to spend more coins than the limit and says how to fix it', () => {
+			const result = register(coinsWorth(Array.from({ length: 30 }, () => 60_000)));
+			expect(result.psbtBase64).toBeUndefined();
+			expect(result.error).toContain(String(MAX_INPUTS));
+		});
 	});
 });

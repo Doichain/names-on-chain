@@ -3,7 +3,8 @@
     import { _, locale, t } from "$lib/i18n/index.js";
     import { checkName } from "$lib/doichain/nameValidation.js";
     import { getUtxosAndNamesOfAddress } from "$lib/doichain/utxoHelpers.js";
-    import { electrumClient, connectedServer, scanOpen, network, electrumBlockchainBlockHeadersSubscribe } from "../doichain/doichain-store.js";
+    import { electrumClient, connectedServer, scanOpen, network, electrumBlockchainBlockHeadersSubscribe, electrumBlockchainRelayfee } from "../doichain/doichain-store.js";
+    import { feeRateFor } from "$lib/doichain/fees.js";
     import ScanModal from "$lib/doichain/ScanModal.svelte";
     import { describeNameBytes } from "$lib/doichain/nameBytes.js";
     import { cleanAddressInput, isAddressOf } from "$lib/doichain/addressValidation.js";
@@ -192,19 +193,27 @@
     let changeAmount = 0;
     /** change too small for an output, added to the mining fee */
     let dust = 0;
+    /** fee rate, size and coins of the transaction on screen */
+    let feeDetails;
+
+    /**
+     * swartz per vbyte: at least Doichain Core's minimum relay fee, more only if the server asks for it
+     */
+    $: feeRate = feeRateFor($electrumBlockchainRelayfee);
     $:{
         // nothing from an earlier name or address may stay on screen
         psbtBaseText = undefined;
         transactionFee = 0;
         changeAmount = 0;
         dust = 0;
+        feeDetails = undefined;
         totalAmount = 0;
         utxoErrorMessage = '';
         if(name && !isCheckingName && isNameValid && isAddressValid && utxosLoadedFor === doichainAddress) {
             $locale; // rebuild when the language changes, so an error message follows it
             const result = utxoAddresses.length === 0
                 ? { error: t('funds.insufficientForTransaction', { address: doichainAddress }) }
-                : signTransaction(utxoAddresses, name, $network, storageFee, doichainAddress, doichainAddress, doichainAddress);
+                : signTransaction(utxoAddresses, name, $network, storageFee, doichainAddress, doichainAddress, doichainAddress, feeRate);
             if (result.error) {
                 utxoErrorMessage = result.error;
             } else {
@@ -212,6 +221,7 @@
                 transactionFee = result.transactionFee;
                 changeAmount = result.changeAmount;
                 dust = result.dust;
+                feeDetails = { rate: result.feeRate, vsize: result.vsize, used: result.coinsUsed, available: result.coinsAvailable };
                 totalAmount = result.totalAmount;
             }
         }
@@ -408,6 +418,9 @@
                             <p class="mt-6 text-sm leading-6 text-gray-800">{$_('fees.summary', { values: { fee: sb.toBitcoin(transactionFee), locked: sb.toBitcoin(storageFee), change: sb.toBitcoin(changeAmount) } })}</p>
                             {#if dust > 0}
                                 <p class="mt-2 text-sm leading-6 text-gray-600">{$_('fees.dust', { values: { amount: sb.toBitcoin(dust) } })}</p>
+                            {/if}
+                            {#if feeDetails}
+                                <p class="mt-2 text-xs leading-5 text-gray-500">{$_('fees.details', { values: feeDetails })}</p>
                             {/if}
                         {/if}
                         <div id="qr-container"></div>
