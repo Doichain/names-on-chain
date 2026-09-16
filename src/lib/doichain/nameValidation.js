@@ -1,5 +1,6 @@
 import { nameShow } from "$lib/doichain/nameShow.js";
 import { getScriptPubKeyAddress } from "$lib/doichain/scriptPubKeyAddress.js";
+import { t } from "$lib/i18n/index.js";
 import sb from "satoshi-bitcoin";
 import { debounce } from 'lodash';
 
@@ -8,7 +9,7 @@ export const checkName = debounce((electrumClient, name, totalUtxoValue, totalAm
         callback(result);
     }).catch(error => {
         // a failed lookup must not leave the previous result on screen
-        callback({ nameErrorMessage: `Could not check "${name}": ${error?.message ?? error}`, isNameValid: false });
+        callback({ nameErrorMessage: t('name.errors.lookupFailed', { name, error: error?.message ?? String(error) }), isNameValid: false });
     });
 }, 300);
 
@@ -22,12 +23,12 @@ export async function _checkName(electrumClient, _name, totalUtxoValue, totalAmo
     let currentNameAddress = '';
 
     if(!_name) {
-        const nameErrorMessage = `No name provided`;
+        const nameErrorMessage = t('name.errors.empty');
         return { nameErrorMessage }
     }
 
     if(_name.split(' ').length > 1) {
-        const nameErrorMessage = `Only one name is allowed`;
+        const nameErrorMessage = t('name.errors.space');
         return { nameErrorMessage };
     }
     if (_name.length > 3) {
@@ -39,12 +40,12 @@ export async function _checkName(electrumClient, _name, totalUtxoValue, totalAmo
                     currentNameAddress = getScriptPubKeyAddress(scriptPubKey);
                 }
             }
-            nameErrorMessage = `Name "${_name}" already registered under address ${currentNameAddress}`;
+            nameErrorMessage = t('name.errors.taken', { name: _name, address: currentNameAddress });
             isNameValid = false;
             return { currentNameAddress, nameErrorMessage, utxoErrorMessage, isNameValid, isUTXOAddressValid }
         }
         else if(totalUtxoValue <= sb.toSatoshi(totalAmount)){
-            utxoErrorMessage = `Funds on ${currentNameAddress} are insufficient for this Doichain name`;
+            utxoErrorMessage = t('funds.insufficient', { address: currentNameAddress });
             isUTXOAddressValid = false;
             return { nameErrorMessage, utxoErrorMessage, isNameValid, isUTXOAddressValid }
         }
@@ -52,7 +53,7 @@ export async function _checkName(electrumClient, _name, totalUtxoValue, totalAmo
             return { nameErrorMessage, utxoErrorMessage, isNameValid, isUTXOAddressValid }
         }
     } else {
-        nameErrorMessage = `Name "${_name}" is too short`;
+        nameErrorMessage = t('name.errors.tooShort', { name: _name });
         isNameValid = false;
         return { nameErrorMessage, currentNameAddress, utxoErrorMessage, isNameValid, isUTXOAddressValid };
     }
