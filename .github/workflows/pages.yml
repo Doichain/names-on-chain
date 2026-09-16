@@ -1,0 +1,112 @@
+name: GitHub Pages
+
+# Builds every lesson branch and publishes each one under its own path:
+#   https://nikrause.github.io/names-on-chain/lesson01/ ... /lesson05/
+# Fixes reach main through the forward merges (lesson01 -> ... -> main), so a
+# push to main rebuilds all lessons from the current heads of their branches.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build lessons
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Build every lesson from its branch
+        run: |
+          mkdir -p pages
+          touch pages/.nojekyll
+          for lesson in lesson01 lesson02 lesson03 lesson04 lesson05; do
+            git fetch --depth 1 origin "$lesson"
+            mkdir -p "build/$lesson"
+            git archive FETCH_HEAD | tar -x -C "build/$lesson"
+            pnpm --dir "build/$lesson" install --frozen-lockfile
+            pnpm --dir "build/$lesson" run build
+            cp -R "build/$lesson/public" "pages/$lesson"
+          done
+
+      - name: Write the lesson overview
+        run: |
+          cat > pages/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <title>Names-on-Chain lessons</title>
+              <style>
+                :root { color-scheme: light dark; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; background: #f6f7f9; color: #15212a; }
+                body { margin: 0; }
+                main { width: min(860px, calc(100vw - 32px)); margin: 0 auto; padding: 48px 0; }
+                h1 { margin: 0 0 8px; font-size: clamp(2rem, 6vw, 3.2rem); line-height: 1.05; }
+                p { max-width: 64ch; line-height: 1.6; color: #4b5b66; }
+                .note { border-left: 3px solid #b4520a; background: #fdf3e7; color: #5c2c05; padding: 10px 14px; border-radius: 0 6px 6px 0; }
+                ol { list-style: none; padding: 0; display: grid; gap: 12px; margin-top: 28px; }
+                a.lesson { display: block; padding: 16px 18px; border: 1px solid #cdd6db; border-radius: 8px; background: #fff; color: inherit; text-decoration: none; }
+                a.lesson:hover, a.lesson:focus-visible { border-color: #1f4db8; }
+                a.lesson strong { display: block; margin-bottom: 4px; }
+                a.lesson span { color: #4b5b66; }
+                @media (prefers-color-scheme: dark) {
+                  :root { background: #0e1419; color: #e2e9ee; }
+                  p, a.lesson span { color: #a3b1bb; }
+                  a.lesson { background: #141c23; border-color: #26333c; }
+                  .note { background: #3a2616; color: #ffd9b5; border-color: #ffb27a; }
+                }
+              </style>
+            </head>
+            <body>
+              <main>
+                <h1>Names-on-Chain</h1>
+                <p>A hands-on PSBT and NameOp workshop on Doichain: look up, register and trade names without a private key in the browser. Each lesson is a branch of the repository, built and published here.</p>
+                <p class="note">The apps talk to Doichain mainnet. A PSBT you sign in your wallet spends real DOI, so check every output before you sign.</p>
+                <ol>
+                  <li><a class="lesson" href="./lesson01/"><strong>Lesson 1 – Talk to the chain</strong><span>Connect to ElectrumX and look up a Doichain name.</span></a></li>
+                  <li><a class="lesson" href="./lesson02/"><strong>Lesson 2 – UTXOs, name coins and expiry</strong><span>Read the coins and names of an address, scan an address QR code.</span></a></li>
+                  <li><a class="lesson" href="./lesson03/"><strong>Lesson 3 – A name registration transaction</strong><span>Storage amount, mining fee and change for a new name.</span></a></li>
+                  <li><a class="lesson" href="./lesson04/"><strong>Lesson 4 – PSBT over QR</strong><span>Hand the unsigned transaction to DoiWallet as an animated QR code.</span></a></li>
+                  <li><a class="lesson" href="./lesson05/"><strong>Lesson 5 – Atomic name trading</strong><span>Build a PSBT that swaps a name against DOI in one transaction.</span></a></li>
+                </ol>
+                <p><a href="https://github.com/NiKrause/names-on-chain">Source code, lesson texts and known issues</a></p>
+              </main>
+            </body>
+          </html>
+          HTML
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: pages
+
+  deploy:
+    name: Deploy lessons
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
