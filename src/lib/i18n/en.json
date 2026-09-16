@@ -1,0 +1,99 @@
+{
+	"app": {
+		"title": "Names-On-Chain",
+		"subtitle": "A Doichain name registration transaction generator",
+		"description": "Register and trade Doichain names with PSBTs, without a private key in the browser"
+	},
+	"language": {
+		"de": "Deutsch",
+		"en": "English"
+	},
+	"banner": {
+		"before": "Tutorial app on",
+		"network": "Doichain mainnet",
+		"after": ": a PSBT you sign in your wallet spends real DOI. Check every output before you sign.",
+		"link": "Source code and known issues"
+	},
+	"wallet": {
+		"intro": "Sign the PSBTs with DoiWallet:",
+		"googlePlay": "Google Play (Android)",
+		"appStore": "App Store (iPhone)",
+		"source": "Source code"
+	},
+	"status": {
+		"offline": "offline",
+		"retrying": "retrying ({attempt}) – {host}",
+		"offlineHelp": "Offline – please check your internet connection or reload the page."
+	},
+	"name": {
+		"intro": "Register your favorite Doichain name!",
+		"label": "Name to register",
+		"placeholder": "name",
+		"address": "Address: {address}",
+		"errors": {
+			"empty": "Please enter a name.",
+			"space": "A name must not contain spaces.",
+			"tooShort": "The name \"{name}\" is too short.",
+			"taken": "The name \"{name}\" is already registered to the address {address}.",
+			"lookupFailed": "Could not check \"{name}\": {error}"
+		}
+	},
+	"funds": {
+		"insufficient": "The funds on {address} are not enough for this Doichain name.",
+		"insufficientForTransaction": "The funds on {address} are not enough to build the transaction for this name.",
+		"missingParameters": "Some required information is missing."
+	},
+	"address": {
+		"label": "Doichain registration address",
+		"placeholder": "address",
+		"scan": "Scan the QR code of an address",
+		"total": "Total UTXO value: {amount}",
+		"names": "Names registered to this address:",
+		"expires": "{name} (expires at block {height})"
+	},
+	"features": {
+		"title": "Features:",
+		"static": "Static web app, no server of its own",
+		"noKeys": "No private key in the browser",
+		"serversSee": "The ElectrumX servers see the addresses you enter",
+		"ipfs": "Can be hosted on IPFS",
+		"transfer": "Scan the PSBT QR code or copy and paste the PSBT",
+		"payment": "Sign and pay with DoiWallet",
+		"autoRenewal": "Automatic renewal (coming soon)",
+		"marketplace": "Create offers on the marketplace (coming soon)"
+	},
+	"fees": {
+		"heading": "Register a Doichain name for 36,000 blocks (about 250 days)",
+		"locked": "Locked amount:",
+		"mining": "Mining fee:",
+		"total": "Total:",
+		"change": "Change:"
+	},
+	"psbt": {
+		"label": "PSBT (Base64)",
+		"placeholder": "PSBT",
+		"frame": "QR code frame {current} of {total}",
+		"utxosToSign": "UTXOs to sign: {count}"
+	},
+	"trade": {
+		"seller": "I own this name and want to make a sell offer.",
+		"buyer": "I don't own this name and want to make a buy offer.",
+		"sellerHint": "Creates part 1 of the PSBT to sell the name.",
+		"buyerHint": "Creates the PSBT part to buy the name (only if part 1 is known).",
+		"sellerExplanation": "If you own this name, you only need to enter the transfer price. The app adds an output with this price to the address that holds the name; you sign the name input in your wallet.",
+		"fundingLabel": "Doichain address with the funds to buy the name",
+		"fundingScan": "Scan the QR code of the funding address",
+		"fundingTotal": "Total UTXO value of the funding address: {amount}",
+		"fundingInvalid": "The funding address has no usable UTXOs.",
+		"priceLabel": "Transfer price"
+	},
+	"scan": {
+		"title": "Scan a QR code",
+		"tip": "Hold a QR code in front of your camera.",
+		"result": "Scanned: {result}",
+		"close": "Close"
+	},
+	"page": {
+		"closeMenu": "Close menu"
+	}
+}
