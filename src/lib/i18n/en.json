@@ -83,14 +83,27 @@
 		"heading": "Register a Doichain name for 36,000 blocks (about 250 days)",
 		"locked": "Locked amount:",
 		"mining": "Mining fee:",
-		"total": "Total:",
-		"change": "Change:"
+		"total": "From your coins:",
+		"change": "Change:",
+		"summary": "You pay {fee} DOI mining fee. {locked} DOI stay locked in the name output, which belongs to you, and {change} DOI come back to you as change.",
+		"dust": "The {amount} DOI left over are too little for a change output and go to the miners."
 	},
 	"psbt": {
 		"label": "PSBT (Base64)",
 		"placeholder": "PSBT",
 		"frame": "QR code frame {current} of {total}",
-		"utxosToSign": "UTXOs to sign: {count}"
+		"utxosToSign": "UTXOs to sign: {count}",
+		"create": "Create PSBT",
+		"steps": {
+			"scan": "Scan the QR code with DoiWallet, or copy the PSBT below.",
+			"check": "Check the outputs in your wallet: {locked} DOI with the name and {change} DOI change go to {address}.",
+			"send": "Sign and send only if every output is what you expect."
+		},
+		"errors": {
+			"nameScript": "No transaction was built, the name output failed: {error}",
+			"prevout": "No transaction was built: the server sent data for {txid} that does not match that transaction.",
+			"nameInput": "No transaction was built: output {txid}:{n} holds a name and cannot pay for a registration."
+		}
 	},
 	"trade": {
 		"seller": "I own this name and want to make a sell offer.",

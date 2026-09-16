@@ -83,14 +83,27 @@
 		"heading": "Doichain-Namen für 36.000 Blöcke registrieren (etwa 250 Tage)",
 		"locked": "Gebundener Betrag:",
 		"mining": "Mining-Gebühr:",
-		"total": "Gesamt:",
-		"change": "Wechselgeld:"
+		"total": "Aus Ihren Coins:",
+		"change": "Wechselgeld:",
+		"summary": "Sie zahlen {fee} DOI Mining-Gebühr. {locked} DOI bleiben im Namens-Output gebunden, der Ihnen gehört, und {change} DOI kommen als Wechselgeld zu Ihnen zurück.",
+		"dust": "Die übrigen {amount} DOI reichen nicht für einen Wechselgeld-Output und gehen an die Miner."
 	},
 	"psbt": {
 		"label": "PSBT (Base64)",
 		"placeholder": "PSBT",
 		"frame": "QR-Code-Bild {current} von {total}",
-		"utxosToSign": "Zu signierende UTXOs: {count}"
+		"utxosToSign": "Zu signierende UTXOs: {count}",
+		"create": "PSBT erstellen",
+		"steps": {
+			"scan": "Scannen Sie den QR-Code mit DoiWallet oder kopieren Sie das PSBT unten.",
+			"check": "Prüfen Sie die Outputs in Ihrer Wallet: {locked} DOI mit dem Namen und {change} DOI Wechselgeld gehen an {address}.",
+			"send": "Signieren und senden Sie nur, wenn jeder Output Ihren Erwartungen entspricht."
+		},
+		"errors": {
+			"nameScript": "Es wurde keine Transaktion gebaut, der Namens-Output ließ sich nicht erzeugen: {error}",
+			"prevout": "Es wurde keine Transaktion gebaut: Der Server lieferte zu {txid} Daten, die nicht zu dieser Transaktion passen.",
+			"nameInput": "Es wurde keine Transaktion gebaut: Der Output {txid}:{n} hält einen Namen und kann keine Registrierung bezahlen."
+		}
 	},
 	"trade": {
 		"seller": "Dieser Name gehört mir, ich erstelle ein Verkaufsangebot.",
