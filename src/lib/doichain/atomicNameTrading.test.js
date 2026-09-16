@@ -4,7 +4,7 @@ import { DOICHAIN, VERSION } from './doichain.js';
 import { generateAtomicNameTradingPSBT } from './atomicNameTrading.js';
 import { parseDoiAmount } from './doiAmount.js';
 import { getNameOPStackScript } from './getNameOPStackScript.js';
-import { getTransactionFee } from './getTransactionFee.js';
+import { MIN_RELAY_FEE_RATE } from './fees.js';
 import { pushData } from './pushData.js';
 import { isNameScript, parseNameScript } from './transactionChecks.js';
 import { fixture } from './__fixtures__/fakeElectrumClient.js';
@@ -53,8 +53,8 @@ describe('name purchase', () => {
 		expect(change.to).toBe(buyer);
 
 		const coinValue = 199_418_520;
-		expect(result.transactionFee).toBe(getTransactionFee(2));
-		expect(change.value).toBe(coinValue - price - getTransactionFee(2));
+		expect(result.transactionFee).toBeGreaterThanOrEqual(MIN_RELAY_FEE_RATE * result.vsize);
+		expect(change.value).toBe(coinValue - price - result.transactionFee);
 		expect(coinValue + STORAGE_FEE - seller.value - name.value - change.value).toBe(result.transactionFee);
 	});
 
@@ -64,7 +64,7 @@ describe('name purchase', () => {
 		expect(result.surplus).toBe(99_000_000);
 		const [seller, , change] = outputsOf(result);
 		expect(seller.value).toBe(price + 99_000_000);
-		expect(change.value).toBe(199_418_520 - price - getTransactionFee(2));
+		expect(change.value).toBe(199_418_520 - price - result.transactionFee);
 	});
 
 	it('reads the seller from the verified name script, whatever the server says', () => {
@@ -105,6 +105,19 @@ describe('name purchase', () => {
 		expect(buy(canary, fixture.name, undefined).error).toContain('DOI');
 		expect(buy(canary, fixture.name, 0).error).toContain('0.00000546');
 		expect(buy(canary, fixture.name, 5_00000000).error).toContain(buyer);
+	});
+
+	it('spends only the buyer coins it needs, the largest first', () => {
+		const tx = new Transaction();
+		tx.addInput(Buffer.alloc(32, 9), 0);
+		const values = [30_000_000, 90_000_000, 10_000_000, 60_000_000];
+		for (const value of values) tx.addOutput(address.toOutputScript(buyer, DOICHAIN), value);
+		const coins = values.map((value, n) => ({ hash: tx.getId(), n, value, height: 431000, hex: tx.toHex() }));
+		const result = buy(canary, fixture.name, 50_000_000, coins);
+		expect(result.error).toBeUndefined();
+		expect(result.coinsUsed).toBe(1);
+		expect(result.coinsAvailable).toBe(4);
+		expect(result.fromCoins).toBe(50_000_000 + result.transactionFee);
 	});
 
 	it('refuses to sell a name to its owner', () => {

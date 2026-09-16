@@ -3,7 +3,8 @@
     import { _, locale, t } from "$lib/i18n/index.js";
     import { checkName } from "$lib/doichain/nameValidation.js";
     import { getUtxosAndNamesOfAddress } from "$lib/doichain/utxoHelpers.js";
-    import {electrumClient, connectedServer, scanOpen, network, electrumBlockchainBlockHeadersSubscribe} from "../doichain/doichain-store.js";
+    import {electrumClient, connectedServer, scanOpen, network, electrumBlockchainBlockHeadersSubscribe, electrumBlockchainRelayfee} from "../doichain/doichain-store.js";
+    import { feeRateFor } from "$lib/doichain/fees.js";
     import { describeNameBytes } from "$lib/doichain/nameBytes.js";
     import { cleanAddressInput, isAddressOf, isP2WPKHAddress } from "$lib/doichain/addressValidation.js";
     import { nameExpiry } from "$lib/doichain/nameExpiry.js";
@@ -12,7 +13,7 @@
 
     import { signTransaction } from "$lib/doichain/signTransaction.js";
     import sb from "satoshi-bitcoin";
-    import { onDestroy } from "svelte";
+    import { onDestroy, tick } from "svelte";
     import { generateAtomicNameTradingPSBT } from "$lib/doichain/atomicNameTrading.js";
     import { parseDoiAmount } from "$lib/doichain/doiAmount.js";
 
@@ -221,11 +222,12 @@
                 utxosLoadedFor = ''
                 addressError = { address: requestedAddress, error: error?.message ?? String(error) }
             })
-        } else {
+        } else if (!isAddressValid) {
             nameOpTxs = []
             utxoAddresses = []
             utxosLoadedFor = ''
         }
+        // while the connection is down, the coins loaded last stay, so PSBT and QR code remain on screen
     }
 
     /**
@@ -248,7 +250,7 @@
                 fundingLoadedFor = ''
                 fundingError = { address: requestedAddress, error: error?.message ?? String(error) }
             })
-        } else {
+        } else if (!isFundingAddressValid) {
             fundingUtxoAddresses = []
             fundingTotalUtxoValue = 0
             fundingLoadedFor = ''
@@ -274,6 +276,13 @@
      * @type {number} dust - Change too small for an output, added to the mining fee, in swartz.
      */
     let dust = 0;
+    /** fee rate, size and coins of the registration on screen */
+    let feeDetails;
+
+    /**
+     * swartz per vbyte: at least Doichain Core's minimum relay fee, more only if the server asks for it
+     */
+    $: feeRate = feeRateFor($electrumBlockchainRelayfee);
 
     /**
      * @type {string|string[]} qrCodeData - The data to be encoded in the QR code. Can be a string for a single QR code or an array of strings for animated QR codes.
@@ -296,18 +305,17 @@
     $: {
         // nothing computed for an earlier name or address may stay on screen
         psbtBaseText = undefined;
-        qrCodeData = undefined;
-        qrCode = undefined;
         transactionFee = 0;
         changeAmount = 0;
         dust = 0;
+        feeDetails = undefined;
         totalAmount = 0;
         utxoErrorMessage = '';
         if(name && !isCheckingName && isNameValid && !isNameExists && isAddressValid && utxosLoadedFor === doichainAddress) {
             $locale; // rebuild when the language changes, so an error message follows it
             const result = utxoAddresses.length === 0
                 ? { error: t('funds.insufficientForTransaction', { address: doichainAddress }) }
-                : signTransaction(utxoAddresses, name, $network, DEFAULT_STORAGE_FEE, doichainAddress, doichainAddress, doichainAddress);
+                : signTransaction(utxoAddresses, name, $network, DEFAULT_STORAGE_FEE, doichainAddress, doichainAddress, doichainAddress, feeRate);
             if (result.error) {
                 utxoErrorMessage = result.error;
             } else {
@@ -315,10 +323,41 @@
                 transactionFee = result.transactionFee;
                 changeAmount = result.changeAmount;
                 dust = result.dust;
+                feeDetails = { rate: result.feeRate, vsize: result.vsize, used: result.coinsUsed, available: result.coinsAvailable };
                 totalAmount = result.totalAmount;
             }
         }
     }
+
+    /** time each QR code frame stays on screen, in milliseconds */
+    const FRAME_DELAY = 300;
+
+    /** The PSBT the QR code on screen belongs to (not reactive on purpose: it only decides what to keep) */
+    const shown = { psbt: undefined };
+
+    /** @type {number|null} animationTimeout - Holds the timeout ID for the QR code animation. */
+    let animationTimeout;
+
+    /** @type {number} frameIndex - The frame of the animated QR code on screen, counted from 0. */
+    let frameIndex = 0;
+
+    /** The animation stands still on the frame on screen */
+    let isPaused = false;
+
+    /** 'copied' or 'failed' for a moment after "Copy PSBT" */
+    let copyState;
+
+    /** The QR code, brought into view on small screens once it is created */
+    let qrContainer;
+
+    /** Sharing files (e.g. to DoiWallet on the same phone) works in this browser */
+    const canShareFiles = (() => {
+        try {
+            return Boolean(navigator.canShare?.({ files: [new File([new Uint8Array(1)], 'check.psbt', { type: 'application/octet-stream' })] }));
+        } catch {
+            return false;
+        }
+    })();
 
     /**
      * Renders the QR code for the PSBT that is on screen right now.
@@ -331,51 +370,104 @@
         if(bbqr)
             renderBBQR(requested).then(imgurl => { if (stillCurrent()) qrCodeData = imgurl })
         else
-            renderBCUR(requested).then(_qr => {
+            renderBCUR(requested).then(async _qr => {
                 if (!_qr || !stillCurrent()) return;
+                shown.psbt = requested;
                 qrCodeData = _qr;
+                isPaused = false;
                 displayQrCodes();
+                await tick();
+                qrContainer?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }).catch(error => {
                 console.error('Error generating QR code:', error);
                 qrCodeData = undefined;
             });
     }
 
-    /**
-     * @type {number|null} animationTimeout - Holds the timeout ID for the QR code animation.
-     */
-    let animationTimeout;
-
-    /**
-     * @type {number} currentSvgIndex - The index of the currently displayed SVG in the QR code animation.
-     */
-    let currentSvgIndex;
+    /** Shows frame `index` of the animated QR code, wrapping around at both ends */
+    function showFrame(index) {
+        if (!qrCodeData?.length) return;
+        frameIndex = (index + qrCodeData.length) % qrCodeData.length;
+        qrCode = qrCodeData[frameIndex];
+    }
 
     /**
      * Initializes and starts the QR code animation.
      * Resets the animation if it's already running.
      */
     function displayQrCodes() {
-        currentSvgIndex = 0;
-        if (animationTimeout) clearTimeout(animationTimeout);
-        animateQrCodes();
+        showFrame(0);
+        scheduleNextFrame();
     }
 
     /**
-     * Animates through the QR code SVGs.
-     * This function is called recursively to create a loop through all QR code frames.
-     * 
+     * Moves on to the next frame after FRAME_DELAY, unless paused.
      * Stops quietly when qrCodeData has been withdrawn in the meantime.
      */
-    function animateQrCodes() {
-        // the PSBT can be withdrawn while the animation runs (qrCodeData = undefined)
-        if (!qrCodeData?.length) return;
-        qrCode = qrCodeData[currentSvgIndex];
-        currentSvgIndex = (currentSvgIndex + 1) % qrCodeData.length;
-        // console.log("currentSvgIndex", currentSvgIndex);
-        animationTimeout = setTimeout(animateQrCodes, 200);
+    function scheduleNextFrame() {
+        if (animationTimeout) clearTimeout(animationTimeout);
+        if (isPaused) return;
+        animationTimeout = setTimeout(() => {
+            // the PSBT can be withdrawn while the animation runs (qrCodeData = undefined)
+            if (!qrCodeData?.length) return;
+            showFrame(frameIndex + 1);
+            scheduleNextFrame();
+        }, FRAME_DELAY);
     }
-    
+
+    function stopQrCodes() {
+        if (animationTimeout) clearTimeout(animationTimeout);
+        qrCodeData = undefined;
+        qrCode = undefined;
+        shown.psbt = undefined;
+    }
+
+    function togglePause() {
+        isPaused = !isPaused;
+        scheduleNextFrame();
+    }
+
+    /** Pauses and shows the previous (-1) or next (+1) frame */
+    function stepFrame(delta) {
+        isPaused = true;
+        if (animationTimeout) clearTimeout(animationTimeout);
+        showFrame(frameIndex + delta);
+    }
+
+    const psbtBytes = (base64) => Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    const psbtFileName = () => `${(name || 'transaction').replace(/[^a-z0-9._-]+/gi, '_')}.psbt`;
+
+    async function copyPsbt() {
+        try {
+            await navigator.clipboard.writeText(shownPsbt);
+            copyState = 'copied';
+        } catch {
+            copyState = 'failed';
+        }
+        setTimeout(() => (copyState = undefined), 3000);
+    }
+
+    /** Saves the PSBT as a binary .psbt file, the format wallets import */
+    function downloadPsbt() {
+        const url = URL.createObjectURL(new Blob([psbtBytes(shownPsbt)], { type: 'application/octet-stream' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = psbtFileName();
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    async function sharePsbt() {
+        const file = new File([psbtBytes(shownPsbt)], psbtFileName(), { type: 'application/octet-stream' });
+        try {
+            await navigator.share({ files: [file] });
+        } catch {
+            // closing the share sheet is not an error
+        }
+    }
+
     onDestroy(() => {
         if (animationTimeout) clearTimeout(animationTimeout);
     });
@@ -390,11 +482,9 @@
     let trade;
     $: {
         trade = undefined;
-        qrCodeData = undefined;
-        qrCode = undefined;
         if (name && !isCheckingName && isNameExists && currentNameUtxo && isFundingAddressValid && fundingLoadedFor === fundingUTXOAddress && priceText) {
             $locale; // rebuild when the language changes, so an error message follows it
-            trade = generateAtomicNameTradingPSBT(name, fundingUtxoAddresses, currentNameUtxo, fundingUTXOAddress, price, DEFAULT_STORAGE_FEE, $network);
+            trade = generateAtomicNameTradingPSBT(name, fundingUtxoAddresses, currentNameUtxo, fundingUTXOAddress, price, DEFAULT_STORAGE_FEE, $network, feeRate);
         }
     }
     $: tradeReady = Boolean(trade && !trade.error);
@@ -408,17 +498,18 @@
     /** The PSBT on screen: the purchase of a taken name, or the registration of a free one */
     $: shownPsbt = isNameExists ? (tradeReady ? trade.psbtBase64 : undefined) : psbtBaseText;
 
+    /** A new PSBT needs a new QR code; the same PSBT again (after reloading the coins) keeps the running one */
+    $: if (shownPsbt !== shown.psbt) stopQrCodes();
+
+    /** fee rate, size and coins of what the fee box shows */
+    $: shownFeeDetails = isNameExists
+        ? (tradeReady ? { rate: trade.feeRate, vsize: trade.vsize, used: trade.coinsUsed, available: trade.coinsAvailable } : undefined)
+        : feeDetails;
+
     /** What the fee box shows, for the purchase or for the registration */
     $: feeView = isNameExists
         ? { mining: tradeReady ? trade.transactionFee : 0, fromCoins: tradeReady ? trade.fromCoins : 0, change: tradeReady ? trade.changeAmount : 0 }
         : { mining: transactionFee, fromCoins: totalAmount, change: changeAmount };
-
-    function handleQRCodeClick() {
-        if (qrCodeData && qrCodeData.length > 0) {
-            currentSvgIndex = (currentSvgIndex + 1) % qrCodeData.length;
-            qrCode = qrCodeData[currentSvgIndex];
-        }
-    }
 
 </script>
 
@@ -635,17 +726,43 @@
                             <p class="mt-2 text-sm leading-6 text-gray-600">{$_('fees.dust', { values: { amount: sb.toBitcoin(dust) } })}</p>
                         {/if}
                     {/if}
+                    {#if shownFeeDetails}
+                        <p class="mt-2 text-xs leading-5 text-gray-500">{$_('fees.details', { values: shownFeeDetails })}</p>
+                    {/if}
                     <div id="qr-container"></div>
                     {#if shownPsbt && !qrCodeData}
                         <button type="button" on:click={createPsbt}
                                 class="mt-6 w-full rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{$_('psbt.create')}</button>
                     {/if}
                     {#if qrCodeData && shownPsbt}
-                        {@html qrCode}
-                        <button type="button" on:click={handleQRCodeClick} class="mt-2 text-sm text-gray-600 underline">
-                            {$_('psbt.frame', { values: { current: currentSvgIndex + 1, total: qrCodeData.length } })}
-                        </button>
-                        <ol class="mt-4 list-decimal space-y-1 pl-5 text-sm leading-6 text-gray-800">
+                        <div bind:this={qrContainer} class="qr mt-6 rounded-lg bg-white p-4 ring-1 ring-gray-200">
+                            {@html qrCode}
+                        </div>
+                        <div class="mt-3 flex flex-wrap items-center gap-2" role="group" aria-label={$_('psbt.controls')}>
+                            <button type="button" on:click={() => stepFrame(-1)} aria-label={$_('psbt.previous')} title={$_('psbt.previous')}
+                                    class="min-h-[44px] min-w-[44px] rounded-md bg-white px-3 text-lg font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">‹</button>
+                            <button type="button" on:click={togglePause} aria-pressed={isPaused}
+                                    class="min-h-[44px] rounded-md bg-white px-3 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{isPaused ? $_('psbt.play') : $_('psbt.pause')}</button>
+                            <button type="button" on:click={() => stepFrame(1)} aria-label={$_('psbt.next')} title={$_('psbt.next')}
+                                    class="min-h-[44px] min-w-[44px] rounded-md bg-white px-3 text-lg font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">›</button>
+                            <span class="text-sm text-gray-600">{$_('psbt.frame', { values: { current: frameIndex + 1, total: qrCodeData.length } })}</span>
+                        </div>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            <button type="button" on:click={copyPsbt}
+                                    class="min-h-[44px] rounded-md bg-white px-3 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{copyState === 'copied' ? $_('psbt.copied') : $_('psbt.copy')}</button>
+                            <button type="button" on:click={downloadPsbt}
+                                    class="min-h-[44px] rounded-md bg-white px-3 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{$_('psbt.download')}</button>
+                            {#if canShareFiles}
+                                <button type="button" on:click={sharePsbt}
+                                        class="min-h-[44px] rounded-md bg-white px-3 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{$_('psbt.share')}</button>
+                            {/if}
+                        </div>
+                        <div role="status">
+                            {#if copyState === 'failed'}
+                                <p class="mt-2 text-sm text-red-600">{$_('psbt.copyFailed')}</p>
+                            {/if}
+                        </div>
+                        <ol class="mt-4 list-decimal space-y-1 break-words pl-5 text-sm leading-6 text-gray-800">
                             {#if isNameExists && tradeReady}
                                 <li>{$_('trade.steps.scan')}</li>
                                 <li>{$_('trade.steps.check', { values: { price: sb.toBitcoin(trade.sellerReceives), seller: trade.sellerAddress, change: sb.toBitcoin(trade.changeAmount), buyer: fundingUTXOAddress } })}</li>
@@ -678,6 +795,11 @@
     }
     .fade-red-to-green.connected {
         color: green;
+    }
+    .qr :global(svg) {
+        display: block;
+        width: 100%;
+        height: auto;
     }
     .blinking {
         animation: blinkingText 1.5s infinite;
