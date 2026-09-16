@@ -51,6 +51,7 @@
 	"funds": {
 		"insufficient": "Das Guthaben auf {address} reicht für diesen Doichain-Namen nicht aus.",
 		"insufficientForTransaction": "Das Guthaben auf {address} reicht nicht aus, um die Transaktion für diesen Namen zu erstellen.",
+		"tooFragmented": "Die Coins auf {address} sind in zu viele kleine Beträge aufgeteilt: Es bräuchte mehr als {max} davon. Senden Sie sie in DoiWallet an sich selbst, um sie zusammenzufassen, und versuchen Sie es dann erneut.",
 		"missingParameters": "Es fehlen erforderliche Angaben."
 	},
 	"address": {
@@ -86,7 +87,8 @@
 		"total": "Aus Ihren Coins:",
 		"change": "Wechselgeld:",
 		"summary": "Sie zahlen {fee} DOI Mining-Gebühr. {locked} DOI bleiben im Namens-Output gebunden, der Ihnen gehört, und {change} DOI kommen als Wechselgeld zu Ihnen zurück.",
-		"dust": "Die übrigen {amount} DOI reichen nicht für einen Wechselgeld-Output und gehen an die Miner."
+		"dust": "Die übrigen {amount} DOI reichen nicht für einen Wechselgeld-Output und gehen an die Miner.",
+		"details": "{rate} swartz je vByte für etwa {vsize} vBytes; {used} von {available} Coins werden ausgegeben."
 	},
 	"psbt": {
 		"label": "PSBT (Base64)",
@@ -102,7 +104,17 @@
 			"nameScript": "Es wurde keine Transaktion gebaut, der Namens-Output ließ sich nicht erzeugen: {error}",
 			"prevout": "Es wurde keine Transaktion gebaut: Der Server lieferte zu {txid} Daten, die nicht zu dieser Transaktion passen.",
 			"nameInput": "Es wurde keine Transaktion gebaut: Der Output {txid}:{n} hält einen Namen und kann keine Registrierung bezahlen."
-		}
+		},
+		"pause": "Anhalten",
+		"play": "Abspielen",
+		"previous": "Vorheriges Bild",
+		"next": "Nächstes Bild",
+		"copy": "PSBT kopieren",
+		"copied": "Kopiert",
+		"copyFailed": "Kopieren ging nicht; markieren Sie stattdessen den Text unten.",
+		"download": ".psbt herunterladen",
+		"share": "Teilen",
+		"controls": "Steuerung des QR-Codes"
 	},
 	"trade": {
 		"heading": "Diesen Namen kaufen",
