@@ -25,6 +25,11 @@
     let nameErrorMessage = '';
 
     /**
+     * Something worth knowing about a free name, e.g. that it expired
+     */
+    let nameNotice = '';
+
+    /**
      * The address which will be used to look for
      * - utxos (inputs)
      * - as recipient for the name transaction
@@ -76,6 +81,7 @@
         currentNameAddress = result.currentNameAddress ?? ''
         isNameValid = result.isNameValid
         nameErrorMessage  = result.nameErrorMessage
+        nameNotice = result.nameNotice ?? ''
     }
 
     /**
@@ -109,6 +115,7 @@
         isCheckingName = false;
         isNameValid = true;
         nameErrorMessage = '';
+        nameNotice = '';
     }
 
     /**
@@ -181,7 +188,7 @@
                         {:else if !isNameValid}
                             <p class="mt-2 text-sm text-red-600">{nameErrorMessage}</p>
                         {:else}
-                            <p class="mt-2 text-sm text-green-700">{$_('name.available', { values: { name } })}</p>
+                            <p class="mt-2 text-sm text-green-700">{$_('name.available', { values: { name } })} {nameNotice}</p>
                             {#if doichainAddress}
                                 <p class="mt-1 text-sm text-gray-600">{$_('name.address', { values: { address: doichainAddress } })}</p>
                             {/if}

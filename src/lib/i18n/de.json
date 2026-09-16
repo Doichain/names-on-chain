@@ -31,13 +31,16 @@
 		"placeholder": "Name",
 		"address": "Adresse: {address}",
 		"checking": "„{name}“ wird geprüft …",
-		"available": "„{name}“ ist noch frei.",
+		"available": "„{name}“ ist frei.",
+		"expired": "Er war schon registriert und ist bei Block {expiresAt} abgelaufen; er kann neu registriert werden.",
 		"errors": {
 			"empty": "Bitte geben Sie einen Namen ein.",
 			"space": "Ein Name darf keine Leerzeichen enthalten.",
 			"tooShort": "Der Name „{name}“ ist zu kurz.",
 			"tooLong": "Der Name ist {bytes} Bytes lang; Doichain erlaubt höchstens {max} Bytes.",
 			"taken": "Der Name „{name}“ ist bereits auf die Adresse {address} registriert.",
+			"takenUntil": "Der Name „{name}“ gehört bis Block {expiresAt} der Adresse {address}, also noch {blocksLeft} Blöcke.",
+			"pending": "Der Name „{name}“ wird gerade auf die Adresse {address} registriert; die Transaktion steckt noch in keinem Block.",
 			"lookupFailed": "„{name}“ konnte nicht geprüft werden: {error}"
 		},
 		"warnings": {
