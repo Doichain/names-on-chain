@@ -9,7 +9,6 @@ const config = {
 			// these options are set automatically — see below
 			pages: 'public',
 			assets: 'public',
-			fallback: 'index.html',
 			precompress: false,
 			strict: false
 		})
