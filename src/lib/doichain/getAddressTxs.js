@@ -1,4 +1,5 @@
 import { address, crypto } from 'bitcoinjs-lib';
+import { getScriptPubKeyAddress } from './scriptPubKeyAddress.js';
 import moment from 'moment';
 import Buffer from 'vite-plugin-node-polyfills/shims/buffer/index.js';
 
@@ -61,13 +62,13 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
               (asmParts[0] !== 'OP_2' && asmParts[0] !== 'OP_NAME_FIRSTUPDATE') &&
               (asmParts[0] !== 'OP_3' && asmParts[0] !== 'OP_NAME_UPDATE'))
             {
-                _tx.address = vout.scriptPubKey?.addresses ? vout.scriptPubKey?.addresses[0] : _doiAddress
+                _tx.address = getScriptPubKeyAddress(vout.scriptPubKey) ?? _doiAddress
             } else {
                 // const chunks = vout.scriptPubKey.asm.split(" ")
 
                 _tx.nameId = vout.scriptPubKey.nameOp.name
                 _tx.nameValue = vout.scriptPubKey.nameOp.value
-                _tx.address = vout.scriptPubKey?.addresses[0]
+                _tx.address = getScriptPubKeyAddress(vout.scriptPubKey)
 
                 // namesCount.set(_namesCount += 1)
                 console.log('name_op nameId', _tx.nameId)
