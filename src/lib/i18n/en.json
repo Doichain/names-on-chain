@@ -30,12 +30,22 @@
 		"label": "Name to register",
 		"placeholder": "name",
 		"address": "Address: {address}",
+		"checking": "Checking \"{name}\" …",
+		"available": "\"{name}\" is available.",
+		"expired": "It was registered before and expired at block {expiresAt}, so it can be registered again.",
 		"errors": {
 			"empty": "Please enter a name.",
 			"space": "A name must not contain spaces.",
 			"tooShort": "The name \"{name}\" is too short.",
+			"tooLong": "The name is {bytes} bytes long; Doichain allows at most {max} bytes.",
 			"taken": "The name \"{name}\" is already registered to the address {address}.",
+			"takenUntil": "The name \"{name}\" belongs to the address {address} until block {expiresAt}, {blocksLeft} blocks from now.",
+			"pending": "The name \"{name}\" is just being registered to the address {address}; the transaction is not in a block yet.",
 			"lookupFailed": "Could not check \"{name}\": {error}"
+		},
+		"warnings": {
+			"nonAscii": "This name contains characters beyond ASCII. On chain it is stored as the bytes {hex}; names that look the same can consist of different bytes.",
+			"mixedScripts": "This name mixes alphabets, for example Latin and Cyrillic letters that look alike. On chain it is stored as the bytes {hex}."
 		}
 	},
 	"funds": {
@@ -49,7 +59,14 @@
 		"scan": "Scan the QR code of an address",
 		"total": "Total UTXO value: {amount}",
 		"names": "Names registered to this address:",
-		"expires": "{name} (expires at block {height})"
+		"expires": "{name} (expires at block {height})",
+		"nameValidUntil": "{name} (valid until block {height}, {blocksLeft} blocks left)",
+		"nameExpired": "{name} (expired at block {height})",
+		"namePending": "{name} (not in a block yet)",
+		"errors": {
+			"invalid": "This is not a valid Doichain address.",
+			"lookupFailed": "Could not read the coins of {address}: {error}"
+		}
 	},
 	"features": {
 		"title": "Features:",
