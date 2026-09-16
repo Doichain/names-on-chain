@@ -1,4 +1,5 @@
 import { Psbt } from "bitcoinjs-lib";
+import { t } from "$lib/i18n/index.js";
 import { getNameOPStackScript } from "./getNameOPStackScript.js";
 import { VERSION } from "./doichain.js";
 
@@ -19,7 +20,7 @@ import { VERSION } from "./doichain.js";
  */
 export function signTransaction(_utxoAddresses, _name, _network, _storageFee, _recipientAddress, _changeAddress, doichainAddress) {
     if(!_name || _utxoAddresses.length === 0 || !_recipientAddress || !_changeAddress) {
-        return { error: "Missing required parameters" };
+        return { error: t('funds.missingParameters') };
     }
 
     const psbt = new Psbt({ network: _network });
@@ -68,7 +69,7 @@ export function signTransaction(_utxoAddresses, _name, _network, _storageFee, _r
     let totalAmount = totalOutputAmount + transactionFee;
     if(changeAmount < 0) {
         return {
-            error: `Funds on ${doichainAddress} are insufficient for this Doichain name`,
+            error: t('funds.insufficient', { address: doichainAddress }),
             isUTXOAddressValid: false
         };
     }
