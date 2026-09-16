@@ -150,7 +150,7 @@
     /**
      * If we have a connection to Electrumx and a doichainAddress get UTXOs without and with NameOps.
      * - UTXOs, we need to calculate the total amount of all inputs to spend
-     * - Multiple NameOp UTXOs are possible (their values are burned and un spendable
+     * - NameOp UTXOs hold the amount locked in a name; it stays the owner's and moves with the name
      */
     $: {
         if(isConnected && isAddressValid){
