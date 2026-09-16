@@ -259,9 +259,11 @@
      * Animates through the QR code SVGs.
      * This function is called recursively to create a loop through all QR code frames.
      * 
-     * @throws {Error} Implicitly throws an error if qrCodeData is not an array or is empty.
+     * Stops quietly when qrCodeData has been withdrawn in the meantime.
      */
     function animateQrCodes() {
+        // the PSBT can be withdrawn while the animation runs (qrCodeData = undefined)
+        if (!qrCodeData?.length) return;
         qrCode = qrCodeData[currentSvgIndex];
         currentSvgIndex = (currentSvgIndex + 1) % qrCodeData.length;
         // console.log("currentSvgIndex", currentSvgIndex);
