@@ -202,7 +202,7 @@
     /**
      * If we have a connection to Electrumx and a doichainAddress get UTXOs without and with NameOps.
      * - UTXOs, we need to calculate the total amount of all inputs to spend
-     * - Multiple NameOp UTXOs are possible (their values are burned and un spendable
+     * - NameOp UTXOs hold the amount locked in a name; it stays the owner's and moves with the name
      */
     $: {
         if(isConnected && isAddressValid){
@@ -229,9 +229,8 @@
     }
 
     /**
-     * If we have a connection to Electrumx and a doichainAddress get UTXOs without and with NameOps.
-     * - UTXOs, we need to calculate the total amount of all inputs to spend
-     * - Multiple NameOp UTXOs are possible (their values are burned and un spendable
+     * The buyer's coins: loaded when a valid buyer address is entered, never per keystroke in the name field.
+     * Name outputs of that address are left out; they cannot pay for a purchase.
      */
     $: {
         if(isConnected && isFundingAddressValid){
