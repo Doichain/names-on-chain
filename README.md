@@ -62,7 +62,7 @@ ipfs add -r lesson02
 ### Lesson 3)
 1. Adding a feature box
    - src/lib/components/pricing.svelte
-2. Adding a transaction calculation box (storage fee, mining fee, change amount, total amount)
+2. Adding a transaction calculation box (locked amount, mining fee, what leaves your coins, change)
    - src/lib/components/pricing.svelte
 3. Generating a PSBT (partially signed Bitcoin transaction)
    - src/lib/components/pricing.svelte
