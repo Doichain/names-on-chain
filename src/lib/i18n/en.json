@@ -108,6 +108,7 @@
 		"heading": "Buy this name",
 		"intro": "One transaction pays the price to the current owner {seller} and moves the name to your address. You sign your coins, then the owner signs the name input – so either both happen or nothing does.",
 		"sellOfferOff": "Sell offers are switched off for now: DoiWallet signs only with SIGHASH_ALL, and an offer signed that way cannot be completed by a buyer.",
+		"segwitName": "This name is held by a SegWit address ({address}). DoiWallet 7.0.4 cannot yet sign a name input at such an address – tested on regtest –, so the owner could not complete the purchase with DoiWallet.",
 		"fundingLabel": "Your Doichain address: it pays for the name and receives it",
 		"fundingScan": "Scan the QR code of the funding address",
 		"fundingTotal": "Total UTXO value of the funding address: {amount}",
