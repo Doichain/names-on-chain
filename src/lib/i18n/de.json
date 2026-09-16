@@ -30,12 +30,19 @@
 		"label": "Zu registrierender Name",
 		"placeholder": "Name",
 		"address": "Adresse: {address}",
+		"checking": "„{name}“ wird geprüft …",
+		"available": "„{name}“ ist noch frei.",
 		"errors": {
 			"empty": "Bitte geben Sie einen Namen ein.",
 			"space": "Ein Name darf keine Leerzeichen enthalten.",
 			"tooShort": "Der Name „{name}“ ist zu kurz.",
+			"tooLong": "Der Name ist {bytes} Bytes lang; Doichain erlaubt höchstens {max} Bytes.",
 			"taken": "Der Name „{name}“ ist bereits auf die Adresse {address} registriert.",
 			"lookupFailed": "„{name}“ konnte nicht geprüft werden: {error}"
+		},
+		"warnings": {
+			"nonAscii": "Dieser Name enthält Zeichen außerhalb von ASCII. On-Chain wird er als die Bytes {hex} gespeichert; gleich aussehende Namen können aus anderen Bytes bestehen.",
+			"mixedScripts": "Dieser Name mischt Alphabete, etwa lateinische und kyrillische Buchstaben, die gleich aussehen. On-Chain wird er als die Bytes {hex} gespeichert."
 		}
 	},
 	"funds": {

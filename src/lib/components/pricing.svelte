@@ -1,6 +1,7 @@
 <script>
     import { getConnectionStatus } from "../doichain/connectElectrum.js"
     import { checkName } from "$lib/doichain/nameValidation.js";
+    import { describeNameBytes } from "$lib/doichain/nameBytes.js";
     import { electrumClient, connectedServer } from "../doichain/doichain-store.js";
     import { _, locale } from "$lib/i18n/index.js";
 
@@ -33,11 +34,26 @@
     let totalUtxoValue = 0, totalAmount = 0;
 
     /**
+     * The address a taken name belongs to. Kept apart from doichainAddress:
+     * the name check must never write into the address the user entered.
+     */
+    let currentNameAddress = '';
+
+    /**
+     * True from the moment the name changes until its check has answered.
+     * Meanwhile the name is shown neither as free nor as taken.
+     */
+    let isCheckingName = false;
+
+    /**
      * Check a name, debounce every keyboard typing, return local variables by callback
      * @param result
      */
     export async function nameCheckCallback(result) {
-        doichainAddress = result.currentNameAddress || doichainAddress
+        // an answer for a name typed earlier arrives too late to matter
+        if (result.name !== name) return
+        isCheckingName = false
+        currentNameAddress = result.currentNameAddress ?? ''
         isNameValid = result.isNameValid
         nameErrorMessage  = result.nameErrorMessage
     }
@@ -67,8 +83,18 @@
      */
     $: if (name) {
         $locale; // check again when the language changes, so the message follows it
+        isCheckingName = true;
         checkName($electrumClient, name, totalUtxoValue, totalAmount, nameCheckCallback);
+    } else {
+        isCheckingName = false;
+        isNameValid = true;
+        nameErrorMessage = '';
     }
+
+    /**
+     * The bytes the name is stored as, to warn about look-alike names
+     */
+    $: nameBytes = describeNameBytes(name);
 
 </script>
 
@@ -88,13 +114,15 @@
                     <label for="name" class="block text-sm font-medium leading-6 text-gray-900">{$_('name.label')}</label>
                     <div class="relative mt-2 rounded-md shadow-sm">
                         <input bind:value={name} name="name" id="name"
-                               type="text"
-                               class="{isNameValid?'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}"
+                               type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+                               class="{isCheckingName || isNameValid?'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}"
                                placeholder={$_('name.placeholder')}
-                               aria-invalid="{isNameValid}"
-                               aria-describedby="name-error"/>
+                               aria-invalid={!isCheckingName && !isNameValid}
+                               aria-describedby="name-status"/>
 
-                                {#if !isNameValid}
+                                {#if isCheckingName}
+                                    <!-- no verdict while the check runs -->
+                                {:else if !isNameValid}
                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                         <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
@@ -108,14 +136,28 @@
                                     </div>
                                 {/if}
                     </div>
-                    {#if !isNameValid}
-                        <p class="mt-2 text-sm text-red-600" id="name-error">{nameErrorMessage}</p>
-                    {:else if name}
-                        <p class="mt-2 text-sm text-green-600" id="name-success">{$_('name.address', { values: { address: doichainAddress } })}</p>
-                    {/if}
+                    <div id="name-status" aria-live="polite">
+                        {#if !name}
+                            <!-- nothing to say yet -->
+                        {:else if isCheckingName}
+                            <p class="mt-2 text-sm text-gray-600">{$_('name.checking', { values: { name } })}</p>
+                        {:else if !isNameValid}
+                            <p class="mt-2 text-sm text-red-600">{nameErrorMessage}</p>
+                        {:else}
+                            <p class="mt-2 text-sm text-green-700">{$_('name.available', { values: { name } })}</p>
+                            {#if doichainAddress}
+                                <p class="mt-1 text-sm text-gray-600">{$_('name.address', { values: { address: doichainAddress } })}</p>
+                            {/if}
+                        {/if}
+                        {#if name && nameBytes.mixesScripts}
+                            <p class="mt-2 text-sm text-amber-800">{$_('name.warnings.mixedScripts', { values: { hex: nameBytes.hex } })}</p>
+                        {:else if name && !nameBytes.isAscii}
+                            <p class="mt-2 text-sm text-amber-800">{$_('name.warnings.nonAscii', { values: { hex: nameBytes.hex } })}</p>
+                        {/if}
+                    </div>
                 </div>
                     {:else}
-                    <p class="mt-2 text-sm text-red-600" id="name-error">{$_('status.offlineHelp')}</p>
+                    <p class="mt-2 text-sm text-red-600" id="connection-status">{$_('status.offlineHelp')}</p>
                 {/if}
             </div>
         </div>
