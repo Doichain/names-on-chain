@@ -1,10 +1,15 @@
 import { nameShow } from "$lib/doichain/nameShow.js";
+import { getScriptPubKeyAddress } from "$lib/doichain/scriptPubKeyAddress.js";
 import sb from "satoshi-bitcoin";
 import { debounce } from 'lodash';
 
 export const checkName = debounce((electrumClient, currentNameAddress , name, totalUtxoValue, totalAmount, callback) => {
     _checkName(electrumClient, currentNameAddress, name, totalUtxoValue, totalAmount).then(result => {
         callback(result);
+    }).catch(error => {
+        // a failed lookup must not leave the previous result on screen,
+        // and must not wipe the address the callback writes back
+        callback({ currentNameAddress, nameErrorMessage: `Could not check "${name}": ${error?.message ?? error}`, isNameValid: false });
     });
 }, 300);
 
@@ -33,7 +38,7 @@ export async function _checkName(electrumClient, currentNameAddress, _name, tota
             for (let utxo of res) {
                 const scriptPubKey = utxo.scriptPubKey;
                 if (scriptPubKey && scriptPubKey.nameOp) {
-                    currentNameAddress = scriptPubKey.addresses[0];
+                    currentNameAddress = getScriptPubKeyAddress(scriptPubKey);
                     currentNameOp = scriptPubKey.nameOp;
                     currentNameUtxo = {
                         ...utxo,
