@@ -88,7 +88,7 @@
 		"change": "Wechselgeld:",
 		"summary": "Sie zahlen {fee} DOI Mining-Gebühr. {locked} DOI bleiben im Namens-Output gebunden, der Ihnen gehört, und {change} DOI kommen als Wechselgeld zu Ihnen zurück.",
 		"dust": "Die übrigen {amount} DOI reichen nicht für einen Wechselgeld-Output und gehen an die Miner.",
-		"details": "{rate} swartz je vByte für etwa {vsize} vBytes; {used} von {available} Coins werden ausgegeben."
+		"details": "{rate} swartz je vByte für etwa {vsize} vBytes, mit {used} von {available} Coins."
 	},
 	"psbt": {
 		"label": "PSBT (Base64)",

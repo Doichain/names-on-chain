@@ -88,7 +88,7 @@
 		"change": "Change:",
 		"summary": "You pay {fee} DOI mining fee. {locked} DOI stay locked in the name output, which belongs to you, and {change} DOI come back to you as change.",
 		"dust": "The {amount} DOI left over are too little for a change output and go to the miners.",
-		"details": "{rate} swartz per vbyte for about {vsize} vbytes; {used} of {available} coins are spent."
+		"details": "{rate} swartz per vbyte for about {vsize} vbytes, using {used} of {available} coins."
 	},
 	"psbt": {
 		"label": "PSBT (Base64)",
