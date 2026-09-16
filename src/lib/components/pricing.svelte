@@ -1,5 +1,6 @@
 <script>
     import { getConnectionStatus } from "../doichain/connectElectrum.js"
+    import { _, locale } from "$lib/i18n/index.js";
     import { checkName } from "$lib/doichain/nameValidation.js";
     import { getUtxosAndNamesOfAddress } from "$lib/doichain/utxoHelpers.js";
     import {electrumClient, connectedServer, scanOpen, network} from "../doichain/doichain-store.js";
@@ -119,10 +120,23 @@
     $: ({ isConnected, serverName } = getConnectionStatus($connectedServer));
 
     /**
+     * The connection status in words: the server URL once connected,
+     * otherwise the status the connection store reports, translated.
+     */
+    function describeServer(server, translate) {
+        if (server === 'offline') return translate('status.offline');
+        const retry = /^retrying \((\d+)(?: - (.+))?\)$/.exec(server || '');
+        if (retry) return translate('status.retrying', { values: { attempt: retry[1], host: retry[2] ?? '' } });
+        return server;
+    }
+    $: serverText = describeServer(serverName, $_);
+
+    /**
      * Check a name, debounce every keyboard typing, return local variables by callback
      */
     $: {
         if (name) {
+            $locale; // check again when the language changes, so the message follows it
             try {
                 checkName($electrumClient, doichainAddress, name, totalUtxoValue, totalAmount, nameCheckCallback);
             } catch (error) {
@@ -205,6 +219,7 @@
      */
     $: {
         if(name && isNameValid && !isNameExists) {
+            $locale; // rebuild when the language changes, so an error message follows it
             const result = signTransaction(utxoAddresses, name, $network, DEFAULT_STORAGE_FEE, doichainAddress, doichainAddress, doichainAddress);
             console.log("signTransaction:result",result)
             if (result.error) {
@@ -312,21 +327,21 @@
 <div class="bg-white py-24 sm:py-32">
     <div class="mx-auto max-w-7xl px-6 lg:px-8">
                 <div class="mx-auto max-w-2xl sm:text-center">
-                    <h2  class="text-3xl font-bold tracking-tight sm:text-4xl fade-red-to-green {isConnected ? 'connected' : ''}">Names-On-Chain</h2>
-                    <h2  class="font-bold tracking-tight sm:text-1xl fade-red-to-green {isConnected ? 'connected' : 'blinking'} ">{serverName}</h2>
+                    <h2  class="text-3xl font-bold tracking-tight sm:text-4xl fade-red-to-green {isConnected ? 'connected' : ''}">{$_('app.title')}</h2>
+                    <h2  class="font-bold tracking-tight sm:text-1xl fade-red-to-green {isConnected ? 'connected' : 'blinking'} ">{serverText}</h2>
                 </div>
                 <div class="mx-auto mt-16 max-w-2xl rounded-3xl ring-1 ring-gray-200 sm:mt-20 lg:mx-0 lg:flex lg:max-w-none">
                     <div class="p-8 sm:p-10 lg:flex-auto">
-                        <p class="mt-6 text-base leading-7 text-gray-600">Register your favourite Doichain name!</p>
+                        <p class="mt-6 text-base leading-7 text-gray-600">{$_('name.intro')}</p>
                         {#if isConnected}
                         <p>&nbsp;</p>
                         <div>
-                            <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Name to be registered</label>
+                            <label for="name" class="block text-sm font-medium leading-6 text-gray-900">{$_('name.label')}</label>
                             <div class="relative mt-2 rounded-md shadow-sm">
                                 <input bind:value={name} name="name" id="name"
                                        type="text"
                                        class="{isNameValid?'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}"
-                                       placeholder="name"
+                                       placeholder={$_('name.placeholder')}
                                        aria-invalid="{isNameValid}"
                                        aria-describedby="name-error"/>
 
@@ -347,20 +362,20 @@
                             {#if !isNameValid}
                                 <p class="mt-2 text-sm text-red-600" id="name-error">{nameErrorMessage}</p>
                             {:else if name}
-                                <p class="mt-2 text-sm text-green-600" id="name-success">Address: {doichainAddress}</p>
+                                <p class="mt-2 text-sm text-green-600" id="name-success">{$_('name.address', { values: { address: doichainAddress } })}</p>
                             {/if}
                         </div>
                             {:else}
-                            <p class="mt-2 text-sm text-red-600" id="name-error">offline - please check internet connection or reload browser</p>
+                            <p class="mt-2 text-sm text-red-600" id="name-error">{$_('status.offlineHelp')}</p>
                         {/if}
                         <div>
-                            <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Doichain Registration Address</label>
+                            <label for="email" class="block text-sm font-medium leading-6 text-gray-900">{$_('address.label')}</label>
                             <div class="relative mt-2 rounded-md shadow-sm flex items-center">
                                 <input bind:value={doichainAddress}
                                        on:change={() => checkName($electrumClient, doichainAddress, name, totalUtxoValue, totalAmount, nameCheckCallback)}
                                        type="address" name="address" id="address"
                                        class="{isNameValid?'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}"
-                                       placeholder="address"
+                                       placeholder={$_('address.placeholder')}
                                        aria-invalid="{isUTXOAddressValid}"
                                        aria-describedby="name-error">
                                 {#if !isUTXOAddressValid}
@@ -370,20 +385,20 @@
                                         </svg>
                                     </div>
                                 {/if}
-                                <button on:click={ () => { $scanOpen = true }} class="ml-2"><svg class="h-8 w-8 text-orange-600"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />  <path d="M4 17v1a2 2 0 0 0 2 2h2" />  <path d="M16 4h2a2 2 0 0 1 2 2v1" />  <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />  <line x1="5" y1="12" x2="19" y2="12" /></svg></button>
+                                <button type="button" aria-label={$_('address.scan')} title={$_('address.scan')} on:click={ () => { $scanOpen = true }} class="ml-2"><svg class="h-8 w-8 text-orange-600"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />  <path d="M4 17v1a2 2 0 0 0 2 2h2" />  <path d="M16 4h2a2 2 0 0 1 2 2v1" />  <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />  <line x1="5" y1="12" x2="19" y2="12" /></svg></button>
                             </div>
 
                             {#if !isUTXOAddressValid}
-                                <p class="mt-2 text-sm text-red-600" id="name-error"><b>Total UTXO value: { sb.toBitcoin(totalUtxoValue) }</b> {utxoErrorMessage}</p>
+                                <p class="mt-2 text-sm text-red-600" id="name-error"><b>{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}</b> {utxoErrorMessage}</p>
                             {:else}
-                                <p class="mt-2 text-sm text-gray red-600" id="name-error">Total UTXO value: { sb.toBitcoin(totalUtxoValue) }</p>
+                                <p class="mt-2 text-sm text-gray red-600" id="name-error">{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}</p>
                                 {#if nameOpTxs.length > 0}
                                     <div class="mt-4">
-                                        <h4 class="text-sm font-medium text-gray-900 mb-2">Registered Names on Doichain Address:</h4>
+                                        <h4 class="text-sm font-medium text-gray-900 mb-2">{$_('address.names')}</h4>
                                         <div class="flex flex-wrap gap-2">
                                             {#each nameOpTxs as nameOp}
                                                 <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
-                                                    {nameOp.name} (expires: {nameOp.expires})
+                                                    {$_('address.expires', { values: { name: nameOp.name, height: nameOp.expires } })}
                                                 </span>
                                             {/each}
                                         </div>
@@ -395,8 +410,8 @@
                         {#if isNameExists}
                             <div class="flex items-center justify-between">
                               <span class="flex flex-grow flex-col">
-                                <span class="text-sm font-medium leading-6 text-gray-900" id="availability-label">{ownerOfName?'I am owner of that name. I make a sell offer':'I am NOT the owner of the name. I make a buy offer'}</span>
-                                <span class="text-sm text-gray-500" id="availability-description">{ownerOfName?'Create the PSBT-part (1) to sell the name':'create a PSBT-part to buy the name (only if Part 1 is known)'}</span>
+                                <span class="text-sm font-medium leading-6 text-gray-900" id="availability-label">{ownerOfName ? $_('trade.seller') : $_('trade.buyer')}</span>
+                                <span class="text-sm text-gray-500" id="availability-description">{ownerOfName ? $_('trade.sellerHint') : $_('trade.buyerHint')}</span>
                               </span>
                                 <button on:click={() => ownerOfName=!ownerOfName} type="button" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent {ownerOfName?'bg-indigo-600':'bg-gray-200'} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2" role="switch" aria-checked="false" aria-labelledby="availability-label" aria-describedby="availability-description">
                                   <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 {ownerOfName?'translate-x-5':'translate-x-0'} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
@@ -404,11 +419,10 @@
                             </div>
                             <p>&nbsp;</p>
                             {#if ownerOfName}
-                                If you are owner of that name you only have to tell us the transfer price.
-                                We generate an output to the same address where the name is stored with the transfer price and sign the name input.
+                                {$_('trade.sellerExplanation')}
                             {/if}
                             {#if !ownerOfName}
-                                <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Doichain Address of funds to buy name</label>
+                                <label for="email" class="block text-sm font-medium leading-6 text-gray-900">{$_('trade.fundingLabel')}</label>
                                 <div class="relative mt-2 rounded-md shadow-sm flex items-center">
                                     <input bind:value={fundingUTXOAddress}
                                            type="fundingUTXOAddress" name="fundingUTXOAddress" id="fundingUTXOAddress"
@@ -418,7 +432,7 @@
                                                isFundingUTXOAddressValid=result.isUTXOAddressValid
                                            })}
                                            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"
-                                           placeholder="address"
+                                           placeholder={$_('address.placeholder')}
                                            aria-invalid="{isFundingUTXOAddressValid}"
                                            aria-describedby="name-error">
 
@@ -430,17 +444,17 @@
                                                 </div>
                                             {/if}
 
-                                    <button on:click={ () => { scanOpenFunding = true }} class="ml-2"><svg class="h-8 w-8 text-orange-600"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />  <path d="M4 17v1a2 2 0 0 0 2 2h2" />  <path d="M16 4h2a2 2 0 0 1 2 2v1" />  <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />  <line x1="5" y1="12" x2="19" y2="12" /></svg></button>
+                                    <button type="button" aria-label={$_('trade.fundingScan')} title={$_('trade.fundingScan')} on:click={ () => { scanOpenFunding = true }} class="ml-2"><svg class="h-8 w-8 text-orange-600"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />  <path d="M4 17v1a2 2 0 0 0 2 2h2" />  <path d="M16 4h2a2 2 0 0 1 2 2v1" />  <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />  <line x1="5" y1="12" x2="19" y2="12" /></svg></button>
                                 </div>
                                 {#if !isFundingUTXOAddressValid}
-                                    <p class="mt-2 text-sm text-red-600" id="name-error"><b>Funding Total UTXO value: { sb.toBitcoin(fundingTotalUtxoValue) }</b> "fundingUtxoErrorMessage?"</p>
+                                    <p class="mt-2 text-sm text-red-600" id="name-error"><b>{$_('trade.fundingTotal', { values: { amount: sb.toBitcoin(fundingTotalUtxoValue) } })}</b> {$_('trade.fundingInvalid')}</p>
                                 {:else}
-                                    <p class="mt-2 text-sm text-gray red-600" id="name-error">Funding Total UTXO value: { sb.toBitcoin(fundingTotalUtxoValue) }</p>
+                                    <p class="mt-2 text-sm text-gray red-600" id="name-error">{$_('trade.fundingTotal', { values: { amount: sb.toBitcoin(fundingTotalUtxoValue) } })}</p>
                                 {/if}
                             {/if}
                             <p>&nbsp;</p>
                             <div>
-                                <label for="price" class="block text-sm font-medium leading-6 text-gray-900">Transfer Price</label>
+                                <label for="price" class="block text-sm font-medium leading-6 text-gray-900">{$_('trade.priceLabel')}</label>
                                 <div class="relative mt-2 rounded-md shadow-sm">
                                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                         <span class="text-gray-500 sm:text-sm">&#8383</span>
@@ -455,38 +469,38 @@
             </div>
             <div class="lg:w-1/3 mt-8 lg:mt-0 rounded-2xl bg-gray-50 py-10 text-left ring-1 ring-inset ring-gray-900/5 lg:flex lg:flex-col lg:justify-start lg:py-16">
                 <div class="mx-auto max-w-xs px-8">
-                    <p class="text-base font-semibold text-gray-600">Register Doichain Name for 31,968 blocks (approximately 222 days)</p>
+                    <p class="text-base font-semibold text-gray-600">{$_('fees.heading')}</p>
                     <div class="mt-6">
                         <div class="flex justify-between mt-2">
-                            <span class="text-sm font-bold tracking-tight text-gray-900">Storage Fee:</span>
+                            <span class="text-sm font-bold tracking-tight text-gray-900">{$_('fees.locked')}</span>
                             <span class="text-sm font-semibold leading-6 tracking-wide text-gray-600">{sb.toBitcoin(DEFAULT_STORAGE_FEE)} DOI</span>
                         </div>
                         <div class="flex justify-between mt-2">
-                            <span class="text-sm font-bold tracking-tight text-gray-900">Mining Fee:</span>
+                            <span class="text-sm font-bold tracking-tight text-gray-900">{$_('fees.mining')}</span>
                             <span class="text-sm font-semibold leading-6 tracking-wide text-gray-600">{sb.toBitcoin(transactionFee)} DOI</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-sm font-bold tracking-tight text-gray-900">Total Amount:</span>
+                            <span class="text-sm font-bold tracking-tight text-gray-900">{$_('fees.total')}</span>
                             <span class="text-sm font-semibold leading-6 tracking-wide text-gray-600">{sb.toBitcoin(totalAmount)} DOI</span>
                         </div>
                         <div class="flex justify-between mt-2">
-                            <span class="text-sm font-bold tracking-tight text-gray-900">Change:</span>
+                            <span class="text-sm font-bold tracking-tight text-gray-900">{$_('fees.change')}</span>
                             <span class="text-sm font-semibold leading-6 tracking-wide text-gray-600">{sb.toBitcoin(changeAmount)} DOI</span>
                         </div>
                     </div>
                     <div id="qr-container"></div>
-                    utxos to sign: {fundingUtxoAddresses.length}
+                    {$_('psbt.utxosToSign', { values: { count: fundingUtxoAddresses.length } })}
                     {#if qrCodeData && psbtBaseText && (psbtBaseText || isBuyOfferValid)}
                         {@html qrCode}
                         <div on:click={handleQRCodeClick} class="cursor-pointer">
                             { currentSvgIndex + 1 } / { qrCodeData ? qrCodeData.length : 0 }
                         </div>
                         <div class="mt-4">
-                            <label for="name" class="block text-sm font-medium leading-6 text-gray-900">PSBT File</label>
+                            <label for="name" class="block text-sm font-medium leading-6 text-gray-900">{$_('psbt.label')}</label>
                             <div class="relative mt-2 rounded-md shadow-sm">
                                 <textarea bind:value={psbtBaseText} rows="4" name="comment" id="comment"
                                       class="{isNameValid?'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6':'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}"
-                                      placeholder="psbt file"
+                                      placeholder={$_('psbt.placeholder')}
                                       aria-invalid="{!psbtBaseText}"
                                       aria-describedby="name-error"/>
                                         {#if !psbtBaseText}

@@ -2,6 +2,7 @@
     import { createEventDispatcher } from "svelte";
     import { Scanner } from '@peerpiper/qrcode-scanner-svelte'
     import { joinQRs } from 'bbqr';
+    import { _ } from '$lib/i18n/index.js';
 
     const dispatch = createEventDispatcher();
     let result = "";
@@ -47,7 +48,7 @@
     }
 </script>
 
-<div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div class="scan-modal relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <!--
       Background backdrop, show/hide based on modal state.
 
@@ -73,13 +74,15 @@
                 To: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             -->
             <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
-                <div>
+                <h2 id="modal-title" class="text-base font-semibold text-gray-900">{$_('scan.title')}</h2>
+                <p class="mt-1 text-sm text-gray-600">{$_('scan.tip')}</p>
+                <div class="mt-3">
                     <Scanner bind:result>
                         <!-- Insert custom results component if you want to do something unique with the QR code data -->
                         <!-- override default by placing handler in here  -->
                         {#if result}
                             <div>
-                                The scan contained: {result}
+                                {$_('scan.result', { values: { result } })}
                             </div>
 <!--                            <div>-->
 <!--                                <button on:click={() => (result = null)}>Scan again</button>-->
@@ -90,9 +93,16 @@
                 <div class="mt-5 sm:mt-6">
                     <button  on:click={() => { scanOpen = false }}
                              type="button"
-                             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Close</button>
+                             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{$_('scan.close')}</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* the scanner library prints its own English tip; the modal shows a translated one */
+    .scan-modal :global(.scanner-tip) {
+        display: none;
+    }
+</style>
