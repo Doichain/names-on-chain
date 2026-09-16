@@ -16,18 +16,38 @@ network.subscribe((value) => _network = value);
 const MAX_RETRIES = 25;
 const RETRY_DELAY = 5000;
 
+/** Wait before replacing a dropped connection; doubles after every failed attempt, up to a minute. */
+const RECONNECT_DELAY = 2000;
+const MAX_RECONNECT_DELAY = 60000;
+
+let connecting;
+let reconnectTimer;
+let reconnectDelay = RECONNECT_DELAY;
+
 /**
  * Connect to a random electrumx server in the electrumServers list
  * with a certain network (doichain-mainnet,doichain-testnet,..)
  *
  * sets a couple of svelte store variables
  *
+ * A dropped connection is replaced on its own. The browser's online event and
+ * a reconnect can ask at the same moment; both then wait for the same attempt.
+ *
  * @param _network
  * @returns {Promise<string>} the connected server url
  */
 export const connectElectrum = async (_network) => {
 	if (!_network) return;
-	
+	if (!connecting) {
+		connecting = connect(_network).finally(() => { connecting = undefined; });
+	}
+	return connecting;
+};
+
+async function connect(_network) {
+	// never leave an old connection open next to the new one
+	_electrumClient?.close?.();
+
 	let retries = 0;
 	let randomServer
 	while (retries < MAX_RETRIES) {
@@ -53,7 +73,21 @@ export const connectElectrum = async (_network) => {
 		}
 	}
 
-	const _electrumServerVersion = await _electrumClient.request('server.version');
+	const client = _electrumClient;
+
+	// new blocks arrive as notifications once the headers are subscribed below
+	client.subscribe.on('blockchain.headers.subscribe', (params) => {
+		if (client === _electrumClient && params?.[0]) electrumBlockchainBlockHeadersSubscribe.set(params[0]);
+	});
+
+	// a connection that drops on its own gets replaced
+	client.onclose = () => {
+		if (client !== _electrumClient) return; // already replaced by a newer connection
+		connectedServer.set('offline');
+		scheduleReconnect(_network);
+	};
+
+	const _electrumServerVersion = await client.request('server.version');
 	electrumServerVersion.set(_electrumServerVersion);
 	console.log("electrumServerVersion", _electrumServerVersion);
 
@@ -61,18 +95,33 @@ export const connectElectrum = async (_network) => {
 	connectedServer.set(_connectedServer);
 	console.log("network", _connectedServer);
 
-	const _electrumServerBanner = await _electrumClient.request('server.banner');
+	const _electrumServerBanner = await client.request('server.banner');
 	console.log("electrumServerBanner", _electrumServerBanner);
 	electrumServerBanner.set(_electrumServerBanner);
 
-	const _electrumBlockchainBlockHeadersSubscribe = await _electrumClient.request('blockchain.headers.subscribe');
+	const _electrumBlockchainBlockHeadersSubscribe = await client.request('blockchain.headers.subscribe');
 	electrumBlockchainBlockHeadersSubscribe.set(_electrumBlockchainBlockHeadersSubscribe);
 
-	const _electrumBlockchainRelayfee = await _electrumClient.request('blockchain.relayfee');
+	const _electrumBlockchainRelayfee = await client.request('blockchain.relayfee');
 	electrumBlockchainRelayfee.set(_electrumBlockchainRelayfee);
 
+	reconnectDelay = RECONNECT_DELAY;
 	return _connectedServer;
-};
+}
+
+function scheduleReconnect(_network) {
+	if (reconnectTimer) return;
+	reconnectTimer = setTimeout(async () => {
+		reconnectTimer = undefined;
+		try {
+			await connectElectrum(_network);
+		} catch (error) {
+			console.error("Reconnect failed", error);
+			reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
+			scheduleReconnect(_network);
+		}
+	}, reconnectDelay);
+}
 
 export function getConnectionStatus(server) {
 	if (!server || server === 'offline' || server.includes('retry')) {
