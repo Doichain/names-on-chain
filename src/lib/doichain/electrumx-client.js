@@ -1,5 +1,13 @@
 import { EventEmitter } from 'events';
 
+/** How long a request may stay unanswered before it fails, in milliseconds. */
+export const REQUEST_TIMEOUT = 30_000;
+
+/** ElectrumX drops a silent client after about ten minutes; a ping keeps the connection open. */
+export const KEEPALIVE_INTERVAL = 90_000;
+
+const WEBSOCKET_OPEN = 1;
+
 export const makeRequest = (method, params, id) => {
 	return JSON.stringify({
 		jsonrpc: '2.0',
@@ -31,6 +39,12 @@ export const createPromiseResultBatch = (resolve, reject, argz) => {
 
 export class ElectrumxClient {
 
+	/**
+	 * @param {string} host
+	 * @param {number} port
+	 * @param {string} protocol - 'wss' or 'ws'
+	 * @param {{timeout?: number, keepAliveInterval?: number}} [options]
+	 */
 	constructor(host, port, protocol, options) {
 		this.id = 0;
 		this.port = port;
@@ -39,6 +53,14 @@ export class ElectrumxClient {
 		this.subscribe = new EventEmitter();
 		this._protocol = protocol; // saving defaults
 		this._options = options;
+		this.timeout = options?.timeout ?? REQUEST_TIMEOUT;
+		this.keepAliveInterval = options?.keepAliveInterval ?? KEEPALIVE_INTERVAL;
+		/**
+		 * Called when the connection drops without close() having been called,
+		 * so the owner can connect again.
+		 * @type {((event: any) => void) | null}
+		 */
+		this.onclose = null;
 	}
 
 	getStatus() {
@@ -50,16 +72,19 @@ export class ElectrumxClient {
 			return Promise.resolve();
 		}
 		this.status = 1;
+		this.closedOnPurpose = false;
 		return this.connectSocket(this.port, this.host, this._protocol);
 	}
 
 	connectSocket(port, host, protocol) {
 		return new Promise((resolve, reject) => {
-			let ws = new WebSocket(`${protocol}://${host}:${port}/`);
+			const url = `${protocol}://${host}:${port}/`;
+			let ws = new WebSocket(url);
 			this.ws = ws;
 
 			ws.onopen = () => {
 				console.log("connected websocket main component");
+				this.startKeepAlive();
 				resolve();
 			};
 
@@ -68,26 +93,24 @@ export class ElectrumxClient {
 			}
 
 			ws.onclose = e => {
-				console.log('Socket is closed: ' + JSON.stringify(e));
+				console.log('Socket is closed: ' + (e?.code ?? ''));
 				this.status = 0;
-				this.onClose();
+				this.onClose(e);
 			};
 
-			const errorHandler = e => reject(e);
-			ws.onerror = err => {
-				console.error(
-					"Socket encountered error: ",
-					err.message,
-					"Closing socket"
-				);
+			ws.onerror = () => {
+				console.error("Socket encountered error, closing socket", url);
 				this.status = 0;
 				ws.close();
-				errorHandler();
+				// the error event carries no message, so at least name the server
+				reject(new Error(`WebSocket error on ${url}`));
 			};
 		});
 	}
 
 	close() {
+		this.closedOnPurpose = true;
+		this.stopKeepAlive();
 		if (this.status === 0) {
 			return;
 		}
@@ -99,14 +122,30 @@ export class ElectrumxClient {
 	}
 
 	request(method, params) {
-		if (this.status === 0) {
+		if (this.status === 0 || this.ws?.readyState !== WEBSOCKET_OPEN) {
 			return Promise.reject(new Error('ESOCKET'));
 		}
 		return new Promise((resolve, reject) => {
 			const id = ++this.id;
 			const content = makeRequest(method, params, id);
-			this.callback_message_queue[id] = createPromiseResult(resolve, reject);
-			this.ws.send(content + '\n', 'utf8');
+			// a request the server never answers must not hang forever
+			const timer = setTimeout(() => {
+				if (this.callback_message_queue[id]) {
+					delete this.callback_message_queue[id];
+					reject(new Error(`ETIMEDOUT ${method}`));
+				}
+			}, this.timeout);
+			this.callback_message_queue[id] = createPromiseResult(
+				(result) => { clearTimeout(timer); resolve(result); },
+				(error) => { clearTimeout(timer); reject(error); }
+			);
+			try {
+				this.ws.send(content + '\n', 'utf8');
+			} catch (error) {
+				delete this.callback_message_queue[id];
+				clearTimeout(timer);
+				reject(error);
+			}
 		});
 	}
 
@@ -150,9 +189,12 @@ export class ElectrumxClient {
 		if (callback) {
 			delete this.callback_message_queue[msg.id];
 			if (msg.error) {
-				callback(msg.error);
+				const error = new Error(msg.error.message ?? JSON.stringify(msg.error));
+				error.code = msg.error.code;
+				callback(error);
 			} else {
-				callback(null, msg.result || msg);
+				// a result may be 0, false or null; only a batch answer has no result field
+				callback(null, 'result' in msg ? msg.result : msg);
 			}
 		} else {
 			console.log("Can't get callback"); // can't get callback
@@ -160,24 +202,50 @@ export class ElectrumxClient {
 	}
 
 	onMessage(body) {
-		const msg = JSON.parse(body);
+		let msg;
+		try {
+			msg = JSON.parse(body);
+		} catch (error) {
+			console.error('ElectrumX sent something that is not JSON, ignored', error);
+			return;
+		}
 		if (msg instanceof Array) {
 			this.response(msg);
+		} else if (msg.id === undefined || msg.id === null) {
+			// notifications (a new block, a changed script hash) come without an id
+			if (msg.method) this.subscribe.emit(msg.method, msg.params);
+			else console.error('ElectrumX message without id', msg);
 		} else {
-			if (msg.id !== 0) {
-				this.response(msg);
-			} else {
-				this.subscribe.emit(msg.method, msg.params);
-			}
+			this.response(msg);
 		}
 	}
 
 	onClose(e) {
 		this.status = 0;
+		this.stopKeepAlive();
 		Object.keys(this.callback_message_queue).forEach(key => {
 			this.callback_message_queue[key](new Error('close connect'));
 			delete this.callback_message_queue[key];
 		});
+		if (!this.closedOnPurpose && typeof this.onclose === 'function') {
+			this.onclose(e);
+		}
+	}
+
+	startKeepAlive() {
+		this.stopKeepAlive();
+		this.keepAliveTimer = setInterval(() => {
+			this.request('server.ping').catch((error) => {
+				console.error('ElectrumX did not answer the ping, closing the connection', error);
+				// a server that stopped answering is treated like a dropped connection
+				this.ws?.close();
+			});
+		}, this.keepAliveInterval);
+	}
+
+	stopKeepAlive() {
+		if (this.keepAliveTimer) clearInterval(this.keepAliveTimer);
+		this.keepAliveTimer = undefined;
 	}
 
 }

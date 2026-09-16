@@ -1,3 +1,6 @@
+import moment from 'moment';
+import { getScriptPubKeyAddress } from './scriptPubKeyAddress.js';
+
 export async function scanBlockchainForNameOps(maxRecords, electrumClient) {
     const currentHeight = await electrumClient.request('blockchain.headers.subscribe');
     let lowerHightBy = 0
@@ -25,7 +28,7 @@ export async function scanBlockchainForNameOps(maxRecords, electrumClient) {
                         let _tx = {}
                         _tx.nameId = vout.scriptPubKey.nameOp.name
                         _tx.nameValue = vout.scriptPubKey.nameOp.value
-                        _tx.address = vout.scriptPubKey?.addresses[0]
+                        _tx.address = getScriptPubKeyAddress(vout.scriptPubKey)
 
                         if(_tx.nameId.indexOf('/')!==-1) {
                             const newNameSpace = _tx.nameId.substring(0,_tx.nameId.indexOf('/'))
@@ -40,7 +43,7 @@ export async function scanBlockchainForNameOps(maxRecords, electrumClient) {
                             value: vout.value,
                             nameId: vout.scriptPubKey.nameOp.name,
                             nameValue: vout.scriptPubKey.nameOp.value,
-                            address: vout.scriptPubKey?.addresses[0]
+                            address: getScriptPubKeyAddress(vout.scriptPubKey)
                         })
                         nameSpaces = nameSpaces
                         quatsch = quatsch

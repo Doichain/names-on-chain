@@ -1,4 +1,6 @@
 import { nameShow } from "$lib/doichain/nameShow.js";
+import { describeNameBytes } from "$lib/doichain/nameBytes.js";
+import { NAME_MAX_LENGTH } from "$lib/doichain/getNameOPStackScript.js";
 import { getScriptPubKeyAddress } from "$lib/doichain/scriptPubKeyAddress.js";
 import { t } from "$lib/i18n/index.js";
 import sb from "satoshi-bitcoin";
@@ -6,10 +8,12 @@ import { debounce } from 'lodash';
 
 export const checkName = debounce((electrumClient, name, totalUtxoValue, totalAmount, callback) => {
     _checkName(electrumClient, name, totalUtxoValue, totalAmount).then(result => {
-        callback(result);
+        // every answer names the name it was computed for, so the caller can drop
+        // an answer that arrives after the user has typed on
+        callback({ ...result, name });
     }).catch(error => {
         // a failed lookup must not leave the previous result on screen
-        callback({ nameErrorMessage: t('name.errors.lookupFailed', { name, error: error?.message ?? String(error) }), isNameValid: false });
+        callback({ name, nameErrorMessage: t('name.errors.lookupFailed', { name, error: error?.message ?? String(error) }), isNameValid: false });
     });
 }, 300);
 
@@ -24,12 +28,19 @@ export async function _checkName(electrumClient, _name, totalUtxoValue, totalAmo
 
     if(!_name) {
         const nameErrorMessage = t('name.errors.empty');
-        return { nameErrorMessage }
+        return { nameErrorMessage, isNameValid: false }
     }
 
     if(_name.split(' ').length > 1) {
         const nameErrorMessage = t('name.errors.space');
-        return { nameErrorMessage };
+        return { nameErrorMessage, isNameValid: false };
+    }
+
+    // Doichain limits names by bytes; "ü" takes two of them
+    const { byteLength } = describeNameBytes(_name);
+    if (byteLength > NAME_MAX_LENGTH) {
+        const nameErrorMessage = t('name.errors.tooLong', { bytes: byteLength, max: NAME_MAX_LENGTH });
+        return { nameErrorMessage, isNameValid: false };
     }
     if (_name.length > 3) {
         const res = await nameShow(electrumClient, _name);
