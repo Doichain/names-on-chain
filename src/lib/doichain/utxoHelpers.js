@@ -1,4 +1,5 @@
 import { getUTXOSFromAddress } from "./nameDoi.js";
+import { getScriptPubKeyAddress } from "./scriptPubKeyAddress.js";
 
 /**
  * Retrieves UTXOs and name operations associated with a Doichain address
@@ -31,7 +32,7 @@ export async function getUtxosAndNamesOfAddress(electrumClient, doichainAddress)
                 n: utxo.fullTx.n,
                 value: utxo.value,
                 height: utxo.height,
-                address: utxo.fullTx.scriptPubKey.addresses[0]})
+                address: getScriptPubKeyAddress(utxo.fullTx.scriptPubKey)})
         } else {
             nameOpTxs.push({
                 name: scriptPubKey.nameOp.name,
