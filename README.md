@@ -48,7 +48,11 @@ Previous: [lesson04](https://github.com/Doichain/names-on-chain/tree/lesson04)
 
 ## More
 
+- [All pages of the workshop](docs/README.md) · [Deutsch](docs/README.de.md)
+- [Getting started](docs/getting-started.md) · [Deutsch](docs/getting-started.de.md)
 - [Wallet and safety](docs/wallet-and-safety.md) · [Deutsch](docs/wallet-and-safety.de.md)
+- [The ideas behind it](docs/concepts.md) · [Deutsch](docs/concepts.de.md)
+- [Under the hood](docs/under-the-hood.md) · [Deutsch](docs/under-the-hood.de.md)
 - [Publish a lesson on IPFS](docs/ipfs.md) · [Deutsch](docs/ipfs.de.md)
 - [For maintainers](docs/maintainers.md) · [Deutsch](docs/maintainers.de.md)
 - DoiWallet: [Google Play](https://play.google.com/store/apps/details?id=org.doichain.doiwallet) ·
