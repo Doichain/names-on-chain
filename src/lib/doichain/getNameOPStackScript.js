@@ -3,6 +3,9 @@ import { DOICHAIN } from './doichain.js';
 import { normalizeName } from './nameBytes.js';
 import { pushData } from './pushData.js';
 
+// Doichain Core accepts names of any length up to 255 bytes. The app asks for
+// at least four characters, and the name check and this builder share the rule.
+export const NAME_MIN_LENGTH = 4
 export const NAME_MAX_LENGTH = 255
 export const VALUE_MAX_LENGTH = 520
 
@@ -12,7 +15,7 @@ const OP_DROP = 0x75;
 
 const ERRORS = {
     NAME_ID_DEFINED: "nameId and nameValue must be defined",
-    NAME_ID_LENGTH: `nameId must be at least 3 characters and not longer than ${NAME_MAX_LENGTH} bytes`,
+    NAME_ID_LENGTH: `nameId must have at least ${NAME_MIN_LENGTH} characters and at most ${NAME_MAX_LENGTH} bytes`,
     NAME_VALUE_LENGTH: `nameValue must not be longer than ${VALUE_MAX_LENGTH} bytes`,
     INVALID_ADDRESS: "Invalid recipient address: ",
     UNSUPPORTED_ADDRESS: "A name can only be sent to a P2PKH or P2WPKH address, not to "
@@ -62,7 +65,7 @@ export const getNameOPStackScript = (nameId, nameValue, recipientAddress, networ
     const name = Buffer.from(normalizeName(nameId), 'utf8');
     const value = Buffer.from(nameValue, 'utf8');
 
-    if (name.length > NAME_MAX_LENGTH || nameId.length < 3) {
+    if (name.length > NAME_MAX_LENGTH || normalizeName(nameId).length < NAME_MIN_LENGTH) {
         throw new Error(ERRORS.NAME_ID_LENGTH);
     }
 

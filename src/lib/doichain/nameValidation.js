@@ -1,6 +1,6 @@
 import { nameShow } from "$lib/doichain/nameShow.js";
 import { describeNameBytes } from "$lib/doichain/nameBytes.js";
-import { NAME_MAX_LENGTH } from "$lib/doichain/getNameOPStackScript.js";
+import { NAME_MAX_LENGTH, NAME_MIN_LENGTH } from "$lib/doichain/getNameOPStackScript.js";
 import { getScriptPubKeyAddress } from "$lib/doichain/scriptPubKeyAddress.js";
 import { latestNameOperation, nameExpiry } from "$lib/doichain/nameExpiry.js";
 import { electrumBlockchainBlockHeadersSubscribe, network } from "$lib/doichain/doichain-store.js";
@@ -46,7 +46,7 @@ export async function _checkName(electrumClient, _name, totalUtxoValue, totalAmo
         const nameErrorMessage = t('name.errors.tooLong', { bytes: byteLength, max: NAME_MAX_LENGTH });
         return { nameErrorMessage, isNameValid: false };
     }
-    if (_name.length > 3) {
+    if (normalizeName(_name).length >= NAME_MIN_LENGTH) {
         const res = await nameShow(electrumClient, _name);
         // the newest name operation decides: who holds the name, and until which block
         const latest = latestNameOperation(res, normalizeName(_name));
@@ -77,7 +77,7 @@ export async function _checkName(electrumClient, _name, totalUtxoValue, totalAmo
             return { nameErrorMessage, nameNotice, utxoErrorMessage, isNameValid, isUTXOAddressValid }
         }
     } else {
-        nameErrorMessage = t('name.errors.tooShort', { name: _name });
+        nameErrorMessage = t('name.errors.tooShort', { name: _name, min: NAME_MIN_LENGTH });
         isNameValid = false;
         return { nameErrorMessage, currentNameAddress, utxoErrorMessage, isNameValid, isUTXOAddressValid };
     }
