@@ -11,13 +11,9 @@ export const electrumServers = [
 
 export const networks = [
 	{ id: 'doichain-mainnet', text: 'Doichain-Mainnet', value: DOICHAIN },
-	// { id: 'testnet', text: 'Testnet', value: DOICHAIN_TESTNET },
 	{ id: 'doichain-regtest', text: 'Doichain-Regtest', value: DOICHAIN_REGTEST }
 ];
 
-export const libp2p = writable()
-export const helia = writable()
-export const connectedPeers = writable(0);
 export const scanOpen = writable(false)
 export const scanData = writable()
 export const network = writable(DOICHAIN);
