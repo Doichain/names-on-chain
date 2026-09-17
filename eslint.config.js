@@ -13,11 +13,14 @@ export default [
 		languageOptions: {
 			globals: {
 				...globals.browser,
-				...globals.node
+				...globals.node,
+				// the version from package.json, set in vite.config.js
+				__APP_VERSION__: 'readonly'
 			}
 		}
 	},
 	{
-		ignores: ['build/', '.svelte-kit/', 'dist/']
+		// public/ is the build output (adapter-static pages: 'public')
+		ignores: ['build/', '.svelte-kit/', 'dist/', 'public/']
 	}
 ];

@@ -1,5 +1,5 @@
-import { getUTXOSFromAddress } from "./nameDoi.js";
-import { getScriptPubKeyAddress } from "./scriptPubKeyAddress.js";
+import { getUTXOSFromAddress } from './nameDoi.js';
+import { getScriptPubKeyAddress } from './scriptPubKeyAddress.js';
 
 /**
  * Retrieves UTXOs and name operations associated with a Doichain address
@@ -17,33 +17,33 @@ import { getScriptPubKeyAddress } from "./scriptPubKeyAddress.js";
  * const result = await getUtxosAndNamesOfAddress(electrumClient, 'DKj2jL8Ns3eWjgXbwPrLwZ');
  */
 export async function getUtxosAndNamesOfAddress(electrumClient, doichainAddress) {
-    let nameOpTxs = []
-    let utxoAddresses = []
-    let totalUtxoValue = 0
-    const result = await getUTXOSFromAddress(electrumClient, doichainAddress)
-    for (let utxo of result) {
-        const scriptPubKey = utxo.fullTx.scriptPubKey;
-        if (!scriptPubKey.nameOp) {
-            utxoAddresses.push({
-                formattedBlocktime: utxo.fullTx.formattedBlocktime,
-                txid: utxo.fullTx.txid,
-                hex: utxo.fullTx.hex,
-                hash: utxo.tx_hash,
-                n: utxo.fullTx.n,
-                value: utxo.value,
-                height: utxo.height,
-                address: getScriptPubKeyAddress(utxo.fullTx.scriptPubKey)})
-        } else {
-            nameOpTxs.push({
-                name: scriptPubKey.nameOp.name,
-                value: scriptPubKey.nameOp.value,
-                txid: utxo.fullTx.txid,
-                height: utxo.height,
-                expires: utxo.height+36000
-                // You might need to fetch additional data to calculate expiration
-            })
-        }
-        totalUtxoValue+=utxo.value;
-    }
-    return { nameOpTxs, utxoAddresses, totalUtxoValue }
+	let nameOpTxs = [];
+	let utxoAddresses = [];
+	let totalUtxoValue = 0;
+	const result = await getUTXOSFromAddress(electrumClient, doichainAddress);
+	for (let utxo of result) {
+		const scriptPubKey = utxo.fullTx.scriptPubKey;
+		if (!scriptPubKey.nameOp) {
+			utxoAddresses.push({
+				txid: utxo.fullTx.txid,
+				hex: utxo.fullTx.hex,
+				hash: utxo.tx_hash,
+				n: utxo.fullTx.n,
+				value: utxo.value,
+				height: utxo.height,
+				address: getScriptPubKeyAddress(utxo.fullTx.scriptPubKey)
+			});
+		} else {
+			nameOpTxs.push({
+				name: scriptPubKey.nameOp.name,
+				value: scriptPubKey.nameOp.value,
+				txid: utxo.fullTx.txid,
+				height: utxo.height,
+				expires: utxo.height + 36000
+				// You might need to fetch additional data to calculate expiration
+			});
+		}
+		totalUtxoValue += utxo.value;
+	}
+	return { nameOpTxs, utxoAddresses, totalUtxoValue };
 }

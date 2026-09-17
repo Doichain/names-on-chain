@@ -30,26 +30,35 @@ export function nameExpiry(height, tipHeight, network) {
 	if (!(height > 0)) return { confirmed: false, expired: false };
 	const expiresAt = height + nameExpirationDepth(network);
 	if (!(tipHeight > 0)) return { confirmed: true, expiresAt, expired: false };
-	return { confirmed: true, expiresAt, blocksLeft: expiresAt - tipHeight, expired: expiresAt <= tipHeight };
+	return {
+		confirmed: true,
+		expiresAt,
+		blocksLeft: expiresAt - tipHeight,
+		expired: expiresAt <= tipHeight
+	};
 }
 
 /**
  * The output that holds a name today: its newest name operation.
  * Unconfirmed operations count as newer than any mined one.
  *
- * @param {Array<{height?: number, scriptPubKey?: {nameOp?: {name: string, name_encoding?: string}}}>} outputs
+ * @param {Array<{height?: number, scriptPubKey?: {nameOp?: {name: string, name_encoding?: string}, [key: string]: any}, [key: string]: any}>} outputs
  * @param {string} name - in NFC, as the app looks names up
  */
 export function latestNameOperation(outputs, name) {
 	const rank = (output) => (output.height > 0 ? output.height : Number.POSITIVE_INFINITY);
 	return outputs
 		.filter((output) => nameOfOutput(output) === name)
-		.reduce((latest, output) => (!latest || rank(output) >= rank(latest) ? output : latest), undefined);
+		.reduce(
+			(latest, output) => (!latest || rank(output) >= rank(latest) ? output : latest),
+			undefined
+		);
 }
 
 function nameOfOutput(output) {
 	const nameOp = output?.scriptPubKey?.nameOp;
 	if (!nameOp) return undefined;
-	const name = nameOp.name_encoding === 'hex' ? Buffer.from(nameOp.name, 'hex').toString('utf8') : nameOp.name;
+	const name =
+		nameOp.name_encoding === 'hex' ? Buffer.from(nameOp.name, 'hex').toString('utf8') : nameOp.name;
 	return name.normalize('NFC');
 }

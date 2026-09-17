@@ -8,7 +8,10 @@
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"sourceMap": true,
-		"strict": true,
+		// checkJs finds wrong imports, argument counts and property names in the
+		// plain JavaScript of the lessons. strict would also ask for a type on
+		// every parameter, which would bury the code the lessons teach.
+		"strict": false,
 		"moduleResolution": "bundler"
 	}
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias

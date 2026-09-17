@@ -4,14 +4,13 @@ import {
 	electrumClient,
 	electrumServerBanner,
 	electrumServers,
-	electrumServerVersion, network, connectedServer
+	electrumServerVersion,
+	connectedServer
 } from './doichain-store.js';
 import { ElectrumxClient } from '$lib/doichain/electrumx-client.js';
 
 let _electrumClient;
-electrumClient.subscribe((value) => _electrumClient = value);
-let _network;
-network.subscribe((value) => _network = value);
+electrumClient.subscribe((value) => (_electrumClient = value));
 
 const MAX_RETRIES = 25;
 const RETRY_DELAY = 5000;
@@ -39,7 +38,9 @@ let reconnectDelay = RECONNECT_DELAY;
 export const connectElectrum = async (_network) => {
 	if (!_network) return;
 	if (!connecting) {
-		connecting = connect(_network).finally(() => { connecting = undefined; });
+		connecting = connect(_network).finally(() => {
+			connecting = undefined;
+		});
 	}
 	return connecting;
 };
@@ -49,26 +50,29 @@ async function connect(_network) {
 	_electrumClient?.close?.();
 
 	let retries = 0;
-	let randomServer
+	let randomServer;
 	while (retries < MAX_RETRIES) {
-
-		const networkNodes = electrumServers.filter(n => n.network === _network.name);
+		const networkNodes = electrumServers.filter((n) => n.network === _network.name);
 		randomServer = networkNodes[Math.floor(Math.random() * networkNodes.length)];
-		_electrumClient = new ElectrumxClient(randomServer.host, randomServer.port, randomServer.protocol);
+		_electrumClient = new ElectrumxClient(
+			randomServer.host,
+			randomServer.port,
+			randomServer.protocol
+		);
 
 		try {
 			electrumClient.set(_electrumClient);
-			await _electrumClient.connect("electrum-client-js", "1.4.2");
+			await _electrumClient.connect();
 			break;
 		} catch (error) {
-			console.error("Connection failed, retrying...", error);
+			console.error('Connection failed, retrying...', error);
 			retries++;
 			if (retries < MAX_RETRIES) {
 				electrumServerVersion.set(`retrying (${retries})`);
-				connectedServer.set(`retrying (${retries} - ${randomServer.host})`)
-				await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+				connectedServer.set(`retrying (${retries} - ${randomServer.host})`);
+				await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
 			} else {
-				throw new Error("Max retries reached. Unable to connect to Electrum server.");
+				throw new Error('Max retries reached. Unable to connect to Electrum server.');
 			}
 		}
 	}
@@ -77,7 +81,8 @@ async function connect(_network) {
 
 	// new blocks arrive as notifications once the headers are subscribed below
 	client.subscribe.on('blockchain.headers.subscribe', (params) => {
-		if (client === _electrumClient && params?.[0]) electrumBlockchainBlockHeadersSubscribe.set(params[0]);
+		if (client === _electrumClient && params?.[0])
+			electrumBlockchainBlockHeadersSubscribe.set(params[0]);
 	});
 
 	// a connection that drops on its own gets replaced
@@ -89,17 +94,20 @@ async function connect(_network) {
 
 	const _electrumServerVersion = await client.request('server.version');
 	electrumServerVersion.set(_electrumServerVersion);
-	console.log("electrumServerVersion", _electrumServerVersion);
+	console.log('electrumServerVersion', _electrumServerVersion);
 
-	const _connectedServer = randomServer.protocol + "://" + randomServer.host + ":" + randomServer.port;
+	const _connectedServer =
+		randomServer.protocol + '://' + randomServer.host + ':' + randomServer.port;
 	connectedServer.set(_connectedServer);
-	console.log("network", _connectedServer);
+	console.log('network', _connectedServer);
 
 	const _electrumServerBanner = await client.request('server.banner');
-	console.log("electrumServerBanner", _electrumServerBanner);
+	console.log('electrumServerBanner', _electrumServerBanner);
 	electrumServerBanner.set(_electrumServerBanner);
 
-	const _electrumBlockchainBlockHeadersSubscribe = await client.request('blockchain.headers.subscribe');
+	const _electrumBlockchainBlockHeadersSubscribe = await client.request(
+		'blockchain.headers.subscribe'
+	);
 	electrumBlockchainBlockHeadersSubscribe.set(_electrumBlockchainBlockHeadersSubscribe);
 
 	const _electrumBlockchainRelayfee = await client.request('blockchain.relayfee');
@@ -116,7 +124,7 @@ function scheduleReconnect(_network) {
 		try {
 			await connectElectrum(_network);
 		} catch (error) {
-			console.error("Reconnect failed", error);
+			console.error('Reconnect failed', error);
 			reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
 			scheduleReconnect(_network);
 		}

@@ -1,8 +1,6 @@
 .DS_Store
 .idea
 public
-/namokado_*
-/namokado_v0.1.4
 node_modules
 /.svelte-kit
 /package
