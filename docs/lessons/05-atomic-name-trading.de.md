@@ -36,6 +36,11 @@ pnpm dev
 
 Nichts, was bestimmt, wohin Geld fließt, stammt vom ElectrumX-Server: Ihre Adresse ist die, die Sie getippt haben, die Adresse des Halters wird aus dem Namens-Skript gelesen, und jeder Betrag stammt aus Roh-Transaktionen, deren Hashes zu ihren txids passen. Der Builder ist `buildNameTradePsbt` in `src/lib/doichain/buildNameTradePsbt.js`; `parseDoiAmount` in `doiAmount.js` liest den Preis.
 
+Lektion 5 braucht ein Adressfeld zweimal, für den Namen und für die Coins, die
+ihn bezahlen. Deshalb wurde daraus `AddressField.svelte`: Label, Eingabe,
+Scan-Button und Meldungsbereich in einer Komponente, die Meldungen je Stelle
+befüllt.
+
 ## Namen an SegWit-Adressen
 
 Auf Regtest signiert DoiWallet 7.0.4 einen Namens-Input an einer P2WPKH-Adresse (`dc1q…`) wie einen Legacy-Input, und Doichain Core lehnt die Transaktion ab. Namen an P2PKH-Adressen lassen sich wie beschrieben kaufen. Bei einem Namen an einer SegWit-Adresse warnt die App, weil sein Halter den Kauf mit DoiWallet noch nicht abschließen könnte.
