@@ -65,7 +65,7 @@ async function cameraShowing(page, text, { useBarcodeDetector = true } = {}) {
 	const svg = vkQr.createQR(text, { qrSize: 512, isShowLogo: false });
 	await page.addInitScript(
 		({ code, keepDetector }) => {
-			if (!keepDetector) delete window.BarcodeDetector;
+			if (!keepDetector) delete (/** @type {any} */ (window).BarcodeDetector);
 			const canvas = document.createElement('canvas');
 			canvas.width = 640;
 			canvas.height = 640;
