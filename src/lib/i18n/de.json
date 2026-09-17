@@ -42,6 +42,8 @@
 	"name": {
 		"intro": "Registrieren Sie Ihren Wunschnamen auf Doichain!",
 		"label": "Zu registrierender Name",
+		"check": "Namen prüfen",
+		"notChecked": "Noch nicht geprüft. Der Name geht erst an einen Server, wenn Sie ihn prüfen.",
 		"placeholder": "Name",
 		"address": "Adresse: {address}",
 		"checking": "„{name}“ wird geprüft …",
