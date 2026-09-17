@@ -68,7 +68,9 @@ export const getNameOPStackScript = (nameId, nameValue, recipientAddress, networ
 	}
 
 	const name = Buffer.from(normalizeName(nameId), 'utf8');
-	const value = Buffer.from(nameValue, 'utf8');
+	// text is written as UTF-8; bytes, such as a value read from the chain, stay as they are
+	const value =
+		typeof nameValue === 'string' ? Buffer.from(nameValue, 'utf8') : Buffer.from(nameValue);
 
 	if (name.length > NAME_MAX_LENGTH || normalizeName(nameId).length < NAME_MIN_LENGTH) {
 		throw new Error(ERRORS.NAME_ID_LENGTH);
