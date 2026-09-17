@@ -209,7 +209,7 @@
 		if (isConnected && isAddressValid) {
 			const requestedAddress = doichainAddress;
 			addressError = undefined;
-			getUtxosAndNamesOfAddress($electrumClient, requestedAddress)
+			getUtxosAndNamesOfAddress($electrumClient, requestedAddress, $network)
 				.then((retObj) => {
 					if (requestedAddress !== doichainAddress) return; // the user has moved on to another address
 					nameOpTxs = retObj.nameOpTxs;
@@ -240,7 +240,7 @@
 		if (isConnected && isFundingAddressValid) {
 			const requestedAddress = fundingUTXOAddress;
 			fundingError = undefined;
-			getUtxosAndNamesOfAddress($electrumClient, requestedAddress)
+			getUtxosAndNamesOfAddress($electrumClient, requestedAddress, $network)
 				.then((retObj) => {
 					if (requestedAddress !== fundingUTXOAddress) return; // the user has moved on to another address
 					fundingTotalUtxoValue = retObj.utxoAddresses.reduce((sum, utxo) => sum + utxo.value, 0);

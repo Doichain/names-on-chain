@@ -7,6 +7,7 @@ import { getScriptPubKeyAddress } from './scriptPubKeyAddress.js';
  * @async
  * @param {Object} electrumClient - The Electrum client instance
  * @param {string} doichainAddress - The Doichain address to query
+ * @param {Object} network - DOICHAIN, DOICHAIN_REGTEST, ...
  * @returns {Promise<{
  *   nameOpTxs: Array<{name: string, nameValue: string, expires: number, txid: string, hex: string, scriptPubKey: any, hash: string, n: number, value: number, height: number, address: string}>,
  *   utxoAddresses: Array<Object>,
@@ -15,13 +16,13 @@ import { getScriptPubKeyAddress } from './scriptPubKeyAddress.js';
  * @throws {Error} If there's an issue querying the Electrum server
  *
  * @example
- * const { nameOpTxs } = await getUtxosAndNamesOfAddress(electrumClient, myAddress);
+ * const { nameOpTxs } = await getUtxosAndNamesOfAddress(electrumClient, myAddress, network);
  */
-export async function getUtxosAndNamesOfAddress(electrumClient, doichainAddress) {
+export async function getUtxosAndNamesOfAddress(electrumClient, doichainAddress, network) {
 	let nameOpTxs = [];
 	let utxoAddresses = [];
 	let totalUtxoValue = 0;
-	const result = await getUTXOSFromAddress(electrumClient, doichainAddress);
+	const result = await getUTXOSFromAddress(electrumClient, doichainAddress, network);
 	for (let utxo of result) {
 		const scriptPubKey = utxo.fullTx.scriptPubKey;
 		if (!scriptPubKey?.nameOp) {
