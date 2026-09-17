@@ -17,15 +17,15 @@ importers:
       '@ngraveio/bc-ur':
         specifier: ^1.1.13
         version: 1.1.13
-      '@peerpiper/qrcode-scanner-svelte':
-        specifier: ^1.0.7
-        version: 1.0.7
       '@vkontakte/vk-qr':
         specifier: ^2.1.1
         version: 2.1.1
       events:
         specifier: ^3.3.0
         version: 3.3.0
+      jsqr:
+        specifier: ^1.4.0
+        version: 1.4.0
       satoshi-bitcoin:
         specifier: ^1.0.5
         version: 1.0.7
@@ -483,9 +483,6 @@ packages:
   '@nodelib/fs.walk@1.2.8':
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
-
-  '@peerpiper/qrcode-scanner-svelte@1.0.7':
-    resolution: {integrity: sha512-PuESenMlOF6LmCCFfC6NRhK/UXUwnXCrMplPQij8P771AtOIZUhEiZ7fUqJPEEDfEbSmXUA6aDXY+m+qVhjt1A==}
 
   '@playwright/test@1.63.0':
     resolution: {integrity: sha512-oxMK4vllB9RK5NQ2l1pq1IfOf2AvnEuj/vYGDj0H2nMtmtZpKtCwt/l00GEO6xjGfpBNAvjovvYdCm50dRQkpQ==}
@@ -2679,10 +2676,6 @@ snapshots:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.3
-
-  '@peerpiper/qrcode-scanner-svelte@1.0.7':
-    dependencies:
-      jsqr: 1.4.0
 
   '@playwright/test@1.63.0':
     dependencies:
