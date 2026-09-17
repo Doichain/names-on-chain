@@ -1,4 +1,4 @@
-import { address } from 'bitcoinjs-lib';
+import { address } from '@doichain/doichainjs-lib';
 import { DOICHAIN } from './doichain.js';
 import { normalizeName } from './nameBytes.js';
 import { pushData } from './pushData.js';

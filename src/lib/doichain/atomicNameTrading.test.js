@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { address, payments, Psbt, Transaction } from 'bitcoinjs-lib';
+import { address, payments, Psbt, Transaction } from '@doichain/doichainjs-lib';
 import { DOICHAIN, VERSION } from './doichain.js';
 import { generateAtomicNameTradingPSBT } from './atomicNameTrading.js';
 import { parseDoiAmount } from './doiAmount.js';

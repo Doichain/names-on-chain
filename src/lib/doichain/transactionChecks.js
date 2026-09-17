@@ -1,4 +1,4 @@
-import { Transaction } from 'bitcoinjs-lib';
+import { Transaction } from '@doichain/doichainjs-lib';
 import { VERSION } from './doichain.js';
 
 /**
@@ -107,7 +107,7 @@ export function inputFor(utxo, output, extra = {}) {
  * What must hold for every name transaction before it is handed to a wallet:
  * version 0x7100 and exactly one name output.
  *
- * @param {import('bitcoinjs-lib').Psbt} psbt
+ * @param {import('@doichain/doichainjs-lib').Psbt} psbt
  * @returns {string|undefined} what is wrong, or undefined
  */
 export function checkNameTransaction(psbt) {

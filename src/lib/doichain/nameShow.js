@@ -1,5 +1,4 @@
-import { pushData } from './pushData.js'
-import { crypto } from 'bitcoinjs-lib'
+import { nameops } from '@doichain/doichainjs-lib'
 import { getNameOpUTXOsOfTxHash } from './getNameOpUTXOsOfTxHash.js'
 import { normalizeName } from './nameBytes.js'
 
@@ -8,6 +7,8 @@ import { normalizeName } from './nameBytes.js'
  *
  * ElectrumX indexes every name under the script hash of
  * OP_NAME_UPDATE <name> <empty value> OP_2DROP OP_DROP OP_RETURN.
+ * nameops.nameIndexScriptHash from doichainjs-lib builds that script from the
+ * bytes of the name and hashes it the way Electrum expects.
  * The name is looked up in NFC, the same form the app registers.
  *
  * @param {ElectrumClient} electrumClient - The Electrum client instance to use for querying
@@ -23,12 +24,10 @@ import { normalizeName } from './nameBytes.js'
  */
 export const nameShow = async (electrumClient, nameToCheck) => {
 
-	let script = '53' + pushData(normalizeName(nameToCheck)) + pushData(new Uint8Array([])) + '6d' + '75' + '6a';
-	let hash = crypto.sha256(Buffer.from(script, 'hex'));
-	let reversedHash = Buffer.from(hash.reverse()).toString("hex");
+	const scriptHash = nameops.nameIndexScriptHash(normalizeName(nameToCheck));
 	let results = []
 	await electrumClient.connect("electrum-client-js", "1.4.2");
-	const result = await electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
+	const result = await electrumClient.request('blockchain.scripthash.get_history', [scriptHash]);
 
 	for (const item of result) {
 		const detailResults = await getNameOpUTXOsOfTxHash(electrumClient,item.tx_hash);

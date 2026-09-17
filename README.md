@@ -103,7 +103,7 @@ ipfs add -r -Q --cid-version=1 public
 
 A name can change hands between people who do not trust each other: one transaction pays the seller and moves the name to the buyer, so either both happen or nothing does. Namecoin calls this [atomic name trading](https://www.namecoin.org/docs/name-owners/atomic-name-trading/). This lesson builds such a transaction as a PSBT and hands it to the wallet as a QR code.
 
-The app uses the original bitcoinjs-lib. The PSBTs are signed in DoiWallet, a fork of BlueWallet whose bitcoinjs-lib fork understands name scripts.
+The app builds the PSBTs with [doichainjs-lib](https://github.com/Doichain/doichainjs-lib), the bitcoinjs-lib fork that understands name scripts. DoiWallet, a fork of BlueWallet, signs them with the same library.
 
 #### How a purchase works
 

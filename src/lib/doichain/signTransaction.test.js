@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { address, payments, Psbt, Transaction } from 'bitcoinjs-lib';
+import { address, payments, Psbt, Transaction } from '@doichain/doichainjs-lib';
 import { DOICHAIN, VERSION } from './doichain.js';
 import { getNameOPStackScript } from './getNameOPStackScript.js';
 import { signTransaction } from './signTransaction.js';
