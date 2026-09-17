@@ -36,7 +36,7 @@
 		"errors": {
 			"empty": "Bitte geben Sie einen Namen ein.",
 			"space": "Ein Name darf keine Leerzeichen enthalten.",
-			"tooShort": "Der Name „{name}“ ist zu kurz.",
+			"tooShort": "Der Name „{name}“ ist zu kurz: Namen brauchen mindestens {min} Zeichen.",
 			"tooLong": "Der Name ist {bytes} Bytes lang; Doichain erlaubt höchstens {max} Bytes.",
 			"taken": "Der Name „{name}“ ist bereits auf die Adresse {address} registriert.",
 			"takenUntil": "Der Name „{name}“ gehört bis Block {expiresAt} der Adresse {address}, also noch {blocksLeft} Blöcke.",
