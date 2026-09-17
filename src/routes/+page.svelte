@@ -7,6 +7,7 @@
    $: title = $_('app.title')
 </script>
 <svelte:head>
+   <!-- svelte-ignore missing-declaration -->
    <title>{title} {__APP_VERSION__}</title>
 </svelte:head>
 <div class="bg-white">

@@ -11,7 +11,7 @@ import { normalizeName } from './nameBytes.js'
  * bytes of the name and hashes it the way Electrum expects.
  * The name is looked up in NFC, the same form the app registers.
  *
- * @param {ElectrumClient} electrumClient - The Electrum client instance to use for querying
+ * @param {{connect(): Promise<unknown>, request(method: string, params?: unknown[]): Promise<any>}} electrumClient - The Electrum client instance to use for querying
  * @param {string} nameToCheck - The nameId to search for in the blockchain
  *
  * @returns {Promise<Array<Object>>} A promise that resolves to an array of UTXO objects
@@ -26,7 +26,7 @@ export const nameShow = async (electrumClient, nameToCheck) => {
 
 	const scriptHash = nameops.nameIndexScriptHash(normalizeName(nameToCheck));
 	let results = []
-	await electrumClient.connect("electrum-client-js", "1.4.2");
+	await electrumClient.connect();
 	const result = await electrumClient.request('blockchain.scripthash.get_history', [scriptHash]);
 
 	for (const item of result) {

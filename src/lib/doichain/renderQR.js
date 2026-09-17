@@ -22,9 +22,9 @@ function base64ToHex(base64) {
 	return Array.from(bytes).map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 /**
- * RenderBCUR
- * @param qrData
- * @returns {Promise<void>}
+ * Splits a PSBT into BC-UR fragments and draws one QR code per fragment.
+ * @param {string} qrData - the PSBT in base64
+ * @returns {Promise<string[] | undefined>} one SVG per fragment
  */
 export const renderBCUR = async (qrData) => {
 

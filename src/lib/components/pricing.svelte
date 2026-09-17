@@ -39,12 +39,6 @@
     let totalUtxoValue = 0, totalAmount = 0;
 
     /**
-     * The address a taken name belongs to. Kept apart from doichainAddress:
-     * the name check must never write into the address the user entered.
-     */
-    let currentNameAddress = '';
-
-    /**
      * True from the moment the name changes until its check has answered.
      * Meanwhile the name is shown neither as free nor as taken.
      */
@@ -58,7 +52,6 @@
         // an answer for a name typed earlier arrives too late to matter
         if (result.name !== name) return
         isCheckingName = false
-        currentNameAddress = result.currentNameAddress ?? ''
         isNameValid = result.isNameValid
         nameErrorMessage  = result.nameErrorMessage
         nameNotice = result.nameNotice ?? ''

@@ -9,6 +9,10 @@ class FakeWebSocket {
 		this.url = url;
 		this.readyState = 0;
 		this.sent = [];
+		/** @type {any} */ this.onopen = null;
+		/** @type {any} */ this.onerror = null;
+		/** @type {any} */ this.onclose = null;
+		/** @type {any} */ this.onmessage = null;
 		FakeWebSocket.last = this;
 	}
 

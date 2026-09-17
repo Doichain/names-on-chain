@@ -4,14 +4,12 @@ import {
 	electrumClient,
 	electrumServerBanner,
 	electrumServers,
-	electrumServerVersion, network, connectedServer
+	electrumServerVersion, connectedServer
 } from './doichain-store.js';
 import { ElectrumxClient } from '$lib/doichain/electrumx-client.js';
 
 let _electrumClient;
 electrumClient.subscribe((value) => _electrumClient = value);
-let _network;
-network.subscribe((value) => _network = value);
 
 const MAX_RETRIES = 25;
 const RETRY_DELAY = 5000;
@@ -58,7 +56,7 @@ async function connect(_network) {
 
 		try {
 			electrumClient.set(_electrumClient);
-			await _electrumClient.connect("electrum-client-js", "1.4.2");
+			await _electrumClient.connect();
 			break;
 		} catch (error) {
 			console.error("Connection failed, retrying...", error);

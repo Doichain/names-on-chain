@@ -140,7 +140,7 @@ export class ElectrumxClient {
 				(error) => { clearTimeout(timer); reject(error); }
 			);
 			try {
-				this.ws.send(content + '\n', 'utf8');
+				this.ws.send(content + '\n');
 			} catch (error) {
 				delete this.callback_message_queue[id];
 				clearTimeout(timer);
@@ -168,7 +168,7 @@ export class ElectrumxClient {
 			const content = '[' + contents.join(',') + ']';
 			this.callback_message_queue[this.id] = createPromiseResultBatch(resolve, reject, arguments_far_calls);
 			// callback will exist only for max id
-			this.ws.send(content + '\n', 'utf8');
+			this.ws.send(content + '\n');
 		});
 	}
 
@@ -189,7 +189,9 @@ export class ElectrumxClient {
 		if (callback) {
 			delete this.callback_message_queue[msg.id];
 			if (msg.error) {
-				const error = new Error(msg.error.message ?? JSON.stringify(msg.error));
+				const error = /** @type {Error & {code?: number}} */ (
+					new Error(msg.error.message ?? JSON.stringify(msg.error))
+				);
 				error.code = msg.error.code;
 				callback(error);
 			} else {

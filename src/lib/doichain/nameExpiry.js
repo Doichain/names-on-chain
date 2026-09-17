@@ -37,7 +37,7 @@ export function nameExpiry(height, tipHeight, network) {
  * The output that holds a name today: its newest name operation.
  * Unconfirmed operations count as newer than any mined one.
  *
- * @param {Array<{height?: number, scriptPubKey?: {nameOp?: {name: string, name_encoding?: string}}}>} outputs
+ * @param {Array<{height?: number, scriptPubKey?: {nameOp?: {name: string, name_encoding?: string}, [key: string]: any}, [key: string]: any}>} outputs
  * @param {string} name - in NFC, as the app looks names up
  */
 export function latestNameOperation(outputs, name) {

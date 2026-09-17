@@ -5,10 +5,9 @@
  * The name check uses it so that typing "doichain" asks the server once, not
  * eight times.
  *
- * @template {unknown[]} A
- * @param {(...args: A) => void} fn
+ * @param {(...args: any[]) => void} fn
  * @param {number} wait
- * @returns {(...args: A) => void}
+ * @returns {(...args: any[]) => void}
  */
 export function debounce(fn, wait) {
 	/** @type {ReturnType<typeof setTimeout> | undefined} */

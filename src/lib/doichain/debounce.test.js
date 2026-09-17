@@ -2,8 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { debounce } from './debounce.js';
 
 describe('debounce', () => {
-	beforeEach(() => vi.useFakeTimers());
-	afterEach(() => vi.useRealTimers());
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+	afterEach(() => {
+		vi.useRealTimers();
+	});
 
 	it('runs once, with the arguments of the last call, after the calls pause', () => {
 		const fn = vi.fn();
