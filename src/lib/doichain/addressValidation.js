@@ -1,4 +1,4 @@
-import { address } from 'bitcoinjs-lib';
+import { address } from '@doichain/doichainjs-lib';
 
 /**
  * Is this a valid address of the given network? Checksum, prefix and type are
