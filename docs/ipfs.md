@@ -13,7 +13,7 @@ that is online keeps a copy. Keeping that copy is called pinning.
    or install [Kubo](https://docs.ipfs.tech/install/command-line/) and run `ipfs daemon`.
 2. Build the lesson and add the build folder:
    ```bash
-   npm run build
+   pnpm run build
    ipfs add -r -Q --cid-version=1 public
    ```
    The second command prints the CID of your build.
