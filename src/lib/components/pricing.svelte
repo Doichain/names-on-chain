@@ -92,9 +92,6 @@
 	/** @type {Array<Object>} - Array of name operation transactions for the current address */
 	let nameOpTxs = [];
 
-	/** @type {boolean} - Indicates if the UTXO address is valid */
-	let isUTXOAddressValid = true;
-
 	/** @type {string} - Error message for UTXO address validation issues */
 	let utxoErrorMessage = '';
 
@@ -106,9 +103,6 @@
 
 	/** @type {boolean} - Controls visibility of funding scan modal */
 	let scanOpenFunding = false;
-
-	/** @type {Object} - Current name operation details */
-	let currentNameOp;
 
 	/** @type {Object} - Current name UTXO details */
 	let currentNameUtxo;
@@ -164,7 +158,6 @@
 		nameErrorMessage = result.nameErrorMessage;
 		nameNotice = result.nameNotice ?? '';
 		isNameExists = Boolean(result.nameExists);
-		currentNameOp = result.currentNameOp;
 		currentNameUtxo = result.currentNameUtxo;
 	}
 
@@ -213,7 +206,6 @@
 		isNameExists = false;
 		nameErrorMessage = '';
 		nameNotice = '';
-		currentNameOp = undefined;
 		currentNameUtxo = undefined;
 	}
 
@@ -383,7 +375,7 @@
 	/** The PSBT the QR code on screen belongs to (not reactive on purpose: it only decides what to keep) */
 	const shown = { psbt: undefined };
 
-	/** @type {number|null} animationTimeout - Holds the timeout ID for the QR code animation. */
+	/** @type {ReturnType<typeof setTimeout> | undefined} animationTimeout - Holds the timeout ID for the QR code animation. */
 	let animationTimeout;
 
 	/** @type {number} frameIndex - The frame of the animated QR code on screen, counted from 0. */
@@ -1064,6 +1056,8 @@
 							bind:this={qrContainer}
 							class="qr mt-6 rounded-lg bg-white p-4 ring-1 ring-gray-200"
 						>
+							<!-- vk-qr draws this SVG from the PSBT the page built: squares only, no text from outside -->
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html qrCode}
 						</div>
 						<div
@@ -1206,8 +1200,5 @@
 		100% {
 			opacity: 1;
 		}
-	}
-	.cursor-pointer {
-		cursor: pointer;
 	}
 </style>
