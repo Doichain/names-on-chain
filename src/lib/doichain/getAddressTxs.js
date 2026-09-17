@@ -1,4 +1,4 @@
-import { address, crypto } from 'bitcoinjs-lib';
+import { address, crypto } from '@doichain/doichainjs-lib';
 import { getScriptPubKeyAddress } from './scriptPubKeyAddress.js';
 import moment from 'moment';
 import Buffer from 'vite-plugin-node-polyfills/shims/buffer/index.js';
