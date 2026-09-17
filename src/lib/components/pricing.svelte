@@ -1,4 +1,5 @@
 <script>
+	import ConnectionStatus from '$lib/components/ConnectionStatus.svelte';
 	import { getConnectionStatus } from '../doichain/connectElectrum.js';
 	import { _, locale, t } from '$lib/i18n/index.js';
 	import { checkName } from '$lib/doichain/nameValidation.js';
@@ -102,25 +103,10 @@
 	}
 
 	/**
-	 * Reactive statement to update connection status
-	 * @type {{isConnected: boolean, serverName: string}}
-	 * @property {boolean} isConnected - Indicates if the server is currently connected
-	 * @property {string} serverName - The name of the connected server or a status message
+	 * The form opens once a server on the valid chain answers;
+	 * ConnectionStatus shows where the connection stands.
 	 */
-	$: ({ isConnected, serverName } = getConnectionStatus($connectedServer));
-
-	/**
-	 * The connection status in words: the server URL once connected,
-	 * otherwise the status the connection store reports, translated.
-	 */
-	function describeServer(server, translate) {
-		if (server === 'offline') return translate('status.offline');
-		const retry = /^retrying \((\d+)(?: - (.+))?\)$/.exec(server || '');
-		if (retry)
-			return translate('status.retrying', { values: { attempt: retry[1], host: retry[2] ?? '' } });
-		return server;
-	}
-	$: serverText = describeServer(serverName, $_);
+	$: ({ isConnected } = getConnectionStatus($connectedServer));
 
 	/**
 	 * Check a name, debounce every keyboard typing, return local variables by callback
@@ -265,29 +251,7 @@
 	<div class="mx-auto max-w-7xl px-6 lg:px-8">
 		<div class="flex flex-col lg:flex-row lg:space-x-8">
 			<div class="lg:w-2/3">
-				<div class="mx-auto max-w-2xl sm:text-center">
-					<h2
-						class="text-3xl font-bold tracking-tight sm:text-4xl fade-red-to-green {isConnected
-							? 'connected'
-							: ''}"
-					>
-						{$_('app.title')}
-					</h2>
-					<h2
-						class="font-bold tracking-tight sm:text-1xl fade-red-to-green {isConnected
-							? 'connected'
-							: ''}"
-					>
-						{$_('app.subtitle')}
-					</h2>
-					<h3
-						class="text-sm font-semibold tracking-tight fade-red-to-green {isConnected
-							? 'connected'
-							: 'blinking'} "
-					>
-						{serverText}
-					</h3>
-				</div>
+				<ConnectionStatus />
 				<div
 					class="mx-auto mt-16 max-w-2xl rounded-3xl ring-1 ring-gray-200 sm:mt-20 lg:mx-0 lg:flex lg:max-w-none"
 				>
@@ -323,7 +287,7 @@
 											class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
 										>
 											<svg
-												class="h-5 w-5 text-red-500"
+												class="h-5 w-5 text-red-600"
 												viewBox="0 0 20 20"
 												fill="currentColor"
 												aria-hidden="true"
@@ -340,7 +304,7 @@
 											class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
 										>
 											<svg
-												class="h-5 w-5 text-green-500"
+												class="h-5 w-5 text-green-700"
 												viewBox="0 0 20 20"
 												fill="currentColor"
 												aria-hidden="true"
@@ -354,7 +318,8 @@
 										</div>
 									{/if}
 								</div>
-								<div id="name-status" aria-live="polite">
+								<!-- room for two lines, so the fields below do not jump while the check answers -->
+								<div id="name-status" class="min-h-12" aria-live="polite">
 									{#if !name}
 										<!-- nothing to say yet -->
 									{:else if isCheckingName}
@@ -386,11 +351,12 @@
 								</div>
 							</div>
 						{:else}
-							<p class="mt-2 text-sm text-red-600" id="connection-status">
+							<p class="mt-2 text-sm text-gray-700" id="connection-status">
 								{$_('status.offlineHelp')}
 							</p>
 						{/if}
-						<div>
+						<!-- nothing to look up before a server on the valid chain answers -->
+						<fieldset disabled={!isConnected} class="min-w-0">
 							<label for="address" class="block text-sm font-medium leading-6 text-gray-900"
 								>{$_('address.label')}</label
 							>
@@ -415,7 +381,7 @@
 										class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
 									>
 										<svg
-											class="h-5 w-5 text-red-500"
+											class="h-5 w-5 text-red-600"
 											viewBox="0 0 20 20"
 											fill="currentColor"
 											aria-hidden="true"
@@ -435,7 +401,7 @@
 									on:click={() => {
 										$scanOpen = true;
 									}}
-									class="ml-2"
+									class="ml-2 inline-flex h-11 w-11 flex-none items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:opacity-50"
 									><svg
 										class="h-8 w-8 text-orange-600"
 										width="24"
@@ -455,7 +421,7 @@
 								>
 							</div>
 
-							<div id="address-status" aria-live="polite">
+							<div id="address-status" class="min-h-12" aria-live="polite">
 								{#if doichainAddress && !isAddressValid}
 									<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
 								{:else if addressError}
@@ -516,7 +482,7 @@
 									{/if}
 								{/if}
 							</div>
-						</div>
+						</fieldset>
 						<p>&nbsp;</p>
 						<div class="mt-10 flex items-center gap-x-4">
 							<h4 class="flex-none text-sm font-semibold leading-6 text-indigo-600">
@@ -713,27 +679,3 @@
 		</div>
 	</div>
 </div>
-
-<style>
-	.fade-red-to-green {
-		transition: color 1s;
-		color: red;
-	}
-	.fade-red-to-green.connected {
-		color: green;
-	}
-	.blinking {
-		animation: blinkingText 1.5s infinite;
-	}
-	@keyframes blinkingText {
-		0% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0;
-		}
-		100% {
-			opacity: 1;
-		}
-	}
-</style>
