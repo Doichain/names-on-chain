@@ -1,5 +1,6 @@
 <script>
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+	import { createQrReader } from '$lib/doichain/scanQr.js';
 	import { _ } from '$lib/i18n/index.js';
 
 	/** true while the dialog is open; the dialog sets it to false when it closes */
@@ -13,24 +14,35 @@
 
 	/** @type {HTMLDialogElement} */
 	let dialog;
-	let result = '';
+	/** @type {HTMLVideoElement} */
+	let video;
+	/** @type {MediaStream | undefined} */
+	let stream;
+	/** @type {ReturnType<typeof setInterval> | undefined} */
+	let reading;
+	let scanning = false;
 	let pasted = '';
-	/** @type {any} the scanner component, loaded only when a dialog opens */
-	let Scanner;
 	/** @type {'' | 'denied' | 'missing' | 'unavailable'} why the camera cannot be used */
 	let cameraProblem = '';
+
+	/** how often a frame is read, in milliseconds */
+	const FRAME_INTERVAL = 250;
 
 	onMount(async () => {
 		// a native modal dialog keeps the focus inside and closes with Esc
 		dialog.showModal();
 		try {
 			if (!navigator.mediaDevices?.getUserMedia) throw new Error('no camera API');
-			// ask for the camera first, so a refusal or a missing camera can be named
-			const stream = await navigator.mediaDevices.getUserMedia({
-				video: { facingMode: 'environment' }
-			});
-			stream.getTracks().forEach((track) => track.stop());
-			({ Scanner } = await import('@peerpiper/qrcode-scanner-svelte'));
+			// the camera is asked for first, so a refusal or a missing camera can be named
+			stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+			video.srcObject = stream;
+			await video.play();
+			scanning = true;
+			const read = await createQrReader();
+			reading = setInterval(async () => {
+				const text = await read(video).catch(() => undefined);
+				if (text) use(text);
+			}, FRAME_INTERVAL);
 		} catch (error) {
 			cameraProblem = ['NotAllowedError', 'SecurityError'].includes(error?.name)
 				? 'denied'
@@ -38,6 +50,12 @@
 					? 'missing'
 					: 'unavailable';
 		}
+	});
+
+	/** the camera is let go as soon as the dialog closes */
+	onDestroy(() => {
+		clearInterval(reading);
+		stream?.getTracks().forEach((track) => track.stop());
 	});
 
 	/** @param {string} text */
@@ -52,8 +70,6 @@
 		scanOpen = false;
 		dispatch('close');
 	}
-
-	$: if (result) use(result);
 </script>
 
 <!-- A click on the dimmed background closes the dialog; the keyboard closes it with Esc (cancel). -->
@@ -71,13 +87,13 @@
 			<p class="mt-2 rounded-md bg-amber-50 p-3 text-sm text-amber-900" role="alert">
 				{$_(`scan.errors.${cameraProblem}`)}
 			</p>
-		{:else if Scanner}
-			<p class="mt-1 text-sm text-gray-700">{$_('scan.tip')}</p>
-			<div class="mt-3">
-				<svelte:component this={Scanner} bind:result />
-			</div>
 		{:else}
-			<p class="mt-1 text-sm text-gray-700">{$_('scan.starting')}</p>
+			<p class="mt-1 text-sm text-gray-700">
+				{scanning ? $_('scan.tip') : $_('scan.starting')}
+			</p>
+			<!-- the camera picture, not a film: no sound, no captions -->
+			<video bind:this={video} class="mt-3 w-full rounded-md bg-gray-900" muted autoplay playsinline
+			></video>
 		{/if}
 
 		<form class="mt-4" on:submit|preventDefault={() => pasted.trim() && use(pasted.trim())}>
@@ -110,10 +126,3 @@
 		>
 	</div>
 </dialog>
-
-<style>
-	/* the scanner library prints its own English tip; the dialog shows a translated one */
-	.scan-modal :global(.scanner-tip) {
-		display: none;
-	}
-</style>
