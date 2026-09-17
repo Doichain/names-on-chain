@@ -26,7 +26,7 @@
 	import { buildNameRegistrationPsbt } from '$lib/doichain/buildNameRegistrationPsbt.js';
 	import sb from 'satoshi-bitcoin';
 	import { onDestroy, tick } from 'svelte';
-	import { generateAtomicNameTradingPSBT } from '$lib/doichain/atomicNameTrading.js';
+	import { buildNameTradePsbt } from '$lib/doichain/buildNameTradePsbt.js';
 	import { parseDoiAmount } from '$lib/doichain/doiAmount.js';
 
 	/** @type {string} - The name currently typed in the name input */
@@ -520,7 +520,7 @@
 			priceText
 		) {
 			$locale; // rebuild when the language changes, so an error message follows it
-			trade = generateAtomicNameTradingPSBT(
+			trade = buildNameTradePsbt(
 				name,
 				fundingUtxoAddresses,
 				currentNameUtxo,
