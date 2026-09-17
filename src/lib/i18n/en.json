@@ -148,8 +148,5 @@
 		"tip": "Hold a QR code in front of your camera.",
 		"result": "Scanned: {result}",
 		"close": "Close"
-	},
-	"page": {
-		"closeMenu": "Close menu"
 	}
 }

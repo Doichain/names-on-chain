@@ -54,7 +54,9 @@ describe('the message catalogues', () => {
 		for (const key of english) {
 			const source = String(at(en, key));
 			const target = String(at(de, key));
-			expect([...placeholders(target)].sort(), `de: ${key}`).toEqual([...placeholders(source)].sort());
+			expect([...placeholders(target)].sort(), `de: ${key}`).toEqual(
+				[...placeholders(source)].sort()
+			);
 		}
 	});
 });

@@ -5,7 +5,7 @@
  * whose verbose transactions carry `scriptPubKey.address` (a string).
  * Nodes up to 0.20.x returned `scriptPubKey.addresses` (an array) instead.
  *
- * @param {{address?: string, addresses?: string[]} | undefined} scriptPubKey
+ * @param {{address?: string, addresses?: string[], [key: string]: any} | undefined} scriptPubKey
  * @returns {string | undefined}
  */
 export function getScriptPubKeyAddress(scriptPubKey) {

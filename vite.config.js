@@ -20,7 +20,8 @@ export default defineConfig({
 				process: true
 			},
 			protocolImports: true
-		})],
+		})
+	],
 	build: {
 		minify: true
 	},
@@ -28,6 +29,6 @@ export default defineConfig({
 		include: ['src/**/*.{test,spec}.{js,ts}']
 	},
 	define: {
-		'__APP_VERSION__': JSON.stringify(pkg.version),
+		__APP_VERSION__: JSON.stringify(pkg.version)
 	}
 });

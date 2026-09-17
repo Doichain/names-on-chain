@@ -9,6 +9,10 @@ class FakeWebSocket {
 		this.url = url;
 		this.readyState = 0;
 		this.sent = [];
+		/** @type {any} */ this.onopen = null;
+		/** @type {any} */ this.onerror = null;
+		/** @type {any} */ this.onclose = null;
+		/** @type {any} */ this.onmessage = null;
 		FakeWebSocket.last = this;
 	}
 
@@ -68,14 +72,22 @@ describe('ElectrumxClient', () => {
 		const { client, socket } = await connectedClient();
 		const listener = vi.fn();
 		client.subscribe.on('blockchain.headers.subscribe', listener);
-		socket.receive({ jsonrpc: '2.0', method: 'blockchain.headers.subscribe', params: [{ height: 431800, hex: '00' }] });
+		socket.receive({
+			jsonrpc: '2.0',
+			method: 'blockchain.headers.subscribe',
+			params: [{ height: 431800, hex: '00' }]
+		});
 		expect(listener).toHaveBeenCalledWith([{ height: 431800, hex: '00' }]);
 	});
 
 	it('turns a server error into an Error with its message', async () => {
 		const { client, socket } = await connectedClient();
 		const answer = client.request('blockchain.transaction.get', ['ff']);
-		socket.receive({ jsonrpc: '2.0', id: socket.sent[0].id, error: { code: 2, message: 'no such transaction' } });
+		socket.receive({
+			jsonrpc: '2.0',
+			id: socket.sent[0].id,
+			error: { code: 2, message: 'no such transaction' }
+		});
 		await expect(answer).rejects.toThrow('no such transaction');
 	});
 
