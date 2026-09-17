@@ -1,4 +1,5 @@
 import {
+	connection,
 	electrumBlockchainBlockHeadersSubscribe,
 	electrumBlockchainRelayfee,
 	electrumClient,
@@ -8,11 +9,12 @@ import {
 	connectedServer
 } from './doichain-store.js';
 import { ElectrumxClient } from '$lib/doichain/electrumx-client.js';
+import { verifyChain } from '$lib/doichain/chainCheck.js';
 
 let _electrumClient;
 electrumClient.subscribe((value) => (_electrumClient = value));
 
-const MAX_RETRIES = 25;
+export const MAX_RETRIES = 25;
 const RETRY_DELAY = 5000;
 
 /** Wait before replacing a dropped connection; doubles after every failed attempt, up to a minute. */
@@ -49,11 +51,15 @@ async function connect(_network) {
 	// never leave an old connection open next to the new one
 	_electrumClient?.close?.();
 
+	/** servers that failed the chain check are only asked again when no other is left */
+	const refused = new Set();
 	let retries = 0;
 	let randomServer;
 	while (retries < MAX_RETRIES) {
 		const networkNodes = electrumServers.filter((n) => n.network === _network.name);
-		randomServer = networkNodes[Math.floor(Math.random() * networkNodes.length)];
+		const candidates = networkNodes.filter((n) => !refused.has(n.host));
+		const pool = candidates.length > 0 ? candidates : networkNodes;
+		randomServer = pool[Math.floor(Math.random() * pool.length)];
 		_electrumClient = new ElectrumxClient(
 			randomServer.host,
 			randomServer.port,
@@ -63,15 +69,27 @@ async function connect(_network) {
 		try {
 			electrumClient.set(_electrumClient);
 			await _electrumClient.connect();
+			// ElectrumX serves whatever chain its node follows: check before trusting any answer
+			const chain = await verifyChain(_electrumClient, _network);
+			if (!chain.ok) {
+				_electrumClient.close();
+				throw Object.assign(new Error(`chain check failed: ${chain.reason}`), {
+					reason: chain.reason
+				});
+			}
 			break;
 		} catch (error) {
 			console.error('Connection failed, retrying...', error);
 			retries++;
+			if (error.reason) refused.add(randomServer.host);
+			const state = { attempt: retries, maxAttempts: MAX_RETRIES, host: randomServer.host };
 			if (retries < MAX_RETRIES) {
+				connection.set({ status: error.reason ?? 'retrying', ...state });
 				electrumServerVersion.set(`retrying (${retries})`);
 				connectedServer.set(`retrying (${retries} - ${randomServer.host})`);
 				await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
 			} else {
+				connection.set({ status: 'failed', ...state });
 				throw new Error('Max retries reached. Unable to connect to Electrum server.');
 			}
 		}
@@ -88,6 +106,12 @@ async function connect(_network) {
 	// a connection that drops on its own gets replaced
 	client.onclose = () => {
 		if (client !== _electrumClient) return; // already replaced by a newer connection
+		connection.set({
+			status: 'reconnecting',
+			attempt: 0,
+			maxAttempts: MAX_RETRIES,
+			host: randomServer.host
+		});
 		connectedServer.set('offline');
 		scheduleReconnect(_network);
 	};
@@ -99,6 +123,12 @@ async function connect(_network) {
 	const _connectedServer =
 		randomServer.protocol + '://' + randomServer.host + ':' + randomServer.port;
 	connectedServer.set(_connectedServer);
+	connection.set({
+		status: 'connected',
+		attempt: 0,
+		maxAttempts: MAX_RETRIES,
+		host: randomServer.host
+	});
 	console.log('network', _connectedServer);
 
 	const _electrumServerBanner = await client.request('server.banner');
@@ -132,7 +162,7 @@ function scheduleReconnect(_network) {
 }
 
 export function getConnectionStatus(server) {
-	if (!server || server === 'offline' || server.includes('retry')) {
+	if (!server || server === 'offline' || server === 'connecting' || server.includes('retry')) {
 		return {
 			isConnected: false,
 			serverName: server || 'No server connected'

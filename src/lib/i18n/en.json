@@ -21,9 +21,23 @@
 		"source": "Source code"
 	},
 	"status": {
-		"offline": "offline",
-		"retrying": "retrying ({attempt}) – {host}",
-		"offlineHelp": "Offline – please check your internet connection or reload the page."
+		"connecting": "Connecting to a Doichain server …",
+		"connected": "Connected · {network} · block {height}",
+		"connectedNoTip": "Connected · {network}",
+		"retrying": "Server {host} is not reachable, new attempt {attempt}/{max}",
+		"wrongChain": "Server {host} does not follow the valid Doichain chain, trying another one ({attempt}/{max})",
+		"unverified": "Could not check the chain of server {host}, trying another one ({attempt}/{max})",
+		"reconnecting": "Connection to {host} lost, reconnecting …",
+		"offline": "No internet connection. The app reconnects once it is back.",
+		"failed": "No Doichain server answered. Check your internet connection and reload the page.",
+		"server": "Server: {host}",
+		"explorer": "Check block {height} in the explorer",
+		"networks": {
+			"mainnet": "Mainnet",
+			"testnet": "Testnet",
+			"regtest": "Regtest"
+		},
+		"offlineHelp": "The form opens as soon as a Doichain server on the valid chain answers."
 	},
 	"name": {
 		"intro": "Register your favorite Doichain name!",

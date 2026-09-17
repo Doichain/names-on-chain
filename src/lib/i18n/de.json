@@ -21,9 +21,23 @@
 		"source": "Quellcode"
 	},
 	"status": {
-		"offline": "offline",
-		"retrying": "neuer Versuch ({attempt}) – {host}",
-		"offlineHelp": "Offline – bitte prüfen Sie Ihre Internetverbindung oder laden Sie die Seite neu."
+		"connecting": "Verbinde mit einem Doichain-Server …",
+		"connected": "Verbunden · {network} · Block {height}",
+		"connectedNoTip": "Verbunden · {network}",
+		"retrying": "Server {host} ist nicht erreichbar, neuer Versuch {attempt}/{max}",
+		"wrongChain": "Server {host} folgt nicht der gültigen Doichain-Kette, versuche einen anderen ({attempt}/{max})",
+		"unverified": "Die Kette von Server {host} ließ sich nicht prüfen, versuche einen anderen ({attempt}/{max})",
+		"reconnecting": "Verbindung zu {host} verloren, verbinde neu …",
+		"offline": "Keine Internetverbindung. Die App verbindet sich neu, sobald sie zurück ist.",
+		"failed": "Kein Doichain-Server hat geantwortet. Prüfen Sie Ihre Internetverbindung und laden Sie die Seite neu.",
+		"server": "Server: {host}",
+		"explorer": "Block {height} im Explorer prüfen",
+		"networks": {
+			"mainnet": "Mainnet",
+			"testnet": "Testnet",
+			"regtest": "Regtest"
+		},
+		"offlineHelp": "Das Formular öffnet sich, sobald ein Doichain-Server auf der gültigen Kette antwortet."
 	},
 	"name": {
 		"intro": "Registrieren Sie Ihren Wunschnamen auf Doichain!",
