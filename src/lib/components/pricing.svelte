@@ -262,7 +262,8 @@
 						{$_('status.offlineHelp')}
 					</p>
 				{/if}
-				<div>
+				<!-- nothing to look up before a server on the valid chain answers -->
+				<fieldset disabled={!isConnected} class="min-w-0">
 					<label for="address" class="block text-sm font-medium leading-6 text-gray-900"
 						>{$_('address.label')}</label
 					>
@@ -285,7 +286,7 @@
 						{#if addressLooksWrong}
 							<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
 								<svg
-									class="h-5 w-5 text-red-500"
+									class="h-5 w-5 text-red-600"
 									viewBox="0 0 20 20"
 									fill="currentColor"
 									aria-hidden="true"
@@ -305,7 +306,7 @@
 							on:click={() => {
 								$scanOpen = true;
 							}}
-							class="ml-2"
+							class="ml-2 inline-flex h-11 w-11 flex-none items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:opacity-50"
 							><svg
 								class="h-8 w-8 text-orange-600"
 								width="24"
@@ -324,7 +325,7 @@
 						>
 					</div>
 
-					<div id="address-status" aria-live="polite">
+					<div id="address-status" class="min-h-12" aria-live="polite">
 						{#if doichainAddress && !isAddressValid}
 							<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
 						{:else if addressError}
@@ -381,7 +382,7 @@
 							{/if}
 						{/if}
 					</div>
-				</div>
+				</fieldset>
 				<p>&nbsp;</p>
 			</div>
 		</div>
