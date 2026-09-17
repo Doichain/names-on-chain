@@ -27,3 +27,7 @@ jobs:
         run: pnpm exec vitest run
       - name: Build
         run: pnpm run build
+      - name: Browser for the smoke test
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Smoke test in the browser, against a simulated ElectrumX
+        run: pnpm exec playwright test
