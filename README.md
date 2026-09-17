@@ -1,10 +1,6 @@
-# Names-On-Chain 
-# A Doichain - PSBT Workshop
+# Names-On-Chain
 
-## Description
-This workshop in five lessons shows how to look up, register and trade Doichain names.
-The app builds the NameOp transactions as PSBTs and hands them over as animated QR codes;
-DoiWallet signs and sends them. No private key is needed in the browser.
+A hands-on PSBT and NameOp workshop on Doichain: register and trade names without keys in the browser.
 
 > [!WARNING]
 > The app works on Doichain mainnet with real DOI, on the chain that is valid since block
@@ -13,95 +9,48 @@ DoiWallet signs and sends them. No private key is needed in the browser.
 > DoiWallet signs every transaction, so check each output there before you sign.
 > Read [Wallet and safety](docs/wallet-and-safety.md) first.
 
+**This branch: Lesson 4, the PSBT over QR.** The app hands the registration PSBT to DoiWallet as
+an animated QR code, as text or as a `.psbt` file. DoiWallet signs and sends it; the app never does.
+
 Live demo of this lesson: https://doichain.github.io/names-on-chain/lesson04/
 
-## Lesson 1)
-0. Clone this repo, then run `corepack enable` and `pnpm install --frozen-lockfile` (Node 22, see `.nvmrc`)
-1. Connect to ElectrumX in src/routes/+layout.js
-2. Validate name to be registered in src/lib/components/pricing.svelte
-   - is name already registered? 
-   - if yes - which address?
-3. Build the project and add it to your local IPFS node ([how](docs/ipfs.md))
+## Start
+
+```bash
+git clone -b lesson04 https://github.com/Doichain/names-on-chain.git
+cd names-on-chain
+corepack enable && pnpm install --frozen-lockfile
+pnpm dev
 ```
-pnpm run build
-ipfs add -r -Q --cid-version=1 public
-```
-4. Open http://localhost:8080/ipfs/{CID}/ with the CID that `ipfs add` printed, or
-   see our version: https://doichain.github.io/names-on-chain/lesson01/
-5. Checkout branch lesson02)
 
-## Goal of this lesson
-1. How to connect to Electrumx via secure websocket (wss) 
-   a) src/lib/doichain/connectElectrum.js
-   b) understanding the Electrum API https://electrum.readthedocs.io/en/latest/protocol.html
-   c) (optionally) setting up a Doichain Node and an ElectrumX Node with SSL
+You need Node 22 (see `.nvmrc`). To publish a build from your own IPFS node, see [IPFS](docs/ipfs.md).
 
-2. NameOps, NameId, NameValue, Recipient (owner) 
-   a) src/lib/doichain/nameShow.js
-   b) what is a UTXO (unspent transaction output) 
-   c) what are inputs and outputs of a transaction
-   b) response of a nameShow command (tx history of the nameOp)
+## In this lesson
 
-## Lesson 2)
-1. Add an address input below the name input 
-   - src/lib/components/pricing.svelte
-2. Gather UTXOs and NameOps of this address (show name and expiration)
-   - src/lib/doichain/utxoHelpers.js
-3. Add an QR-Code scanner to scan an address
-   - use src/lib/doichain/ScanModal.svelte
-4. Show registered NameOps with expiration block
-   - src/lib/components/pricing.svelte
-5. Build the project and add it to your local IPFS node ([how](docs/ipfs.md))
-```
-pnpm run build
-ipfs add -r -Q --cid-version=1 public
-```
-6. Open http://localhost:8080/ipfs/{CID}/ with the CID that `ipfs add` printed, or
-   see our version: https://doichain.github.io/names-on-chain/lesson02/
-7. Checkout branch lesson03)
+- How a long PSBT travels as a sequence of QR codes (BC-UR).
+- What to check in the wallet before you sign.
+- Why the app hands the transaction over instead of sending it.
 
-## Goal of this lesson
-1. Understanding UTXOS
-2. Scanning address-QR-Codes from DoiWallet
-3. Understanding expiration
+Step by step: [Lesson 4](docs/lessons/04-psbt-over-qr-and-signing.md) ·
+[Deutsch](docs/lessons/04-psbt-over-qr-and-signing.de.md) ·
+Previous: [lesson03](https://github.com/Doichain/names-on-chain/tree/lesson03) ·
+Next: [lesson05](https://github.com/Doichain/names-on-chain/tree/lesson05)
 
-### Lesson 3)
-1. Adding a feature box
-   - src/lib/components/pricing.svelte
-2. Adding a transaction calculation box (locked amount, mining fee, what leaves your coins, change)
-   - src/lib/components/pricing.svelte
-3. Generating a PSBT (partially signed Bitcoin transaction)
-   - src/lib/components/pricing.svelte
+## All lessons
 
-### Lesson 4)
-1. Implementing QR code generation for PSBTs
-   - src/lib/components/pricing.svelte
-2. Adding support for BBQR and BCUR formats
-   - src/lib/components/pricing.svelte
-3. Creating an animated QR code display
-   - src/lib/components/pricing.svelte
-4. Handling errors while the PSBT is built (the app never signs; DoiWallet does)
-   - src/lib/doichain/buildNameRegistrationPsbt.js
-5. Updating the UI to display transaction details and QR codes
-   - src/lib/components/pricing.svelte
+| Lesson | The app can | Demo |
+| --- | --- | --- |
+| [1 Talking to the chain](https://github.com/Doichain/names-on-chain/tree/lesson01) | look up who holds a name and until which block | [open](https://doichain.github.io/names-on-chain/lesson01/) |
+| [2 Coins, name coins and expiry](https://github.com/Doichain/names-on-chain/tree/lesson02) | show the balance and the names of an address | [open](https://doichain.github.io/names-on-chain/lesson02/) |
+| [3 A registration as a PSBT](https://github.com/Doichain/names-on-chain/tree/lesson03) | build the PSBT that registers a name, with coin selection and fee | [open](https://doichain.github.io/names-on-chain/lesson03/) |
+| [4 The PSBT over QR](https://github.com/Doichain/names-on-chain/tree/lesson04) | hand the PSBT to DoiWallet as an animated QR code | [open](https://doichain.github.io/names-on-chain/lesson04/) |
+| [5 Atomic name trading](https://github.com/Doichain/names-on-chain/tree/lesson05) | build a purchase that pays the holder and moves the name | [open](https://doichain.github.io/names-on-chain/lesson05/) |
 
-## Goal of this lesson
-1. Understanding different QR code formats for cryptocurrency transactions (BBQR and BCUR)
-2. Implementing animated QR codes for improved user experience
-3. Handling and displaying transaction details in the UI
-4. Error handling in transaction creation and QR code generation
+## More
 
-## Steps to complete
-1. Add QR code generation logic using BBQR and BCUR formats
-2. Create functions for animating QR codes (`displayQrCodes` and `animateQrCodes`)
-3. Update the reactive block to handle transaction signing and QR code generation
-4. Modify the UI to display transaction details and the generated QR code
-5. Implement error handling for transaction creation and QR code generation
-6. Test the functionality with various inputs and edge cases
-
-## Key concepts
-- PSBT (Partially Signed Bitcoin Transactions)
-- QR code formats for cryptocurrency transactions (BBQR and BCUR)
-- Animated QR codes for multi-part data
-- Reactive programming in Svelte
-- Error handling in asynchronous operations
+- [Wallet and safety](docs/wallet-and-safety.md) · [Deutsch](docs/wallet-and-safety.de.md)
+- [Publish a lesson on IPFS](docs/ipfs.md) · [Deutsch](docs/ipfs.de.md)
+- [For maintainers](docs/maintainers.md) · [Deutsch](docs/maintainers.de.md)
+- DoiWallet: [Google Play](https://play.google.com/store/apps/details?id=org.doichain.doiwallet) ·
+  [App Store](https://apps.apple.com/app/doiwallet/id1579900361) · [source code](https://github.com/Doichain/DoiWallet)
+- [Issues](https://github.com/Doichain/names-on-chain/issues) · [MIT License](LICENSE)
