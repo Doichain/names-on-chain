@@ -1,4 +1,9 @@
-import { electrumServerVersion, connectedServer, electrumServerBanner } from './doichain-store.js';
+import {
+	connection,
+	electrumServerVersion,
+	connectedServer,
+	electrumServerBanner
+} from './doichain-store.js';
 
 export async function setupElectrumConnection(network) {
 	const { connectElectrum } = await import('./connectElectrum.js');
@@ -13,6 +18,7 @@ export async function setupElectrumConnection(network) {
 function handleOffline() {
 	console.log('offline');
 	electrumServerVersion.set('server disconnected');
+	connection.update((state) => ({ ...state, status: 'offline' }));
 	connectedServer.set('offline');
 	electrumServerBanner.set('server disconnected');
 }

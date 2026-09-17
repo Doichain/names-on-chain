@@ -1,4 +1,5 @@
 <script>
+	import ConnectionStatus from '$lib/components/ConnectionStatus.svelte';
 	import { getConnectionStatus } from '../doichain/connectElectrum.js';
 	import { describeNameBytes } from '$lib/doichain/nameBytes.js';
 	import { _, locale } from '$lib/i18n/index.js';
@@ -92,25 +93,10 @@
 	}
 
 	/**
-	 * Reactive statement to update connection status
-	 * @type {{isConnected: boolean, serverName: string}}
-	 * @property {boolean} isConnected - Indicates if the server is currently connected
-	 * @property {string} serverName - The name of the connected server or a status message
+	 * The form opens once a server on the valid chain answers;
+	 * ConnectionStatus shows where the connection stands.
 	 */
-	$: ({ isConnected, serverName } = getConnectionStatus($connectedServer));
-
-	/**
-	 * The connection status in words: the server URL once connected,
-	 * otherwise the status the connection store reports, translated.
-	 */
-	function describeServer(server, translate) {
-		if (server === 'offline') return translate('status.offline');
-		const retry = /^retrying \((\d+)(?: - (.+))?\)$/.exec(server || '');
-		if (retry)
-			return translate('status.retrying', { values: { attempt: retry[1], host: retry[2] ?? '' } });
-		return server;
-	}
-	$: serverText = describeServer(serverName, $_);
+	$: ({ isConnected } = getConnectionStatus($connectedServer));
 
 	/**
 	 * Check a name, debounce every keyboard typing, return local variables by callback
@@ -176,29 +162,7 @@
 {/if}
 <div class="bg-white py-24 sm:py-32">
 	<div class="mx-auto max-w-7xl px-6 lg:px-8">
-		<div class="mx-auto max-w-2xl sm:text-center">
-			<h2
-				class="text-3xl font-bold tracking-tight sm:text-4xl fade-red-to-green {isConnected
-					? 'connected'
-					: ''}"
-			>
-				{$_('app.title')}
-			</h2>
-			<h2
-				class="font-bold tracking-tight sm:text-1xl fade-red-to-green {isConnected
-					? 'connected'
-					: ''}"
-			>
-				{$_('app.subtitle')}
-			</h2>
-			<h3
-				class="text-sm font-semibold tracking-tight fade-red-to-green {isConnected
-					? 'connected'
-					: 'blinking'} "
-			>
-				{serverText}
-			</h3>
-		</div>
+		<ConnectionStatus />
 		<div
 			class="mx-auto mt-16 max-w-2xl rounded-3xl ring-1 ring-gray-200 sm:mt-20 lg:mx-0 lg:flex lg:max-w-none"
 		>
@@ -420,27 +384,3 @@
 		</div>
 	</div>
 </div>
-
-<style>
-	.fade-red-to-green {
-		transition: color 1s;
-		color: red;
-	}
-	.fade-red-to-green.connected {
-		color: green;
-	}
-	.blinking {
-		animation: blinkingText 1.5s infinite;
-	}
-	@keyframes blinkingText {
-		0% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0;
-		}
-		100% {
-			opacity: 1;
-		}
-	}
-</style>

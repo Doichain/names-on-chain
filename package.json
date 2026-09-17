@@ -49,7 +49,6 @@
 		"@ngraveio/bc-ur": "^1.1.13",
 		"@peerpiper/qrcode-scanner-svelte": "^1.0.7",
 		"@vkontakte/vk-qr": "^2.1.1",
-		"bbqr": "^1.0.0",
 		"events": "^3.3.0",
 		"satoshi-bitcoin": "^1.0.5",
 		"svelte-i18n": "^4.0.1"
