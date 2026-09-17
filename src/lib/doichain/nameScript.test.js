@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { payments } from '@doichain/doichainjs-lib';
 import { DOICHAIN } from './doichain.js';
-import { getNameOPStackScript, NAME_MAX_LENGTH } from './getNameOPStackScript.js';
+import { getNameOPStackScript, NAME_MAX_LENGTH, NAME_MIN_LENGTH } from './getNameOPStackScript.js';
 import { describeNameBytes, normalizeName } from './nameBytes.js';
 import { nameShow } from './nameShow.js';
 import { pushData } from './pushData.js';
@@ -68,6 +68,12 @@ describe('getNameOPStackScript', () => {
 	it('refuses an address of another network', () => {
 		const bitcoinAddress = payments.p2pkh({ hash: Buffer.alloc(20, 0x33) }).address;
 		expect(() => getNameOPStackScript('hello', '', bitcoinAddress, DOICHAIN)).toThrow(/Invalid recipient address/);
+	});
+
+	it('asks for the same minimum length as the name check', () => {
+		expect(NAME_MIN_LENGTH).toBe(4);
+		expect(() => getNameOPStackScript('abc', '', fixture.fundedAddress, DOICHAIN)).toThrow(/at least 4 characters/);
+		expect(() => getNameOPStackScript('abcd', '', fixture.fundedAddress, DOICHAIN)).not.toThrow();
 	});
 
 	it('limits the name by bytes, not characters', () => {
