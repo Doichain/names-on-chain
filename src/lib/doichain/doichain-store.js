@@ -22,7 +22,20 @@ export const networks = [
 export const scanOpen = writable(false);
 export const scanData = writable();
 export const network = writable(DOICHAIN);
-export const connectedServer = writable('offline');
+
+/**
+ * Where the connection to ElectrumX stands, for the status line:
+ * connecting (first attempt), connected (host), retrying (attempt of maxAttempts,
+ * host = the server that failed), wrongChain or unverified (host failed the
+ * chain check), reconnecting (a connection dropped), offline (no network),
+ * failed (gave up after maxAttempts).
+ *
+ * @type {import('svelte/store').Writable<{status: string, attempt: number, maxAttempts: number, host?: string}>}
+ */
+export const connection = writable({ status: 'connecting', attempt: 0, maxAttempts: 25 });
+
+/** The connected server's URL, or 'connecting', 'offline', 'retrying (n - host)' */
+export const connectedServer = writable('connecting');
 export const electrumClient = writable();
 export const electrumServerVersion = writable('');
 export const electrumServerBanner = writable('disconnected');
