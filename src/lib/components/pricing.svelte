@@ -1,4 +1,5 @@
 <script>
+	import AddressField from '$lib/components/AddressField.svelte';
 	import ConnectionStatus from '$lib/components/ConnectionStatus.svelte';
 	import { getConnectionStatus } from '../doichain/connectElectrum.js';
 	import { _, locale, t } from '$lib/i18n/index.js';
@@ -713,124 +714,72 @@
 				{/if}
 				<!-- nothing to look up before a server on the valid chain answers -->
 				<fieldset disabled={!isConnected} class="min-w-0">
-					<label for="address" class="block text-sm font-medium leading-6 text-gray-900"
-						>{$_('address.label')}</label
+					<AddressField
+						id="address"
+						label={$_('address.label')}
+						scanLabel={$_('address.scan')}
+						invalid={addressLooksWrong}
+						bind:value={doichainAddress}
+						on:scan={() => ($scanOpen = true)}
 					>
-					<div class="relative mt-2 rounded-md shadow-sm flex items-center">
-						<input
-							bind:value={doichainAddress}
-							type="text"
-							name="address"
-							id="address"
-							autocomplete="off"
-							autocapitalize="off"
-							spellcheck="false"
-							class={!addressLooksWrong
-								? 'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6'
-								: 'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}
-							placeholder={$_('address.placeholder')}
-							aria-invalid={addressLooksWrong}
-							aria-describedby="address-status"
-						/>
-						{#if addressLooksWrong}
-							<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-								<svg
-									class="h-5 w-5 text-red-600"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-									aria-hidden="true"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z"
-										clip-rule="evenodd"
-									/>
-								</svg>
-							</div>
-						{/if}
-						<button
-							type="button"
-							aria-label={$_('address.scan')}
-							title={$_('address.scan')}
-							on:click={() => {
-								$scanOpen = true;
-							}}
-							class="ml-2 inline-flex h-11 w-11 flex-none items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:opacity-50"
-							><svg
-								class="h-8 w-8 text-orange-600"
-								width="24"
-								height="24"
-								viewBox="0 0 24 24"
-								stroke-width="2"
-								stroke="currentColor"
-								fill="none"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								<path stroke="none" d="M0 0h24v24H0z" /> <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />
-								<path d="M4 17v1a2 2 0 0 0 2 2h2" /> <path d="M16 4h2a2 2 0 0 1 2 2v1" />
-								<path d="M16 20h2a2 2 0 0 0 2 -2v-1" /> <line x1="5" y1="12" x2="19" y2="12" /></svg
-							></button
-						>
-					</div>
-
-					<div id="address-status" class="min-h-12" aria-live="polite">
-						{#if doichainAddress && !isAddressValid}
-							<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
-						{:else if addressError}
-							<p class="mt-2 text-sm text-red-600">
-								{$_('address.errors.lookupFailed', { values: addressError })}
-							</p>
-						{:else if utxoErrorMessage}
-							<p class="mt-2 text-sm text-red-600">
-								<b>{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}</b>
-								{utxoErrorMessage}
-							</p>
-						{:else}
-							<p class="mt-2 text-sm text-gray-600">
-								{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}
-							</p>
-							{#if nameOpTxs.length > 0}
-								<div class="mt-4">
-									<h4 class="text-sm font-medium text-gray-900 mb-2">{$_('address.names')}</h4>
-									<div class="flex flex-wrap gap-2">
-										{#each nameOpTxs as nameOp}
-											{@const expiry = nameExpiry(
-												nameOp.height,
-												$electrumBlockchainBlockHeadersSubscribe?.height,
-												$network
-											)}
-											<span
-												class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium {expiry.expired
-													? 'bg-gray-100 text-gray-700'
-													: 'bg-blue-100 text-blue-800'}"
-											>
-												{#if !expiry.confirmed}
-													{$_('address.namePending', { values: { name: nameOp.name } })}
-												{:else if expiry.expired}
-													{$_('address.nameExpired', {
-														values: { name: nameOp.name, height: expiry.expiresAt }
-													})}
-												{:else if expiry.blocksLeft !== undefined}
-													{$_('address.nameValidUntil', {
-														values: {
-															name: nameOp.name,
-															height: expiry.expiresAt,
-															blocksLeft: expiry.blocksLeft
-														}
-													})}
-												{:else}
-													{$_('address.expires', {
-														values: { name: nameOp.name, height: expiry.expiresAt }
-													})}
-												{/if}
-											</span>
-										{/each}
+						<svelte:fragment slot="status">
+							{#if doichainAddress && !isAddressValid}
+								<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
+							{:else if addressError}
+								<p class="mt-2 text-sm text-red-600">
+									{$_('address.errors.lookupFailed', { values: addressError })}
+								</p>
+							{:else if utxoErrorMessage}
+								<p class="mt-2 text-sm text-red-600">
+									<b>{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}</b>
+									{utxoErrorMessage}
+								</p>
+							{:else}
+								<p class="mt-2 text-sm text-gray-600">
+									{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}
+								</p>
+								{#if nameOpTxs.length > 0}
+									<div class="mt-4">
+										<h4 class="text-sm font-medium text-gray-900 mb-2">{$_('address.names')}</h4>
+										<div class="flex flex-wrap gap-2">
+											{#each nameOpTxs as nameOp}
+												{@const expiry = nameExpiry(
+													nameOp.height,
+													$electrumBlockchainBlockHeadersSubscribe?.height,
+													$network
+												)}
+												<span
+													class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium {expiry.expired
+														? 'bg-gray-100 text-gray-700'
+														: 'bg-blue-100 text-blue-800'}"
+												>
+													{#if !expiry.confirmed}
+														{$_('address.namePending', { values: { name: nameOp.name } })}
+													{:else if expiry.expired}
+														{$_('address.nameExpired', {
+															values: { name: nameOp.name, height: expiry.expiresAt }
+														})}
+													{:else if expiry.blocksLeft !== undefined}
+														{$_('address.nameValidUntil', {
+															values: {
+																name: nameOp.name,
+																height: expiry.expiresAt,
+																blocksLeft: expiry.blocksLeft
+															}
+														})}
+													{:else}
+														{$_('address.expires', {
+															values: { name: nameOp.name, height: expiry.expiresAt }
+														})}
+													{/if}
+												</span>
+											{/each}
+										</div>
 									</div>
-								</div>
+								{/if}
 							{/if}
-						{/if}
-					</div>
+						</svelte:fragment>
+					</AddressField>
 				</fieldset>
 				<p>&nbsp;</p>
 				{#if isNameExists && name === checkedName}
@@ -850,89 +799,36 @@
 							</p>
 						{/if}
 
-						<label
-							for="fundingUTXOAddress"
-							class="mt-6 block text-sm font-medium leading-6 text-gray-900"
-							>{$_('trade.fundingLabel')}</label
+						<AddressField
+							id="fundingUTXOAddress"
+							label={$_('trade.fundingLabel')}
+							scanLabel={$_('trade.fundingScan')}
+							labelClass="mt-6 block text-sm font-medium leading-6 text-gray-900"
+							invalid={fundingLooksWrong}
+							bind:value={fundingUTXOAddress}
+							on:scan={() => (scanOpenFunding = true)}
 						>
-						<div class="relative mt-2 rounded-md shadow-sm flex items-center">
-							<input
-								bind:value={fundingUTXOAddress}
-								type="text"
-								name="fundingUTXOAddress"
-								id="fundingUTXOAddress"
-								autocomplete="off"
-								autocapitalize="off"
-								spellcheck="false"
-								class={!fundingLooksWrong
-									? 'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6'
-									: 'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}
-								placeholder={$_('address.placeholder')}
-								aria-invalid={fundingLooksWrong}
-								aria-describedby="funding-status"
-							/>
-							{#if fundingLooksWrong}
-								<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-									<svg
-										class="h-5 w-5 text-red-600"
-										viewBox="0 0 20 20"
-										fill="currentColor"
-										aria-hidden="true"
+							<svelte:fragment slot="status">
+								{#if fundingUTXOAddress && !isFundingAddressValid}
+									<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
+								{:else if fundingError}
+									<p class="mt-2 text-sm text-red-600">
+										{$_('address.errors.lookupFailed', { values: fundingError })}
+									</p>
+								{:else if fundingLoadedFor && fundingLoadedFor === fundingUTXOAddress}
+									<p
+										class="mt-2 text-sm {fundingUtxoAddresses.length > 0
+											? 'text-gray-600'
+											: 'text-red-600'}"
 									>
-										<path
-											fill-rule="evenodd"
-											d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z"
-											clip-rule="evenodd"
-										/>
-									</svg>
-								</div>
-							{/if}
-							<button
-								type="button"
-								aria-label={$_('trade.fundingScan')}
-								title={$_('trade.fundingScan')}
-								on:click={() => {
-									scanOpenFunding = true;
-								}}
-								class="ml-2 inline-flex h-11 w-11 flex-none items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:opacity-50"
-								><svg
-									class="h-8 w-8 text-orange-600"
-									width="24"
-									height="24"
-									viewBox="0 0 24 24"
-									stroke-width="2"
-									stroke="currentColor"
-									fill="none"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<path stroke="none" d="M0 0h24v24H0z" /> <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />
-									<path d="M4 17v1a2 2 0 0 0 2 2h2" /> <path d="M16 4h2a2 2 0 0 1 2 2v1" />
-									<path d="M16 20h2a2 2 0 0 0 2 -2v-1" />
-									<line x1="5" y1="12" x2="19" y2="12" /></svg
-								></button
-							>
-						</div>
-						<div id="funding-status" aria-live="polite">
-							{#if fundingUTXOAddress && !isFundingAddressValid}
-								<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
-							{:else if fundingError}
-								<p class="mt-2 text-sm text-red-600">
-									{$_('address.errors.lookupFailed', { values: fundingError })}
-								</p>
-							{:else if fundingLoadedFor && fundingLoadedFor === fundingUTXOAddress}
-								<p
-									class="mt-2 text-sm {fundingUtxoAddresses.length > 0
-										? 'text-gray-600'
-										: 'text-red-600'}"
-								>
-									{$_('trade.fundingTotal', {
-										values: { amount: sb.toBitcoin(fundingTotalUtxoValue) }
-									})}
-									{#if fundingUtxoAddresses.length === 0}{$_('trade.fundingInvalid')}{/if}
-								</p>
-							{/if}
-						</div>
+										{$_('trade.fundingTotal', {
+											values: { amount: sb.toBitcoin(fundingTotalUtxoValue) }
+										})}
+										{#if fundingUtxoAddresses.length === 0}{$_('trade.fundingInvalid')}{/if}
+									</p>
+								{/if}
+							</svelte:fragment>
+						</AddressField>
 
 						<label for="price" class="mt-6 block text-sm font-medium leading-6 text-gray-900"
 							>{$_('trade.priceLabel')}</label
