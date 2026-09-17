@@ -312,7 +312,7 @@
 		utxoErrorMessage = '';
 		if (
 			name &&
-			!isCheckingName &&
+			name === checkedName &&
 			isNameValid &&
 			!isNameExists &&
 			isAddressValid &&
@@ -799,7 +799,7 @@
 					</div>
 				</fieldset>
 				<p>&nbsp;</p>
-				{#if isNameExists && !isCheckingName}
+				{#if isNameExists && name === checkedName}
 					<!-- a purchase needs the server: the fields wait while the connection is gone -->
 					<fieldset disabled={!isConnected} class="min-w-0 border-t border-gray-100 pt-6">
 						<h3 class="text-base font-semibold leading-7 text-gray-900">{$_('trade.heading')}</h3>
