@@ -1,6 +1,6 @@
-import { nameops } from '@doichain/doichainjs-lib'
-import { getNameOpUTXOsOfTxHash } from './getNameOpUTXOsOfTxHash.js'
-import { normalizeName } from './nameBytes.js'
+import { nameops } from '@doichain/doichainjs-lib';
+import { getNameOpUTXOsOfTxHash } from './getNameOpUTXOsOfTxHash.js';
+import { normalizeName } from './nameBytes.js';
 
 /**
  * Queries Electrumx to find transactions associated with a given nameId
@@ -23,17 +23,16 @@ import { normalizeName } from './nameBytes.js'
  * const utxos = await nameShow(electrumClient, nameId);
  */
 export const nameShow = async (electrumClient, nameToCheck) => {
-
 	const scriptHash = nameops.nameIndexScriptHash(normalizeName(nameToCheck));
-	let results = []
+	let results = [];
 	await electrumClient.connect();
 	const result = await electrumClient.request('blockchain.scripthash.get_history', [scriptHash]);
 
 	for (const item of result) {
-		const detailResults = await getNameOpUTXOsOfTxHash(electrumClient,item.tx_hash);
+		const detailResults = await getNameOpUTXOsOfTxHash(electrumClient, item.tx_hash);
 		// the block height tells which operation is the newest and when the name expires
 		for (const output of detailResults) output.height = item.height;
 		results = [...detailResults, ...results];
 	}
-	return results
-}
+	return results;
+};

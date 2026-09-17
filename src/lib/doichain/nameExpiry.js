@@ -30,7 +30,12 @@ export function nameExpiry(height, tipHeight, network) {
 	if (!(height > 0)) return { confirmed: false, expired: false };
 	const expiresAt = height + nameExpirationDepth(network);
 	if (!(tipHeight > 0)) return { confirmed: true, expiresAt, expired: false };
-	return { confirmed: true, expiresAt, blocksLeft: expiresAt - tipHeight, expired: expiresAt <= tipHeight };
+	return {
+		confirmed: true,
+		expiresAt,
+		blocksLeft: expiresAt - tipHeight,
+		expired: expiresAt <= tipHeight
+	};
 }
 
 /**
@@ -44,12 +49,16 @@ export function latestNameOperation(outputs, name) {
 	const rank = (output) => (output.height > 0 ? output.height : Number.POSITIVE_INFINITY);
 	return outputs
 		.filter((output) => nameOfOutput(output) === name)
-		.reduce((latest, output) => (!latest || rank(output) >= rank(latest) ? output : latest), undefined);
+		.reduce(
+			(latest, output) => (!latest || rank(output) >= rank(latest) ? output : latest),
+			undefined
+		);
 }
 
 function nameOfOutput(output) {
 	const nameOp = output?.scriptPubKey?.nameOp;
 	if (!nameOp) return undefined;
-	const name = nameOp.name_encoding === 'hex' ? Buffer.from(nameOp.name, 'hex').toString('utf8') : nameOp.name;
+	const name =
+		nameOp.name_encoding === 'hex' ? Buffer.from(nameOp.name, 'hex').toString('utf8') : nameOp.name;
 	return name.normalize('NFC');
 }
