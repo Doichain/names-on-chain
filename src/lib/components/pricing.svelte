@@ -23,7 +23,7 @@
 	import { renderBCUR } from '$lib/doichain/renderQR.js';
 	import ScanModal from '$lib/doichain/ScanModal.svelte';
 
-	import { signTransaction } from '$lib/doichain/signTransaction.js';
+	import { buildNameRegistrationPsbt } from '$lib/doichain/buildNameRegistrationPsbt.js';
 	import sb from 'satoshi-bitcoin';
 	import { onDestroy, tick } from 'svelte';
 	import { generateAtomicNameTradingPSBT } from '$lib/doichain/atomicNameTrading.js';
@@ -322,7 +322,7 @@
 			const result =
 				utxoAddresses.length === 0
 					? { error: t('funds.insufficientForTransaction', { address: doichainAddress }) }
-					: signTransaction(
+					: buildNameRegistrationPsbt(
 							utxoAddresses,
 							name,
 							$network,

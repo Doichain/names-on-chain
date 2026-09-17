@@ -80,8 +80,8 @@ ipfs add -r -Q --cid-version=1 public
    - src/lib/components/pricing.svelte
 3. Creating an animated QR code display
    - src/lib/components/pricing.svelte
-4. Handling transaction signing and error cases
-   - src/lib/doichain/signTransaction.js
+4. Handling errors while the PSBT is built (the app never signs; DoiWallet does)
+   - src/lib/doichain/buildNameRegistrationPsbt.js
 5. Updating the UI to display transaction details and QR codes
    - src/lib/components/pricing.svelte
 
