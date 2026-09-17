@@ -24,7 +24,8 @@ import {
 const OP_NAME_DOI = 0x5a;
 
 /**
- * An atomic name purchase, built by the buyer.
+ * Builds the PSBT of an atomic name purchase, for the buyer. Nobody signs here:
+ * buyer and seller each sign it in their own wallet.
  *
  * One transaction holds both halves of the trade:
  *
@@ -60,7 +61,7 @@ const OP_NAME_DOI = 0x5a;
  * @returns {Object} either { error } or { psbtBase64, sellerAddress, sellerReceives, surplus,
  *          transactionFee, changeAmount, dust, fromCoins, feeRate, vsize, coinsUsed, coinsAvailable }
  */
-export const generateAtomicNameTradingPSBT = (
+export const buildNameTradePsbt = (
 	name,
 	fundingUtxos,
 	nameUtxo,

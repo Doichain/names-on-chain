@@ -13,7 +13,10 @@ import {
 import { estimateVsize, feeFor, MAX_INPUTS, MIN_RELAY_FEE_RATE, selectCoins } from './fees.js';
 
 /**
- * Creates and signs a Partially Signed Bitcoin Transaction (PSBT) for registering a Doichain name.
+ * Builds the PSBT (partially signed transaction) that registers a Doichain name.
+ *
+ * It signs nothing: the PSBT leaves the browser unsigned, and DoiWallet signs it
+ * with a key the app never sees.
  *
  * Nothing is taken on trust from the ElectrumX server: amounts and scripts of
  * the inputs are read from the raw previous transactions, after checking that
@@ -35,7 +38,7 @@ import { estimateVsize, feeFor, MAX_INPUTS, MIN_RELAY_FEE_RATE, selectCoins } fr
  *
  * @returns {Object} Either { error } or the PSBT base64 string and transaction details.
  */
-export function signTransaction(
+export function buildNameRegistrationPsbt(
 	_utxoAddresses,
 	_name,
 	_network,

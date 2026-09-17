@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { address, payments, Psbt, Transaction } from '@doichain/doichainjs-lib';
 import { DOICHAIN, VERSION } from './doichain.js';
-import { generateAtomicNameTradingPSBT } from './atomicNameTrading.js';
+import { buildNameTradePsbt } from './buildNameTradePsbt.js';
 import { parseDoiAmount } from './doiAmount.js';
 import { getNameOPStackScript } from './getNameOPStackScript.js';
 import { MIN_RELAY_FEE_RATE } from './fees.js';
@@ -43,15 +43,7 @@ const buyer = payments.p2wpkh({ hash: Buffer.alloc(20, 7), network: DOICHAIN }).
 
 /** @type {(nameUtxo: any, name: string, price: number, fundingUtxos?: object[], buyerAddress?: string) => any} */
 const buy = (nameUtxo, name, price, fundingUtxos = [coin], buyerAddress = buyer) =>
-	generateAtomicNameTradingPSBT(
-		name,
-		fundingUtxos,
-		nameUtxo,
-		buyerAddress,
-		price,
-		STORAGE_FEE,
-		DOICHAIN
-	);
+	buildNameTradePsbt(name, fundingUtxos, nameUtxo, buyerAddress, price, STORAGE_FEE, DOICHAIN);
 
 const outputsOf = (result) =>
 	Psbt.fromBase64(result.psbtBase64, { network: DOICHAIN }).txOutputs.map((output) => ({

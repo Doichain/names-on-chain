@@ -23,10 +23,10 @@
 	import { renderBCUR } from '$lib/doichain/renderQR.js';
 	import ScanModal from '$lib/doichain/ScanModal.svelte';
 
-	import { signTransaction } from '$lib/doichain/signTransaction.js';
+	import { buildNameRegistrationPsbt } from '$lib/doichain/buildNameRegistrationPsbt.js';
 	import sb from 'satoshi-bitcoin';
 	import { onDestroy, tick } from 'svelte';
-	import { generateAtomicNameTradingPSBT } from '$lib/doichain/atomicNameTrading.js';
+	import { buildNameTradePsbt } from '$lib/doichain/buildNameTradePsbt.js';
 	import { parseDoiAmount } from '$lib/doichain/doiAmount.js';
 
 	/** @type {string} - The name currently typed in the name input */
@@ -322,7 +322,7 @@
 			const result =
 				utxoAddresses.length === 0
 					? { error: t('funds.insufficientForTransaction', { address: doichainAddress }) }
-					: signTransaction(
+					: buildNameRegistrationPsbt(
 							utxoAddresses,
 							name,
 							$network,
@@ -520,7 +520,7 @@
 			priceText
 		) {
 			$locale; // rebuild when the language changes, so an error message follows it
-			trade = generateAtomicNameTradingPSBT(
+			trade = buildNameTradePsbt(
 				name,
 				fundingUtxoAddresses,
 				currentNameUtxo,
