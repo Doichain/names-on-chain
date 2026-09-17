@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@doichain/doichainjs-lib':
+        specifier: ^6.2.0
+        version: 6.2.0
       '@keystonehq/bc-ur-registry':
         specifier: ^0.6.4
         version: 0.6.4
@@ -23,9 +26,6 @@ importers:
       bbqr:
         specifier: ^1.0.0
         version: 1.2.0
-      bitcoinjs-lib:
-        specifier: ^6.1.6
-        version: 6.1.8
       events:
         specifier: ^3.3.0
         version: 3.3.0
@@ -112,6 +112,10 @@ packages:
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
+
+  '@doichain/doichainjs-lib@6.2.0':
+    resolution: {integrity: sha512-psJePdUZC6ROv2SYcfEHFjTIHir4pF/jnUnb+XesBbKEYem8QI93O/sfye7So4+X0lQMNfzAqox+20jFz1pl1g==}
+    engines: {node: '>=8.0.0'}
 
   '@esbuild/aix-ppc64@0.19.12':
     resolution: {integrity: sha512-bmoCYyWdEL3wDQIVbcyzRyeKLgk2WtWLTWz1ZIAZF/EGbNOwSA6ew3PftJ1PqMiOOGu0OyFMzG53L0zqIpPeNA==}
@@ -825,10 +829,6 @@ packages:
 
   bip174@2.1.1:
     resolution: {integrity: sha512-mdFV5+/v0XyNYXjBS6CQPLo9ekCx4gtKZFnJm5PMto7Fs9hTTDpkkzOB7/FtluRI6JbUUAu+snTYfJRgHLZbZQ==}
-    engines: {node: '>=8.0.0'}
-
-  bitcoinjs-lib@6.1.8:
-    resolution: {integrity: sha512-A6o+yq7BvwlmLj4F0NC5f3XX109rRe5evxi368S9zil5voOtUfiqfiMCzZYKHk4k7iIJ3+NmcQW05Ar4CBlKyg==}
     engines: {node: '>=8.0.0'}
 
   bn.js@4.12.5:
@@ -2425,6 +2425,15 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.31
 
+  '@doichain/doichainjs-lib@6.2.0':
+    dependencies:
+      '@noble/hashes': 1.8.0
+      bech32: 2.0.0
+      bip174: 2.1.1
+      bs58check: 3.0.1
+      typeforce: 1.18.0
+      varuint-bitcoin: 1.1.2
+
   '@esbuild/aix-ppc64@0.19.12':
     optional: true
 
@@ -2971,15 +2980,6 @@ snapshots:
   binary-extensions@2.3.0: {}
 
   bip174@2.1.1: {}
-
-  bitcoinjs-lib@6.1.8:
-    dependencies:
-      '@noble/hashes': 1.8.0
-      bech32: 2.0.0
-      bip174: 2.1.1
-      bs58check: 3.0.1
-      typeforce: 1.18.0
-      varuint-bitcoin: 1.1.2
 
   bn.js@4.12.5: {}
 

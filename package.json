@@ -37,12 +37,12 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@doichain/doichainjs-lib": "^6.2.0",
 		"@keystonehq/bc-ur-registry": "^0.6.4",
 		"@ngraveio/bc-ur": "^1.1.13",
 		"@peerpiper/qrcode-scanner-svelte": "^1.0.7",
 		"@vkontakte/vk-qr": "^2.1.1",
 		"bbqr": "^1.0.0",
-		"bitcoinjs-lib": "^6.1.6",
 		"events": "^3.3.0",
 		"globals": "^15.9.0",
 		"lodash": "^4.17.21",
