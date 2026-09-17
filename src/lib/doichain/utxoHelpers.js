@@ -10,7 +10,6 @@ export async function getUtxosAndNamesOfAddress(electrumClient, doichainAddress)
         const scriptPubKey = utxo.fullTx.scriptPubKey;
         if (!scriptPubKey.nameOp) {
             utxoAddresses.push({
-                formattedBlocktime: utxo.fullTx.formattedBlocktime,
                 txid: utxo.fullTx.txid,
                 hex: utxo.fullTx.hex,
                 hash: utxo.tx_hash,

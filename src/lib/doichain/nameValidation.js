@@ -8,7 +8,7 @@ import { normalizeName } from "$lib/doichain/nameBytes.js";
 import { get } from "svelte/store";
 import { t } from "$lib/i18n/index.js";
 import sb from "satoshi-bitcoin";
-import { debounce } from 'lodash';
+import { debounce } from '$lib/doichain/debounce.js';
 
 export const checkName = debounce((electrumClient, name, totalUtxoValue, totalAmount, callback) => {
     _checkName(electrumClient, name, totalUtxoValue, totalAmount).then(result => {
