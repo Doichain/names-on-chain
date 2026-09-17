@@ -43,3 +43,19 @@ test('waits for a checked name before it builds anything', async ({ page }) => {
 	await expect(page.locator('#name-status')).toContainText('Not checked yet');
 	await expect(page.getByText(/DOI stay locked in the name output/)).toHaveCount(0);
 });
+
+test('hands the PSBT to the wallet as an animated QR code', async ({ page }) => {
+	const errors = [];
+	page.on('pageerror', (error) => errors.push(error.message));
+	await prepare(page);
+
+	await page.getByRole('button', { name: 'Create PSBT' }).click();
+	await expect(page.locator('.qr svg')).toBeVisible();
+	await expect(page.getByText(/QR code frame \d+ of \d+/)).toBeVisible();
+	// a PSBT in Base64 starts with the magic bytes psbt\xff
+	await expect(page.getByLabel('PSBT (Base64)')).toHaveValue(/^cHNidP/);
+
+	await page.getByRole('button', { name: 'Pause' }).click();
+	await expect(page.getByRole('button', { name: 'Play' })).toBeVisible();
+	expect(errors).toEqual([]);
+});
