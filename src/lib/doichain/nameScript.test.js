@@ -76,6 +76,14 @@ describe('getNameOPStackScript', () => {
 		expect(script.startsWith('5a' + pushData('hello') + '00' + '6d75')).toBe(true);
 	});
 
+	it('takes the value as bytes too and writes them unchanged', () => {
+		const bytes = Buffer.from([0xff, 0x00, 0x05]); // not valid UTF-8
+		const script = getNameOPStackScript('hello', bytes, fixture.fundedAddress, DOICHAIN);
+		expect(script.toString('hex').startsWith('5a' + pushData('hello') + '03ff0005' + '6d75')).toBe(
+			true
+		);
+	});
+
 	it('refuses a P2SH address, which would lock name and coins for good', () => {
 		const { address } = payments.p2sh({ hash: Buffer.alloc(20, 0x22), network: DOICHAIN });
 		expect(() => getNameOPStackScript('hello', '', address, DOICHAIN)).toThrow(/P2PKH or P2WPKH/);
