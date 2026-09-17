@@ -12,7 +12,13 @@ export function normalizeName(name) {
 }
 
 /** Alphabets with letters that look like Latin ones: "pаypаl" with a Cyrillic "а". */
-const LOOK_ALIKE_SCRIPTS = [/\p{Script=Latin}/u, /\p{Script=Cyrillic}/u, /\p{Script=Greek}/u, /\p{Script=Armenian}/u, /\p{Script=Cherokee}/u];
+const LOOK_ALIKE_SCRIPTS = [
+	/\p{Script=Latin}/u,
+	/\p{Script=Cyrillic}/u,
+	/\p{Script=Greek}/u,
+	/\p{Script=Armenian}/u,
+	/\p{Script=Cherokee}/u
+];
 
 /**
  * What a name looks like on chain, for warnings about look-alike names.

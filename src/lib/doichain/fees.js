@@ -24,7 +24,8 @@ const varIntSize = (n) => (n < 0xfd ? 1 : n <= 0xffff ? 3 : 5);
 /**
  * The fee rate to pay, in swartz per vbyte.
  *
- * @param {number|undefined} relayFee - blockchain.relayfee of the ElectrumX server, in DOI per kilobyte
+ * @param {unknown} relayFee - blockchain.relayfee of the ElectrumX server, in DOI per kilobyte.
+ *   Whatever else a server sends counts as no answer.
  * @returns {number}
  */
 export function feeRateFor(relayFee) {
@@ -69,7 +70,8 @@ export const feeFor = (vsize, feeRate) => Math.ceil(vsize * feeRate);
  * @param {number} amount - swartz the outputs need, change not included
  * @param {(selected: Coin[]) => number} feeFor - fee for these coins, with a change output
  * @param {number} [maxInputs]
- * @returns {{selected: Coin[], total: number, fee: number} | {error: 'insufficient'} | {error: 'tooFragmented', needed: number}}
+ * @returns {{selected?: Coin[], total?: number, fee?: number, error?: 'insufficient' | 'tooFragmented', needed?: number}}
+ *   the coins, their total and the fee; or error, with needed for 'tooFragmented'
  */
 export function selectCoins(coins, amount, feeFor, maxInputs = MAX_INPUTS) {
 	const confirmed = (coin) => (coin.height > 0 ? 1 : 0);

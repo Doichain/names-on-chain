@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { estimateVsize, feeFor, feeRateFor, MAX_FEE_RATE, MIN_RELAY_FEE_RATE, selectCoins } from './fees.js';
+import {
+	estimateVsize,
+	feeFor,
+	feeRateFor,
+	MAX_FEE_RATE,
+	MIN_RELAY_FEE_RATE,
+	selectCoins
+} from './fees.js';
 
 const P2PKH_OUTPUT = Buffer.alloc(25);
 const NAME_OUTPUT = Buffer.alloc(60);
@@ -34,22 +41,38 @@ describe('estimateVsize', () => {
 });
 
 describe('selectCoins', () => {
-	const fee = (selected) => feeFor(estimateVsize(selected.map(() => ({ segwit: false })), [NAME_OUTPUT, P2PKH_OUTPUT]), MIN_RELAY_FEE_RATE);
+	const fee = (selected) =>
+		feeFor(
+			estimateVsize(
+				selected.map(() => ({ segwit: false })),
+				[NAME_OUTPUT, P2PKH_OUTPUT]
+			),
+			MIN_RELAY_FEE_RATE
+		);
 
 	it('takes the largest coins first and stops as soon as they cover amount and fee', () => {
-		const coins = [{ value: 20_000, height: 5 }, { value: 5_000_000, height: 5 }, { value: 700_000, height: 5 }];
+		const coins = [
+			{ value: 20_000, height: 5 },
+			{ value: 5_000_000, height: 5 },
+			{ value: 700_000, height: 5 }
+		];
 		const result = selectCoins(coins, 1_000_000, fee);
 		expect(result.selected.map((c) => c.value)).toEqual([5_000_000]);
 		expect(result.fee).toBe(fee(result.selected));
 	});
 
 	it('prefers confirmed coins over unconfirmed ones', () => {
-		const coins = [{ value: 9_000_000, height: 0 }, { value: 2_000_000, height: 7 }];
+		const coins = [
+			{ value: 9_000_000, height: 0 },
+			{ value: 2_000_000, height: 7 }
+		];
 		expect(selectCoins(coins, 1_000_000, fee).selected.map((c) => c.value)).toEqual([2_000_000]);
 	});
 
 	it('reports too little money', () => {
-		expect(selectCoins([{ value: 500_000, height: 1 }], 1_000_000, fee)).toEqual({ error: 'insufficient' });
+		expect(selectCoins([{ value: 500_000, height: 1 }], 1_000_000, fee)).toEqual({
+			error: 'insufficient'
+		});
 	});
 
 	it('refuses to spend more coins than the limit', () => {

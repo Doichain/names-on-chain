@@ -19,6 +19,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Lint (Prettier and ESLint)
+        run: pnpm run lint
+      - name: Type check (svelte-check)
+        run: pnpm run check
       - name: Unit tests
         run: pnpm exec vitest run
       - name: Build
