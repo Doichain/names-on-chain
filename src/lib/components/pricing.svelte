@@ -147,7 +147,7 @@
 		if (isConnected && isAddressValid) {
 			const requestedAddress = doichainAddress;
 			addressError = undefined;
-			getUtxosAndNamesOfAddress($electrumClient, requestedAddress)
+			getUtxosAndNamesOfAddress($electrumClient, requestedAddress, $network)
 				.then((retObj) => {
 					if (requestedAddress !== doichainAddress) return; // the user has moved on to another address
 					nameOpTxs = retObj.nameOpTxs;
