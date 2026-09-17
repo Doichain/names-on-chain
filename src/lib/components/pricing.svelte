@@ -121,7 +121,7 @@
 							{:else if !isNameValid}
 								<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
 									<svg
-										class="h-5 w-5 text-red-500"
+										class="h-5 w-5 text-red-600"
 										viewBox="0 0 20 20"
 										fill="currentColor"
 										aria-hidden="true"
@@ -136,7 +136,7 @@
 							{:else if name}
 								<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
 									<svg
-										class="h-5 w-5 text-green-500"
+										class="h-5 w-5 text-green-700"
 										viewBox="0 0 20 20"
 										fill="currentColor"
 										aria-hidden="true"
@@ -150,7 +150,8 @@
 								</div>
 							{/if}
 						</div>
-						<div id="name-status" aria-live="polite">
+						<!-- room for two lines, so the fields below do not jump while the check answers -->
+						<div id="name-status" class="min-h-12" aria-live="polite">
 							{#if !name}
 								<!-- nothing to say yet -->
 							{:else if isCheckingName}
@@ -182,7 +183,9 @@
 						</div>
 					</div>
 				{:else}
-					<p class="mt-2 text-sm text-red-600" id="connection-status">{$_('status.offlineHelp')}</p>
+					<p class="mt-2 text-sm text-gray-700" id="connection-status">
+						{$_('status.offlineHelp')}
+					</p>
 				{/if}
 			</div>
 		</div>
