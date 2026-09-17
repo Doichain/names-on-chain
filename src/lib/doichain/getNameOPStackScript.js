@@ -57,7 +57,7 @@ const isP2WPKH = (output) => output.length === 22 && output[0] === 0x00 && outpu
  *   P2SH address into a P2PKH script that nobody can ever spend.
  *
  * @param {string} nameId - The identifier for the name, stored in NFC.
- * @param {string} nameValue - The value associated with the name, may be empty.
+ * @param {string | Buffer} nameValue - The value associated with the name, as text or as the bytes a name holds today; may be empty.
  * @param {string} recipientAddress - The recipient's Doichain address, P2PKH or P2WPKH.
  * @param {object} network - The Doichain network object (DOICHAIN, DOICHAIN_REGTEST, ...).
  * @returns {Buffer} The compiled script as a Buffer.
