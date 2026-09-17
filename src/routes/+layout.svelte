@@ -28,5 +28,5 @@
 		>{$_('wallet.appStore')}</a
 	>
 	·
-	<a class="underline" href="https://github.com/davidreband/DoiWallet">{$_('wallet.source')}</a>
+	<a class="underline" href="https://github.com/Doichain/DoiWallet">{$_('wallet.source')}</a>
 </footer>
