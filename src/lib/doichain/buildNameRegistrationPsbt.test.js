@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { address, payments, Psbt, Transaction } from '@doichain/doichainjs-lib';
 import { DOICHAIN, VERSION } from './doichain.js';
 import { getNameOPStackScript } from './getNameOPStackScript.js';
-import { signTransaction } from './signTransaction.js';
+import { buildNameRegistrationPsbt } from './buildNameRegistrationPsbt.js';
 import { DUST_LIMIT, isNameScript } from './transactionChecks.js';
 import { MAX_INPUTS, MIN_RELAY_FEE_RATE } from './fees.js';
 import { getUtxosAndNamesOfAddress } from './utxoHelpers.js';
@@ -24,7 +24,7 @@ const register = (
 	storageFee = STORAGE_FEE,
 	recipient = fixture.fundedAddress
 ) =>
-	signTransaction(
+	buildNameRegistrationPsbt(
 		utxos,
 		name,
 		DOICHAIN,
@@ -132,7 +132,7 @@ describe('registration PSBT', () => {
 			expect(result.error).toBeUndefined();
 			expect(result.coinsUsed).toBe(12);
 			expect(result.transactionFee).toBeGreaterThanOrEqual(MIN_RELAY_FEE_RATE * result.vsize);
-			const faster = signTransaction(
+			const faster = buildNameRegistrationPsbt(
 				coinsWorth(Array.from({ length: 12 }, () => 200_000)),
 				'noc-test-name',
 				DOICHAIN,

@@ -18,7 +18,7 @@
 	import { describeNameBytes } from '$lib/doichain/nameBytes.js';
 	import { cleanAddressInput, isAddressOf } from '$lib/doichain/addressValidation.js';
 	import { nameExpiry } from '$lib/doichain/nameExpiry.js';
-	import { signTransaction } from '$lib/doichain/signTransaction.js';
+	import { buildNameRegistrationPsbt } from '$lib/doichain/buildNameRegistrationPsbt.js';
 	import sb from 'satoshi-bitcoin';
 	import { onDestroy, tick } from 'svelte';
 
@@ -255,7 +255,7 @@
 			const result =
 				utxoAddresses.length === 0
 					? { error: t('funds.insufficientForTransaction', { address: doichainAddress }) }
-					: signTransaction(
+					: buildNameRegistrationPsbt(
 							utxoAddresses,
 							name,
 							$network,
