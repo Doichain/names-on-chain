@@ -7,14 +7,15 @@ import { getScriptPubKeyAddress } from './scriptPubKeyAddress.js';
  * @async
  * @param {Object} electrumClient - The Electrum client instance
  * @param {string} doichainAddress - The Doichain address to query
- * @returns {Promise<Object>} An object containing UTXO and name operation data
- * @property {Array<string>} nameOpTxs - List of name operation transactions
- * @property {Array<Object>} utxoAddresses - List of UTXO details
- * @property {number} totalUtxoValue - Sum of all UTXO values
+ * @returns {Promise<{
+ *   nameOpTxs: Array<{name: string, value: string, txid: string, height: number, expires: number}>,
+ *   utxoAddresses: Array<Object>,
+ *   totalUtxoValue: number
+ * }>} the coins without a name, the names, and the value of all coins in swartz
  * @throws {Error} If there's an issue querying the Electrum server
  *
  * @example
- * const result = await getUtxosAndNamesOfAddress(electrumClient, 'DKj2jL8Ns3eWjgXbwPrLwZ');
+ * const { nameOpTxs } = await getUtxosAndNamesOfAddress(electrumClient, myAddress);
  */
 export async function getUtxosAndNamesOfAddress(electrumClient, doichainAddress) {
 	let nameOpTxs = [];

@@ -52,8 +52,8 @@
 		totalAmount = 0;
 
 	/**
-	 * Array of name operation transactions associated with the current address
-	 * @type {Array<string>}
+	 * The names held by the current address, with the block of their last operation
+	 * @type {Array<{name: string, value: string, txid: string, height: number, expires: number}>}
 	 */
 	let nameOpTxs = [];
 	/**
