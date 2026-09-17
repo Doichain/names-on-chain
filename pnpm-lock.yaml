@@ -23,9 +23,6 @@ importers:
       '@vkontakte/vk-qr':
         specifier: ^2.1.1
         version: 2.1.1
-      bbqr:
-        specifier: ^1.0.0
-        version: 1.2.0
       events:
         specifier: ^3.3.0
         version: 3.3.0
@@ -813,9 +810,6 @@ packages:
     resolution: {integrity: sha512-hYrgxie335U08WqICoGqKRzV1HFXv6zdxwJE4ekCb80CM9a0SVVsN4QPwT67RraRo+9h8IATk6uxHJw7QSkdOg==}
     engines: {node: '>=6.0.0'}
     hasBin: true
-
-  bbqr@1.2.0:
-    resolution: {integrity: sha512-wB4UaSMcrnkQgq9ZFoWyvF3/tEAcnakb2n13D4PdppDl6FNvIM+RNmidD0UDeiL6C98syqTdmdD+czkKEgqmWg==}
 
   bech32@2.0.0:
     resolution: {integrity: sha512-LcknSilhIGatDAsY1ak2I8VtGaHNhgMSYVxFrGLXv+xLHytaKZKcaUJJUE7qmBr7h33o5YQwP55pMI0xmkpJwg==}
@@ -2972,8 +2966,6 @@ snapshots:
   base64-js@1.5.1: {}
 
   baseline-browser-mapping@2.11.24: {}
-
-  bbqr@1.2.0: {}
 
   bech32@2.0.0: {}
 

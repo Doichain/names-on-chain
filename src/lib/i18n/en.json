@@ -21,9 +21,23 @@
 		"source": "Source code"
 	},
 	"status": {
-		"offline": "offline",
-		"retrying": "retrying ({attempt}) – {host}",
-		"offlineHelp": "Offline – please check your internet connection or reload the page."
+		"connecting": "Connecting to a Doichain server …",
+		"connected": "Connected · {network} · block {height}",
+		"connectedNoTip": "Connected · {network}",
+		"retrying": "Server {host} is not reachable, new attempt {attempt}/{max}",
+		"wrongChain": "Server {host} does not follow the valid Doichain chain, trying another one ({attempt}/{max})",
+		"unverified": "Could not check the chain of server {host}, trying another one ({attempt}/{max})",
+		"reconnecting": "Connection to {host} lost, reconnecting …",
+		"offline": "No internet connection. The app reconnects once it is back.",
+		"failed": "No Doichain server answered. Check your internet connection and reload the page.",
+		"server": "Server: {host}",
+		"explorer": "Check block {height} in the explorer",
+		"networks": {
+			"mainnet": "Mainnet",
+			"testnet": "Testnet",
+			"regtest": "Regtest"
+		},
+		"offlineHelp": "The form opens as soon as a Doichain server on the valid chain answers."
 	},
 	"name": {
 		"intro": "Register your favorite Doichain name!",
@@ -58,7 +72,7 @@
 		"label": "Doichain registration address",
 		"placeholder": "address",
 		"scan": "Scan the QR code of an address",
-		"total": "Total UTXO value: {amount}",
+		"total": "Balance: {amount} DOI, coins locked in names included",
 		"names": "Names registered to this address:",
 		"expires": "{name} (expires at block {height})",
 		"nameValidUntil": "{name} (valid until block {height}, {blocksLeft} blocks left)",
@@ -123,7 +137,7 @@
 		"segwitName": "This name is held by a SegWit address ({address}). DoiWallet 7.0.4 cannot yet sign a name input at such an address – tested on regtest –, so the owner could not complete the purchase with DoiWallet.",
 		"fundingLabel": "Your Doichain address: it pays for the name and receives it",
 		"fundingScan": "Scan the QR code of the funding address",
-		"fundingTotal": "Total UTXO value of the funding address: {amount}",
+		"fundingTotal": "Spendable balance of your address: {amount} DOI, without the coins locked in names",
 		"fundingInvalid": "The funding address has no usable UTXOs.",
 		"priceLabel": "Price",
 		"summary": "You pay {price} DOI to {seller} and {fee} DOI mining fee. The name moves to {buyer} with {locked} DOI locked in it, and {change} DOI come back to you as change.",
@@ -146,7 +160,14 @@
 	"scan": {
 		"title": "Scan a QR code",
 		"tip": "Hold a QR code in front of your camera.",
-		"result": "Scanned: {result}",
-		"close": "Close"
+		"starting": "Starting the camera …",
+		"paste": "Or paste the address here",
+		"use": "Use",
+		"close": "Close",
+		"errors": {
+			"denied": "The browser may not use the camera. Allow it in the site settings, or paste the address below.",
+			"missing": "No camera found. Paste the address below instead.",
+			"unavailable": "The camera cannot be used here; browsers allow it only on HTTPS pages. Paste the address below instead."
+		}
 	}
 }
