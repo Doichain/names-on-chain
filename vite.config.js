@@ -12,15 +12,15 @@ export default defineConfig({
 	plugins: [
 		// wasm(),
 		sveltekit(),
-		// Only Buffer is polyfilled: the name scripts and PSBTs are built from bytes.
-		// Everything else comes from real packages (events), so no Node shim ends up
-		// in the bundle.
+		// Of the Node modules only buffer is shimmed: scripts and PSBTs are built from
+		// bytes, and events comes from a real package. The globals stay, because the
+		// BC-UR libraries read process and global when they load.
 		nodePolyfills({
 			include: ['buffer'],
 			globals: {
 				Buffer: true,
-				global: false,
-				process: false
+				global: true,
+				process: true
 			},
 			protocolImports: false
 		})
