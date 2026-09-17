@@ -36,7 +36,7 @@
 		"errors": {
 			"empty": "Please enter a name.",
 			"space": "A name must not contain spaces.",
-			"tooShort": "The name \"{name}\" is too short.",
+			"tooShort": "The name \"{name}\" is too short: names need at least {min} characters.",
 			"tooLong": "The name is {bytes} bytes long; Doichain allows at most {max} bytes.",
 			"taken": "The name \"{name}\" is already registered to the address {address}.",
 			"takenUntil": "The name \"{name}\" belongs to the address {address} until block {expiresAt}, {blocksLeft} blocks from now.",
