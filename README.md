@@ -6,17 +6,24 @@ This workshop in five lessons shows how to look up, register and trade Doichain 
 The app builds the NameOp transactions as PSBTs and hands them over as animated QR codes;
 DoiWallet signs and sends them. No private key is needed in the browser.
 
+> [!WARNING]
+> The app works on Doichain mainnet with real DOI, on the chain that is valid since block
+> 431,017 (Doichain Core v31.1.5). Look names and transactions up on
+> [doi-explorer.le-space.de](https://doi-explorer.le-space.de), not on explorer.doichain.org.
+> DoiWallet signs every transaction, so check each output there before you sign.
+> Read [Wallet and safety](docs/wallet-and-safety.md) first.
+
 Live demo of this lesson: https://doichain.github.io/names-on-chain/lesson03/
 
 ## Lesson 1)
-0. Clone this repo and run ```npm i``` 
+0. Clone this repo, then run `corepack enable` and `pnpm install --frozen-lockfile` (Node 22, see `.nvmrc`)
 1. Connect to ElectrumX in src/routes/+layout.js
 2. Validate name to be registered in src/lib/components/pricing.svelte
    - is name already registered? 
    - if yes - which address?
 3. Build the project and add it to your local IPFS node ([how](docs/ipfs.md))
 ```
-npm run build
+pnpm run build
 ipfs add -r -Q --cid-version=1 public
 ```
 4. Open http://localhost:8080/ipfs/{CID}/ with the CID that `ipfs add` printed, or
@@ -46,7 +53,7 @@ ipfs add -r -Q --cid-version=1 public
    - src/lib/components/pricing.svelte
 5. Build the project and add it to your local IPFS node ([how](docs/ipfs.md))
 ```
-npm run build
+pnpm run build
 ipfs add -r -Q --cid-version=1 public
 ```
 6. Open http://localhost:8080/ipfs/{CID}/ with the CID that `ipfs add` printed, or

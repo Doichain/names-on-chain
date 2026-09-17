@@ -36,4 +36,12 @@ describe('name check against Doichain Core 31 responses', () => {
 		expect(result.nameErrorMessage).toContain('256');
 		expect(client.requests).toEqual([]);
 	});
+
+	it('names the minimum length of four characters without asking the server', async () => {
+		const client = fakeElectrumClient();
+		const result = await _checkName(client, 'abc', 0, 0);
+		expect(result.isNameValid).toBe(false);
+		expect(result.nameErrorMessage).toMatch(/at least 4 characters|mindestens 4 Zeichen/);
+		expect(client.requests).toEqual([]);
+	});
 });
