@@ -9,8 +9,9 @@
  * but 8 bytes in UTF-8. Counting characters gives a different script and a
  * different name index hash, so a taken name would look free.
  *
- * A single byte 0x01–0x10 stays a plain push. bitcoinjs-lib's script.compile
- * would turn it into OP_1…OP_16, which Doichain's name parser rejects.
+ * A single byte 0x01–0x10 stays a plain push. script.compile (in bitcoinjs-lib
+ * and doichainjs-lib) would turn it into OP_1…OP_16, which Doichain's name
+ * parser rejects.
  *
  * @param {string|Uint8Array} data - a string is encoded as UTF-8
  * @returns {string} a hex string to be inserted into a op script which can be sent to ElectrumX

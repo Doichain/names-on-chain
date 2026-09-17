@@ -1,4 +1,4 @@
-import { address, crypto, Psbt } from 'bitcoinjs-lib'
+import { address, crypto, Psbt } from '@doichain/doichainjs-lib'
 import { DOICHAIN, NETWORK_FEE, VERSION } from './doichain.js'
 import { getNameOPStackScript } from './getNameOPStackScript.js'
 import { getNameOpUTXOsOfTxHash } from './getNameOpUTXOsOfTxHash.js'

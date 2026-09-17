@@ -1,4 +1,4 @@
-import { address, Psbt } from "bitcoinjs-lib";
+import { address, Psbt } from "@doichain/doichainjs-lib";
 import { t } from "$lib/i18n/index.js";
 import { getNameOPStackScript } from "./getNameOPStackScript.js";
 import { VERSION } from "./doichain.js";
