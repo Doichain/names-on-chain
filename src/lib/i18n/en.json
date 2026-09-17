@@ -160,7 +160,14 @@
 	"scan": {
 		"title": "Scan a QR code",
 		"tip": "Hold a QR code in front of your camera.",
-		"result": "Scanned: {result}",
-		"close": "Close"
+		"starting": "Starting the camera …",
+		"paste": "Or paste the address here",
+		"use": "Use",
+		"close": "Close",
+		"errors": {
+			"denied": "The browser may not use the camera. Allow it in the site settings, or paste the address below.",
+			"missing": "No camera found. Paste the address below instead.",
+			"unavailable": "The camera cannot be used here; browsers allow it only on HTTPS pages. Paste the address below instead."
+		}
 	}
 }
