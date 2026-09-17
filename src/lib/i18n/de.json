@@ -21,9 +21,23 @@
 		"source": "Quellcode"
 	},
 	"status": {
-		"offline": "offline",
-		"retrying": "neuer Versuch ({attempt}) – {host}",
-		"offlineHelp": "Offline – bitte prüfen Sie Ihre Internetverbindung oder laden Sie die Seite neu."
+		"connecting": "Verbinde mit einem Doichain-Server …",
+		"connected": "Verbunden · {network} · Block {height}",
+		"connectedNoTip": "Verbunden · {network}",
+		"retrying": "Server {host} ist nicht erreichbar, neuer Versuch {attempt}/{max}",
+		"wrongChain": "Server {host} folgt nicht der gültigen Doichain-Kette, versuche einen anderen ({attempt}/{max})",
+		"unverified": "Die Kette von Server {host} ließ sich nicht prüfen, versuche einen anderen ({attempt}/{max})",
+		"reconnecting": "Verbindung zu {host} verloren, verbinde neu …",
+		"offline": "Keine Internetverbindung. Die App verbindet sich neu, sobald sie zurück ist.",
+		"failed": "Kein Doichain-Server hat geantwortet. Prüfen Sie Ihre Internetverbindung und laden Sie die Seite neu.",
+		"server": "Server: {host}",
+		"explorer": "Block {height} im Explorer prüfen",
+		"networks": {
+			"mainnet": "Mainnet",
+			"testnet": "Testnet",
+			"regtest": "Regtest"
+		},
+		"offlineHelp": "Das Formular öffnet sich, sobald ein Doichain-Server auf der gültigen Kette antwortet."
 	},
 	"name": {
 		"intro": "Registrieren Sie Ihren Wunschnamen auf Doichain!",
@@ -58,7 +72,7 @@
 		"label": "Doichain-Adresse für die Registrierung",
 		"placeholder": "Adresse",
 		"scan": "QR-Code einer Adresse scannen",
-		"total": "Gesamtwert der UTXOs: {amount}",
+		"total": "Guthaben: {amount} DOI, einschließlich der in Namen gebundenen Coins",
 		"names": "Auf diese Adresse registrierte Namen:",
 		"expires": "{name} (läuft bei Block {height} ab)",
 		"nameValidUntil": "{name} (gültig bis Block {height}, noch {blocksLeft} Blöcke)",
@@ -123,7 +137,7 @@
 		"segwitName": "Dieser Name liegt an einer SegWit-Adresse ({address}). DoiWallet 7.0.4 kann einen Namens-Input an einer solchen Adresse derzeit nicht gültig signieren – auf Regtest geprüft –, der Besitzer könnte den Kauf mit DoiWallet also nicht abschließen.",
 		"fundingLabel": "Ihre Doichain-Adresse: Sie bezahlt den Namen und erhält ihn",
 		"fundingScan": "QR-Code der Kaufadresse scannen",
-		"fundingTotal": "Gesamtwert der UTXOs der Kaufadresse: {amount}",
+		"fundingTotal": "Verfügbares Guthaben Ihrer Adresse: {amount} DOI, ohne die in Namen gebundenen Coins",
 		"fundingInvalid": "Die Kaufadresse hat keine verwendbaren UTXOs.",
 		"priceLabel": "Preis",
 		"summary": "Sie zahlen {price} DOI an {seller} und {fee} DOI Mining-Gebühr. Der Name geht mit {locked} DOI gebundenem Betrag an {buyer}, und {change} DOI kommen als Wechselgeld zu Ihnen zurück.",
@@ -146,7 +160,14 @@
 	"scan": {
 		"title": "QR-Code scannen",
 		"tip": "Halten Sie einen QR-Code vor Ihre Kamera.",
-		"result": "Gescannt: {result}",
-		"close": "Schließen"
+		"starting": "Die Kamera wird gestartet …",
+		"paste": "Oder fügen Sie die Adresse hier ein",
+		"use": "Übernehmen",
+		"close": "Schließen",
+		"errors": {
+			"denied": "Der Browser darf die Kamera nicht benutzen. Erlauben Sie es in den Website-Einstellungen oder fügen Sie die Adresse unten ein.",
+			"missing": "Keine Kamera gefunden. Fügen Sie die Adresse stattdessen unten ein.",
+			"unavailable": "Die Kamera lässt sich hier nicht benutzen; Browser erlauben sie nur auf HTTPS-Seiten. Fügen Sie die Adresse stattdessen unten ein."
+		}
 	}
 }

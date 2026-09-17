@@ -1,4 +1,5 @@
 <script>
+	import ConnectionStatus from '$lib/components/ConnectionStatus.svelte';
 	import { getConnectionStatus } from '../doichain/connectElectrum.js';
 	import { _, locale, t } from '$lib/i18n/index.js';
 	import { checkName } from '$lib/doichain/nameValidation.js';
@@ -19,7 +20,7 @@
 		isP2WPKHAddress
 	} from '$lib/doichain/addressValidation.js';
 	import { nameExpiry } from '$lib/doichain/nameExpiry.js';
-	import { renderBBQR, renderBCUR } from '$lib/doichain/renderQR.js';
+	import { renderBCUR } from '$lib/doichain/renderQR.js';
 	import ScanModal from '$lib/doichain/ScanModal.svelte';
 
 	import { signTransaction } from '$lib/doichain/signTransaction.js';
@@ -162,25 +163,10 @@
 	}
 
 	/**
-	 * Reactive statement to update connection status
-	 * @type {{isConnected: boolean, serverName: string}}
-	 * @property {boolean} isConnected - Indicates if the server is currently connected
-	 * @property {string} serverName - The name of the connected server or a status message
+	 * The form opens once a server on the valid chain answers;
+	 * ConnectionStatus shows where the connection stands.
 	 */
-	$: ({ isConnected, serverName } = getConnectionStatus($connectedServer));
-
-	/**
-	 * The connection status in words: the server URL once connected,
-	 * otherwise the status the connection store reports, translated.
-	 */
-	function describeServer(server, translate) {
-		if (server === 'offline') return translate('status.offline');
-		const retry = /^retrying \((\d+)(?: - (.+))?\)$/.exec(server || '');
-		if (retry)
-			return translate('status.retrying', { values: { attempt: retry[1], host: retry[2] ?? '' } });
-		return server;
-	}
-	$: serverText = describeServer(serverName, $_);
+	$: ({ isConnected } = getConnectionStatus($connectedServer));
 
 	/**
 	 * Check a name, debounce every keyboard typing, return local variables by callback
@@ -313,11 +299,6 @@
 	let qrCode;
 
 	/**
-	 * @type {boolean} bbqr - A flag to determine whether to use BBQR (Binary Bitcoin QR) format. Default is false.
-	 */
-	let bbqr = false;
-
-	/**
 	 * Reactive block for handling name registration transaction and QR code generation.
 	 */
 	$: {
@@ -405,31 +386,26 @@
 
 	/**
 	 * Renders the QR code for the PSBT that is on screen right now.
-	 * Generates either a BBQR or BCUR QR code for the transaction.
+	 * Splits it into BC-UR fragments, one QR code per animation frame.
 	 */
 	function createPsbt() {
 		const requested = shownPsbt;
 		if (!requested) return;
 		const stillCurrent = () => requested === shownPsbt;
-		if (bbqr)
-			renderBBQR(requested).then((imgurl) => {
-				if (stillCurrent()) qrCodeData = imgurl;
+		renderBCUR(requested)
+			.then(async (_qr) => {
+				if (!_qr || !stillCurrent()) return;
+				shown.psbt = requested;
+				qrCodeData = _qr;
+				isPaused = false;
+				displayQrCodes();
+				await tick();
+				qrContainer?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			})
+			.catch((error) => {
+				console.error('Error generating QR code:', error);
+				qrCodeData = undefined;
 			});
-		else
-			renderBCUR(requested)
-				.then(async (_qr) => {
-					if (!_qr || !stillCurrent()) return;
-					shown.psbt = requested;
-					qrCodeData = _qr;
-					isPaused = false;
-					displayQrCodes();
-					await tick();
-					qrContainer?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-				})
-				.catch((error) => {
-					console.error('Error generating QR code:', error);
-					qrCodeData = undefined;
-				});
 	}
 
 	/** Shows frame `index` of the animated QR code, wrapping around at both ends */
@@ -601,22 +577,7 @@
 {/if}
 <div class="bg-white py-24 sm:py-32">
 	<div class="mx-auto max-w-7xl px-6 lg:px-8">
-		<div class="mx-auto max-w-2xl sm:text-center">
-			<h2
-				class="text-3xl font-bold tracking-tight sm:text-4xl fade-red-to-green {isConnected
-					? 'connected'
-					: ''}"
-			>
-				{$_('app.title')}
-			</h2>
-			<h2
-				class="font-bold tracking-tight sm:text-1xl fade-red-to-green {isConnected
-					? 'connected'
-					: 'blinking'} "
-			>
-				{serverText}
-			</h2>
-		</div>
+		<ConnectionStatus />
 		<div
 			class="mx-auto mt-16 max-w-2xl rounded-3xl ring-1 ring-gray-200 sm:mt-20 lg:mx-0 lg:flex lg:max-w-none"
 		>
@@ -650,7 +611,7 @@
 							{:else if !isNameValid}
 								<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
 									<svg
-										class="h-5 w-5 text-red-500"
+										class="h-5 w-5 text-red-600"
 										viewBox="0 0 20 20"
 										fill="currentColor"
 										aria-hidden="true"
@@ -665,7 +626,7 @@
 							{:else if name}
 								<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
 									<svg
-										class="h-5 w-5 text-green-500"
+										class="h-5 w-5 text-green-700"
 										viewBox="0 0 20 20"
 										fill="currentColor"
 										aria-hidden="true"
@@ -679,7 +640,8 @@
 								</div>
 							{/if}
 						</div>
-						<div id="name-status" aria-live="polite">
+						<!-- room for two lines, so the fields below do not jump while the check answers -->
+						<div id="name-status" class="min-h-12" aria-live="polite">
 							{#if !name}
 								<!-- nothing to say yet -->
 							{:else if isCheckingName}
@@ -711,9 +673,12 @@
 						</div>
 					</div>
 				{:else}
-					<p class="mt-2 text-sm text-red-600" id="connection-status">{$_('status.offlineHelp')}</p>
+					<p class="mt-2 text-sm text-gray-700" id="connection-status">
+						{$_('status.offlineHelp')}
+					</p>
 				{/if}
-				<div>
+				<!-- nothing to look up before a server on the valid chain answers -->
+				<fieldset disabled={!isConnected} class="min-w-0">
 					<label for="address" class="block text-sm font-medium leading-6 text-gray-900"
 						>{$_('address.label')}</label
 					>
@@ -736,7 +701,7 @@
 						{#if addressLooksWrong}
 							<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
 								<svg
-									class="h-5 w-5 text-red-500"
+									class="h-5 w-5 text-red-600"
 									viewBox="0 0 20 20"
 									fill="currentColor"
 									aria-hidden="true"
@@ -756,7 +721,7 @@
 							on:click={() => {
 								$scanOpen = true;
 							}}
-							class="ml-2"
+							class="ml-2 inline-flex h-11 w-11 flex-none items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:opacity-50"
 							><svg
 								class="h-8 w-8 text-orange-600"
 								width="24"
@@ -775,7 +740,7 @@
 						>
 					</div>
 
-					<div id="address-status" aria-live="polite">
+					<div id="address-status" class="min-h-12" aria-live="polite">
 						{#if doichainAddress && !isAddressValid}
 							<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
 						{:else if addressError}
@@ -832,10 +797,11 @@
 							{/if}
 						{/if}
 					</div>
-				</div>
+				</fieldset>
 				<p>&nbsp;</p>
 				{#if isNameExists && !isCheckingName}
-					<div class="border-t border-gray-100 pt-6">
+					<!-- a purchase needs the server: the fields wait while the connection is gone -->
+					<fieldset disabled={!isConnected} class="min-w-0 border-t border-gray-100 pt-6">
 						<h3 class="text-base font-semibold leading-7 text-gray-900">{$_('trade.heading')}</h3>
 						<p class="mt-2 text-sm leading-6 text-gray-600">
 							{$_('trade.intro', { values: { seller: currentNameAddress } })}
@@ -874,7 +840,7 @@
 							{#if fundingLooksWrong}
 								<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
 									<svg
-										class="h-5 w-5 text-red-500"
+										class="h-5 w-5 text-red-600"
 										viewBox="0 0 20 20"
 										fill="currentColor"
 										aria-hidden="true"
@@ -894,7 +860,7 @@
 								on:click={() => {
 									scanOpenFunding = true;
 								}}
-								class="ml-2"
+								class="ml-2 inline-flex h-11 w-11 flex-none items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:opacity-50"
 								><svg
 									class="h-8 w-8 text-orange-600"
 									width="24"
@@ -961,7 +927,7 @@
 								<p class="mt-2 text-sm text-red-600">{trade.error}</p>
 							{/if}
 						</div>
-					</div>
+					</fieldset>
 				{/if}
 			</div>
 			<div
@@ -1175,30 +1141,9 @@
 </div>
 
 <style>
-	.fade-red-to-green {
-		transition: color 1s;
-		color: red;
-	}
-	.fade-red-to-green.connected {
-		color: green;
-	}
 	.qr :global(svg) {
 		display: block;
 		width: 100%;
 		height: auto;
-	}
-	.blinking {
-		animation: blinkingText 1.5s infinite;
-	}
-	@keyframes blinkingText {
-		0% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0;
-		}
-		100% {
-			opacity: 1;
-		}
 	}
 </style>
