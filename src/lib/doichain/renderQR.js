@@ -11,7 +11,7 @@ import {
 	// Bytes,
 } from '@keystonehq/bc-ur-registry/dist';
 import vkQr from '@vkontakte/vk-qr';
-import {Psbt} from "bitcoinjs-lib";
+import {Psbt} from "@doichain/doichainjs-lib";
 
 function base64ToHex(base64) {
 	const binaryString = atob(base64);

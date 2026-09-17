@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { payments } from 'bitcoinjs-lib';
+import { payments } from '@doichain/doichainjs-lib';
 import { DOICHAIN, DOICHAIN_REGTEST } from './doichain.js';
 import { cleanAddressInput, isAddressOf, isP2WPKHAddress } from './addressValidation.js';
 import { fixture } from './__fixtures__/fakeElectrumClient.js';

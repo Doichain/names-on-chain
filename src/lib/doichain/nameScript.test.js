@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { payments } from 'bitcoinjs-lib';
+import { payments } from '@doichain/doichainjs-lib';
 import { DOICHAIN } from './doichain.js';
 import { getNameOPStackScript, NAME_MAX_LENGTH } from './getNameOPStackScript.js';
 import { describeNameBytes, normalizeName } from './nameBytes.js';
