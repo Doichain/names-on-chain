@@ -1,10 +1,6 @@
 .DS_Store
 .idea
 public
-/namokado_*
-/namokado_v0.1.4
-/helia-blocks
-/helia-data
 node_modules
 /.svelte-kit
 /package

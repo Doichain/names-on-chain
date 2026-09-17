@@ -32,9 +32,21 @@ describe('name bytes', () => {
 	});
 
 	it('flags names beyond ASCII and names mixing Latin with Cyrillic', () => {
-		expect(describeNameBytes('hello')).toMatchObject({ isAscii: true, mixesScripts: false, byteLength: 5 });
-		expect(describeNameBytes('münchen')).toMatchObject({ isAscii: false, mixesScripts: false, byteLength: 8 });
-		expect(describeNameBytes('pаypаl')).toMatchObject({ isAscii: false, mixesScripts: true, hex: '70 d0 b0 79 70 d0 b0 6c' });
+		expect(describeNameBytes('hello')).toMatchObject({
+			isAscii: true,
+			mixesScripts: false,
+			byteLength: 5
+		});
+		expect(describeNameBytes('münchen')).toMatchObject({
+			isAscii: false,
+			mixesScripts: false,
+			byteLength: 8
+		});
+		expect(describeNameBytes('pаypаl')).toMatchObject({
+			isAscii: false,
+			mixesScripts: true,
+			hex: '70 d0 b0 79 70 d0 b0 6c'
+		});
 	});
 });
 
@@ -52,11 +64,15 @@ describe('getNameOPStackScript', () => {
 		const hash = Buffer.alloc(20, 0x11);
 		const { address } = payments.p2wpkh({ hash, network: DOICHAIN });
 		const script = getNameOPStackScript('hello', 'world', address, DOICHAIN).toString('hex');
-		expect(script).toBe('5a' + pushData('hello') + pushData('world') + '6d75' + '0014' + hash.toString('hex'));
+		expect(script).toBe(
+			'5a' + pushData('hello') + pushData('world') + '6d75' + '0014' + hash.toString('hex')
+		);
 	});
 
 	it('allows an empty value instead of a placeholder', () => {
-		const script = getNameOPStackScript('hello', '', fixture.fundedAddress, DOICHAIN).toString('hex');
+		const script = getNameOPStackScript('hello', '', fixture.fundedAddress, DOICHAIN).toString(
+			'hex'
+		);
 		expect(script.startsWith('5a' + pushData('hello') + '00' + '6d75')).toBe(true);
 	});
 
@@ -67,12 +83,16 @@ describe('getNameOPStackScript', () => {
 
 	it('refuses an address of another network', () => {
 		const bitcoinAddress = payments.p2pkh({ hash: Buffer.alloc(20, 0x33) }).address;
-		expect(() => getNameOPStackScript('hello', '', bitcoinAddress, DOICHAIN)).toThrow(/Invalid recipient address/);
+		expect(() => getNameOPStackScript('hello', '', bitcoinAddress, DOICHAIN)).toThrow(
+			/Invalid recipient address/
+		);
 	});
 
 	it('asks for the same minimum length as the name check', () => {
 		expect(NAME_MIN_LENGTH).toBe(4);
-		expect(() => getNameOPStackScript('abc', '', fixture.fundedAddress, DOICHAIN)).toThrow(/at least 4 characters/);
+		expect(() => getNameOPStackScript('abc', '', fixture.fundedAddress, DOICHAIN)).toThrow(
+			/at least 4 characters/
+		);
 		expect(() => getNameOPStackScript('abcd', '', fixture.fundedAddress, DOICHAIN)).not.toThrow();
 	});
 
@@ -93,7 +113,10 @@ describe('nameShow', () => {
 	it('queries the name index hash ElectrumX computes for a registered name', async () => {
 		const client = fakeElectrumClient();
 		const outputs = await nameShow(client, fixture.name);
-		expect(client.requests[0]).toEqual(['blockchain.scripthash.get_history', [fixture.nameIndexScripthash]]);
+		expect(client.requests[0]).toEqual([
+			'blockchain.scripthash.get_history',
+			[fixture.nameIndexScripthash]
+		]);
 		expect(outputs.some((vout) => vout.scriptPubKey.nameOp?.name === fixture.name)).toBe(true);
 	});
 

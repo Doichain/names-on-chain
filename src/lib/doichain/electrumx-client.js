@@ -13,7 +13,7 @@ export const makeRequest = (method, params, id) => {
 		jsonrpc: '2.0',
 		method: method,
 		params: params,
-		id: id,
+		id: id
 	});
 };
 
@@ -38,7 +38,6 @@ export const createPromiseResultBatch = (resolve, reject, argz) => {
 };
 
 export class ElectrumxClient {
-
 	/**
 	 * @param {string} host
 	 * @param {number} port
@@ -83,23 +82,23 @@ export class ElectrumxClient {
 			this.ws = ws;
 
 			ws.onopen = () => {
-				console.log("connected websocket main component");
+				console.log('connected websocket main component');
 				this.startKeepAlive();
 				resolve();
 			};
 
 			ws.onmessage = (messageEvent) => {
 				this.onMessage(messageEvent.data);
-			}
+			};
 
-			ws.onclose = e => {
+			ws.onclose = (e) => {
 				console.log('Socket is closed: ' + (e?.code ?? ''));
 				this.status = 0;
 				this.onClose(e);
 			};
 
 			ws.onerror = () => {
-				console.error("Socket encountered error, closing socket", url);
+				console.error('Socket encountered error, closing socket', url);
 				this.status = 0;
 				ws.close();
 				// the error event carries no message, so at least name the server
@@ -136,11 +135,17 @@ export class ElectrumxClient {
 				}
 			}, this.timeout);
 			this.callback_message_queue[id] = createPromiseResult(
-				(result) => { clearTimeout(timer); resolve(result); },
-				(error) => { clearTimeout(timer); reject(error); }
+				(result) => {
+					clearTimeout(timer);
+					resolve(result);
+				},
+				(error) => {
+					clearTimeout(timer);
+					reject(error);
+				}
 			);
 			try {
-				this.ws.send(content + '\n', 'utf8');
+				this.ws.send(content + '\n');
 			} catch (error) {
 				delete this.callback_message_queue[id];
 				clearTimeout(timer);
@@ -166,9 +171,13 @@ export class ElectrumxClient {
 				arguments_far_calls[id] = param;
 			}
 			const content = '[' + contents.join(',') + ']';
-			this.callback_message_queue[this.id] = createPromiseResultBatch(resolve, reject, arguments_far_calls);
+			this.callback_message_queue[this.id] = createPromiseResultBatch(
+				resolve,
+				reject,
+				arguments_far_calls
+			);
 			// callback will exist only for max id
-			this.ws.send(content + '\n', 'utf8');
+			this.ws.send(content + '\n');
 		});
 	}
 
@@ -189,7 +198,9 @@ export class ElectrumxClient {
 		if (callback) {
 			delete this.callback_message_queue[msg.id];
 			if (msg.error) {
-				const error = new Error(msg.error.message ?? JSON.stringify(msg.error));
+				const error = /** @type {Error & {code?: number}} */ (
+					new Error(msg.error.message ?? JSON.stringify(msg.error))
+				);
 				error.code = msg.error.code;
 				callback(error);
 			} else {
@@ -223,7 +234,7 @@ export class ElectrumxClient {
 	onClose(e) {
 		this.status = 0;
 		this.stopKeepAlive();
-		Object.keys(this.callback_message_queue).forEach(key => {
+		Object.keys(this.callback_message_queue).forEach((key) => {
 			this.callback_message_queue[key](new Error('close connect'));
 			delete this.callback_message_queue[key];
 		});
@@ -247,5 +258,4 @@ export class ElectrumxClient {
 		if (this.keepAliveTimer) clearInterval(this.keepAliveTimer);
 		this.keepAliveTimer = undefined;
 	}
-
 }

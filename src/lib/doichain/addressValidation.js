@@ -44,5 +44,8 @@ export function isP2WPKHAddress(network, candidate) {
  * @returns {string}
  */
 export function cleanAddressInput(text) {
-	return (text ?? '').trim().replace(/^doichain:/i, '').split('?')[0];
+	return (text ?? '')
+		.trim()
+		.replace(/^doichain:/i, '')
+		.split('?')[0];
 }
