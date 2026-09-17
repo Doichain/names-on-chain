@@ -12,14 +12,17 @@ export default defineConfig({
 	plugins: [
 		// wasm(),
 		sveltekit(),
+		// Only Buffer is polyfilled: the name scripts and PSBTs are built from bytes.
+		// Everything else comes from real packages (events), so no Node shim ends up
+		// in the bundle.
 		nodePolyfills({
-			// exclude: ['fs'],
+			include: ['buffer'],
 			globals: {
 				Buffer: true,
-				global: true,
-				process: true
+				global: false,
+				process: false
 			},
-			protocolImports: true
+			protocolImports: false
 		})
 	],
 	build: {
