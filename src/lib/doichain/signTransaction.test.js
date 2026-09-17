@@ -11,12 +11,28 @@ import { fakeElectrumClient, fixture } from './__fixtures__/fakeElectrumClient.j
 const STORAGE_FEE = 1_000_000;
 
 async function coins() {
-	const { utxoAddresses } = await getUtxosAndNamesOfAddress(fakeElectrumClient(), fixture.fundedAddress);
+	const { utxoAddresses } = await getUtxosAndNamesOfAddress(
+		fakeElectrumClient(),
+		fixture.fundedAddress
+	);
 	return utxoAddresses;
 }
 
-const register = (utxos, name = 'noc-test-name', storageFee = STORAGE_FEE, recipient = fixture.fundedAddress) =>
-	signTransaction(utxos, name, DOICHAIN, storageFee, recipient, fixture.fundedAddress, fixture.fundedAddress);
+const register = (
+	utxos,
+	name = 'noc-test-name',
+	storageFee = STORAGE_FEE,
+	recipient = fixture.fundedAddress
+) =>
+	signTransaction(
+		utxos,
+		name,
+		DOICHAIN,
+		storageFee,
+		recipient,
+		fixture.fundedAddress,
+		fixture.fundedAddress
+	);
 
 describe('registration PSBT', () => {
 	it('registers the name with an empty value and pays the change back', async () => {
@@ -28,7 +44,11 @@ describe('registration PSBT', () => {
 		expect(psbt.version).toBe(VERSION);
 		const nameOutputs = psbt.txOutputs.filter((output) => isNameScript(output.script));
 		expect(nameOutputs).toHaveLength(1);
-		expect(nameOutputs[0].script.equals(getNameOPStackScript('noc-test-name', '', fixture.fundedAddress, DOICHAIN))).toBe(true);
+		expect(
+			nameOutputs[0].script.equals(
+				getNameOPStackScript('noc-test-name', '', fixture.fundedAddress, DOICHAIN)
+			)
+		).toBe(true);
 		expect(nameOutputs[0].value).toBe(STORAGE_FEE);
 
 		const inputs = psbt.data.inputs.length;
@@ -87,8 +107,15 @@ describe('registration PSBT', () => {
 		function coinsWorth(values) {
 			const tx = new Transaction();
 			tx.addInput(Buffer.alloc(32, 7), 0);
-			for (const value of values) tx.addOutput(address.toOutputScript(fixture.fundedAddress, DOICHAIN), value);
-			return values.map((value, n) => ({ hash: tx.getId(), n, value, height: 431000, hex: tx.toHex() }));
+			for (const value of values)
+				tx.addOutput(address.toOutputScript(fixture.fundedAddress, DOICHAIN), value);
+			return values.map((value, n) => ({
+				hash: tx.getId(),
+				n,
+				value,
+				height: 431000,
+				hex: tx.toHex()
+			}));
 		}
 
 		it('spends only the coins it needs, the largest first', () => {
@@ -105,7 +132,16 @@ describe('registration PSBT', () => {
 			expect(result.error).toBeUndefined();
 			expect(result.coinsUsed).toBe(12);
 			expect(result.transactionFee).toBeGreaterThanOrEqual(MIN_RELAY_FEE_RATE * result.vsize);
-			const faster = signTransaction(coinsWorth(Array.from({ length: 12 }, () => 200_000)), 'noc-test-name', DOICHAIN, STORAGE_FEE, fixture.fundedAddress, fixture.fundedAddress, fixture.fundedAddress, 300);
+			const faster = signTransaction(
+				coinsWorth(Array.from({ length: 12 }, () => 200_000)),
+				'noc-test-name',
+				DOICHAIN,
+				STORAGE_FEE,
+				fixture.fundedAddress,
+				fixture.fundedAddress,
+				fixture.fundedAddress,
+				300
+			);
 			expect(faster.error).toBeUndefined();
 			expect(faster.transactionFee).toBeGreaterThanOrEqual(300 * faster.vsize);
 		});

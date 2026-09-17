@@ -59,11 +59,6 @@
 	 */
 	let nameOpTxs = [];
 	/**
-	 * Indicates whether the UTXO address is valid
-	 * @type {boolean}
-	 */
-	let isUTXOAddressValid = true;
-	/**
 	 * Error message for UTXO address validation issues
 	 * @type {string}
 	 */

@@ -65,7 +65,13 @@ describe('name check with expiry', () => {
 
 	it('says until which block a taken name belongs to its owner', async () => {
 		electrumBlockchainBlockHeadersSubscribe.set({ height: fixture.tipHeight });
-		const result = await _checkName(fakeElectrumClient(), fixture.fundedAddress, fixture.name, 0, 0);
+		const result = await _checkName(
+			fakeElectrumClient(),
+			fixture.fundedAddress,
+			fixture.name,
+			0,
+			0
+		);
 		expect(result.isNameValid).toBe(false);
 		expect(result.currentNameAddress).toBe(fixture.owner);
 		expect(result.nameErrorMessage).toContain(
@@ -75,7 +81,13 @@ describe('name check with expiry', () => {
 
 	it('offers an expired name for registration again', async () => {
 		electrumBlockchainBlockHeadersSubscribe.set({ height: REGISTERED_AT + 36000 });
-		const result = await _checkName(fakeElectrumClient(), fixture.fundedAddress, fixture.name, 0, 0);
+		const result = await _checkName(
+			fakeElectrumClient(),
+			fixture.fundedAddress,
+			fixture.name,
+			0,
+			0
+		);
 		expect(result.isNameValid).toBe(true);
 		expect(result.nameNotice).toContain('expired');
 	});

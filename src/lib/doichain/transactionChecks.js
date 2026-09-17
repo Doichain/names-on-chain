@@ -20,7 +20,8 @@ export const isNameScript = (script) => NAME_OPCODES.includes(script?.[0]);
  * OP_0 <20 bytes>
  * @param {Buffer} script
  */
-export const isP2WPKHScript = (script) => script?.length === 22 && script[0] === 0x00 && script[1] === 0x14;
+export const isP2WPKHScript = (script) =>
+	script?.length === 22 && script[0] === 0x00 && script[1] === 0x14;
 
 /**
  * The output a UTXO points to, read from the raw transaction instead of the
@@ -54,7 +55,12 @@ export function verifiedOutput(utxo) {
  * @param {object} [extra] - further input fields, e.g. sequence
  */
 export function inputFor(utxo, output, extra = {}) {
-	const input = { hash: utxo.hash, index: utxo.n, nonWitnessUtxo: Buffer.from(utxo.hex, 'hex'), ...extra };
+	const input = {
+		hash: utxo.hash,
+		index: utxo.n,
+		nonWitnessUtxo: Buffer.from(utxo.hex, 'hex'),
+		...extra
+	};
 	if (isP2WPKHScript(output.script)) {
 		input.witnessUtxo = { script: output.script, value: output.value };
 	}
