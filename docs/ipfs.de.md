@@ -16,7 +16,7 @@ behält. Dieses Behalten heißt Pinnen.
    `ipfs daemon`.
 2. Bauen Sie die Lektion und fügen Sie den Build-Ordner hinzu:
    ```bash
-   npm run build
+   pnpm run build
    ipfs add -r -Q --cid-version=1 public
    ```
    Der zweite Befehl gibt die CID Ihres Builds aus.
