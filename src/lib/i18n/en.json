@@ -42,6 +42,8 @@
 	"name": {
 		"intro": "Register your favorite Doichain name!",
 		"label": "Name to register",
+		"check": "Check name",
+		"notChecked": "Not checked yet. The name reaches a server only when you check it.",
 		"placeholder": "name",
 		"address": "Address: {address}",
 		"checking": "Checking \"{name}\" …",
