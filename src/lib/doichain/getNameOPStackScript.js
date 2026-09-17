@@ -1,5 +1,4 @@
 import { address } from '@doichain/doichainjs-lib';
-import { DOICHAIN } from './doichain.js';
 import { normalizeName } from './nameBytes.js';
 import { pushData } from './pushData.js';
 
@@ -18,7 +17,8 @@ const ERRORS = {
 	NAME_ID_LENGTH: `nameId must have at least ${NAME_MIN_LENGTH} characters and at most ${NAME_MAX_LENGTH} bytes`,
 	NAME_VALUE_LENGTH: `nameValue must not be longer than ${VALUE_MAX_LENGTH} bytes`,
 	INVALID_ADDRESS: 'Invalid recipient address: ',
-	UNSUPPORTED_ADDRESS: 'A name can only be sent to a P2PKH or P2WPKH address, not to '
+	UNSUPPORTED_ADDRESS: 'A name can only be sent to a P2PKH or P2WPKH address, not to ',
+	NETWORK_MISSING: 'The network is missing: pass DOICHAIN, DOICHAIN_REGTEST or another network'
 };
 
 /**
@@ -62,9 +62,13 @@ const isP2WPKH = (output) => output.length === 22 && output[0] === 0x00 && outpu
  * @param {object} network - The Doichain network object (DOICHAIN, DOICHAIN_REGTEST, ...).
  * @returns {Buffer} The compiled script as a Buffer.
  */
-export const getNameOPStackScript = (nameId, nameValue, recipientAddress, network = DOICHAIN) => {
+export const getNameOPStackScript = (nameId, nameValue, recipientAddress, network) => {
 	if (!nameId || nameValue === undefined || nameValue === null) {
 		throw new Error(ERRORS.NAME_ID_DEFINED);
+	}
+	// no silent fallback to mainnet: a regtest address must not become a mainnet script
+	if (!network) {
+		throw new Error(ERRORS.NETWORK_MISSING);
 	}
 
 	const name = Buffer.from(normalizeName(nameId), 'utf8');
