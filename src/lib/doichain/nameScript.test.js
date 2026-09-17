@@ -96,6 +96,12 @@ describe('getNameOPStackScript', () => {
 		);
 	});
 
+	it('refuses to guess the network', () => {
+		expect(() => getNameOPStackScript('hello', '', fixture.fundedAddress, undefined)).toThrow(
+			/network is missing/
+		);
+	});
+
 	it('asks for the same minimum length as the name check', () => {
 		expect(NAME_MIN_LENGTH).toBe(4);
 		expect(() => getNameOPStackScript('abc', '', fixture.fundedAddress, DOICHAIN)).toThrow(

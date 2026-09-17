@@ -1,11 +1,11 @@
 import { getUTXOSFromAddress } from './nameDoi.js';
 import { getScriptPubKeyAddress } from './scriptPubKeyAddress.js';
 
-export async function getUtxosAndNamesOfAddress(electrumClient, doichainAddress) {
+export async function getUtxosAndNamesOfAddress(electrumClient, doichainAddress, network) {
 	let nameOpTxs = [];
 	let utxoAddresses = [];
 	let totalUtxoValue = 0;
-	const result = await getUTXOSFromAddress(electrumClient, doichainAddress);
+	const result = await getUTXOSFromAddress(electrumClient, doichainAddress, network);
 	for (let utxo of result) {
 		const scriptPubKey = utxo.fullTx.scriptPubKey;
 		if (!scriptPubKey.nameOp) {
