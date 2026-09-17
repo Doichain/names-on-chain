@@ -13,7 +13,8 @@ const STORAGE_FEE = 1_000_000;
 async function coins() {
 	const { utxoAddresses } = await getUtxosAndNamesOfAddress(
 		fakeElectrumClient(),
-		fixture.fundedAddress
+		fixture.fundedAddress,
+		DOICHAIN
 	);
 	return utxoAddresses;
 }
