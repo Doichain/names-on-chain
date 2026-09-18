@@ -25,15 +25,29 @@ describe('blockHash', () => {
 });
 
 describe('verifyChain', () => {
-	it('accepts a server that has the checkpoint block of the valid chain', async () => {
-		expect(CHECKPOINTS['doichain-mainnet'].hash).toBe(headers.checkpoint.hash);
-		const server = serverWith({ 431017: headers.checkpoint.hex });
-		expect(await verifyChain(server, DOICHAIN)).toEqual({ ok: true });
-		expect(server.requests).toEqual([['blockchain.block.header', [431017]]]);
+	it('asks for the first block the two chains do not share', () => {
+		// the flag day block is on both chains: the old nodes accepted it as well
+		expect(headers.sharedWithOldChain.height).toBe(431017);
+		expect(headers.oldChain.height).toBe(CHECKPOINTS['doichain-mainnet'].height);
+		expect(headers.oldChain.hash).not.toBe(headers.checkpoint.hash);
+		// both build on the block they share
+		expect(headers.oldChain.hex.slice(8, 72)).toBe(headers.checkpoint.hex.slice(8, 72));
 	});
 
-	it('refuses a server with another block at the checkpoint height', async () => {
-		const server = serverWith({ 431017: headers.blockBeforeSplit.hex });
+	it('accepts a server that has the checkpoint block of the valid chain', async () => {
+		expect(CHECKPOINTS['doichain-mainnet'].hash).toBe(headers.checkpoint.hash);
+		const server = serverWith({ 431018: headers.checkpoint.hex });
+		expect(await verifyChain(server, DOICHAIN)).toEqual({ ok: true });
+		expect(server.requests).toEqual([['blockchain.block.header', [431018]]]);
+	});
+
+	it('refuses a server that follows the old chain', async () => {
+		const server = serverWith({ 431018: headers.oldChain.hex });
+		expect(await verifyChain(server, DOICHAIN)).toEqual({ ok: false, reason: 'wrongChain' });
+	});
+
+	it('is not fooled by the block both chains share', async () => {
+		const server = serverWith({ 431018: headers.sharedWithOldChain.hex });
 		expect(await verifyChain(server, DOICHAIN)).toEqual({ ok: false, reason: 'wrongChain' });
 	});
 
@@ -42,7 +56,7 @@ describe('verifyChain', () => {
 			ok: false,
 			reason: 'unverified'
 		});
-		expect(await verifyChain(serverWith({ 431017: 'abcd' }), DOICHAIN)).toEqual({
+		expect(await verifyChain(serverWith({ 431018: 'abcd' }), DOICHAIN)).toEqual({
 			ok: false,
 			reason: 'unverified'
 		});

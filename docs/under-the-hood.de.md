@@ -65,8 +65,12 @@ gebundenem Coin für immer ein; Cores eigene RPCs hören bei 520 auf
 
 ## Die Regeln seit dem Split
 
-Doichain hat sich am 11. September 2026 bei Block 431.017 geteilt. Ab diesem
-Block wendet Doichain Core v31.1.x strenge Eigentumsregeln auf `name_doi` an:
+Die neuen Regeln griffen am 11. September 2026 mit Block 431.017. Diesen Block
+haben auch die alten Knoten angenommen – Doichain hat das Schwierigkeitsfeld nie
+durchgesetzt –, also liefen die Ketten noch einen Block gemeinsam weiter und
+trennten sich bei 431.018, wo jede einen eigenen Block auf demselben Vorgänger
+hat. Ab diesem Block wendet Doichain Core v31.1.x strenge Eigentumsregeln auf
+`name_doi` an:
 
 - Ein **freier oder abgelaufener** Name wird ohne Namens-Input registriert; eine
   Registrierung, die einen ausgibt, ist ungültig.
@@ -116,7 +120,9 @@ Vor dem Split durfte nach den alten Regeln jeder einen registrierten Namen
 ## Was Sie weiter vertrauen
 
 - **Der Kette eines Servers.** ElectrumX schickt keine Beweise. Die App fragt
-  jeden Server nach Block 431.017 und vergleicht dessen Hash mit dem der gültigen
+  jeden Server nach Block 431.018 – dem ersten Block, den die Kette des Forks und
+  die alte Kette nicht teilen, denn den Flag-Day-Block 431.017 haben die alten
+  Knoten ebenfalls angenommen – und vergleicht dessen Hash mit dem der gültigen
   Kette; ein Server, der durchfällt, zählt als Fehlversuch. Über neuere Blöcke
   sagt das nichts, und ein Server kann weiterhin eine Transaktion weglassen. Die
   Statuszeile verlinkt den neuesten Block im Explorer, damit Sie selbst
