@@ -36,7 +36,9 @@ Sie brauchen Node 22 (siehe `.nvmrc`). Öffnen Sie die Adresse, die `pnpm dev` a
 
 `src/routes/+layout.js` startet die Verbindung, sobald die Seite lädt. `src/lib/doichain/connectElectrum.js` wählt zufällig einen der Server aus `doichain-store.js` und öffnet mit `electrumx-client.js` einen WebSocket zu ihm. Anfragen und Antworten sind JSON-RPC-Nachrichten.
 
-Ein Server antwortet mit der Kette, der sein Knoten folgt, und schickt keinen Beweis mit. Bevor die App einer Antwort traut, fragt sie deshalb nach Block 431.017, dem ersten Block nach dem Chain-Split von Doichain, und vergleicht dessen Hash mit dem, den sie kennt (`chainCheck.js`). Ein Server auf der alten Kette zählt als Fehlversuch, und die App versucht einen anderen. `ConnectionStatus.svelte` zeigt jeden Schritt an.
+Ein Server antwortet mit der Kette, der sein Knoten folgt, und schickt keinen Beweis mit. Bevor die App einer Antwort traut, fragt sie deshalb nach Block 431.018 und vergleicht dessen Hash mit dem, den sie kennt (`chainCheck.js`). Ein Server auf der alten Kette zählt als Fehlversuch, und die App versucht einen anderen. `ConnectionStatus.svelte` zeigt jeden Schritt an.
+
+Warum 431.018 und nicht 431.017, der Block, mit dem die neuen Regeln griffen? Weil dieser auf beiden Ketten steht: Doichain hat das Schwierigkeitsfeld nie durchgesetzt, also haben ihn die alten Knoten ebenfalls angenommen. Beide Ketten setzen ihren nächsten Block darauf – und dort trennen sie sich.
 
 ### 2. Einen Namen prüfen
 
@@ -111,7 +113,7 @@ Es gibt eine Operation in Block 353030 aus. Plus 36.000 ergibt 389030, den Block
 - **Das Index-Skript, Byte für Byte.** Für `doichain` lautet es `53 08 646f69636861696e 00 6d 75 6a`: `OP_3` (bei Namecoin `OP_NAME_UPDATE`), ein Push von 8 Bytes mit dem Namen, `OP_0` als leerer Wert, `OP_2DROP`, `OP_DROP`, `OP_RETURN`. Der Server speichert den SHA-256-Hash dieser Bytes in umgekehrter Byte-Reihenfolge.
 - **Bytes, keine Zeichen.** Namen werden als UTF-8-Bytes gespeichert; `münchen` braucht 8 davon. Die App normalisiert einen Namen vor dem Hashen auf Unicode NFC und warnt vor Zeichen jenseits von ASCII und vor Namen, die Alphabete mischen: Gleich aussehende Namen können aus verschiedenen Bytes bestehen.
 - **Anfragen und Benachrichtigungen.** Eine Anfrage trägt eine `id`, ihre Antwort dieselbe `id`. Nach `blockchain.headers.subscribe` kommen neue Blöcke als Benachrichtigungen ohne `id`. Der Client sendet alle 90 Sekunden einen Ping, weil ElectrumX stille Verbindungen schließt, und eine Anfrage scheitert nach 30 Sekunden ohne Antwort.
-- **Was der Prüfpunkt beweist.** Nur, dass die Kette des Servers Block 431.017 der gültigen Kette enthält. Über neuere Blöcke und über Transaktionen beweist er nichts, und ein Server kann weiterhin Daten weglassen. Mit dem Explorer-Link neben dem Servernamen vergleichen Sie den neuesten Block selbst.
+- **Was der Prüfpunkt beweist.** Nur, dass die Kette des Servers Block 431.018 der gültigen Kette enthält – den ersten Block, den die beiden Ketten nicht teilen. Über neuere Blöcke und über Transaktionen beweist er nichts, und ein Server kann weiterhin Daten weglassen. Mit dem Explorer-Link neben dem Servernamen vergleichen Sie den neuesten Block selbst.
 - **Warum der Split für Namen zählt.** Vor Block 431.017 durfte nach den alten Regeln jeder einen registrierten Namen überschreiben. Seitdem ändert ihn nur eine Transaktion, die den vorigen Output des Namens ausgibt.
 
 </details>
