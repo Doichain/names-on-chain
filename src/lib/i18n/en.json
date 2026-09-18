@@ -41,7 +41,7 @@
 	},
 	"steps": {
 		"name": "Check a name",
-		"address": "Name your address",
+		"address": "Give your address",
 		"psbt": "Look at what it costs",
 		"wallet": "Sign it in your wallet",
 		"buy": "Buy the name",
