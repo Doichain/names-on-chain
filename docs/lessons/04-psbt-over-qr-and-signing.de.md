@@ -4,6 +4,8 @@
 
 Das Registrierungs-PSBT aus Lektion 3 verlässt den Browser: als animierter QR-Code, den DoiWallet scannt, als Text zum Kopieren oder als `.psbt`-Datei. DoiWallet signiert und sendet es. Die App signiert nie und sendet nie.
 
+![Das PSBT auf dem Bildschirm: ein Bild des animierten QR-Codes mit seinen Knöpfen, Kopieren, Speichern und Teilen, die drei Schritte und das PSBT in Base64](../img/lesson04.png)
+
 ## Was Sie lernen
 
 - Wie ein PSBT, das für einen QR-Code zu lang ist, als Folge von QR-Codes reist (BC-UR).
