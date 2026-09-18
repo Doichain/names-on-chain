@@ -1,6 +1,9 @@
 <script>
 	import { onDestroy, tick } from 'svelte';
+	import sb from 'satoshi-bitcoin';
 	import { _ } from '$lib/i18n/index.js';
+	import { describePsbt } from '$lib/doichain/describePsbt.js';
+	import { network } from '$lib/doichain/doichain-store.js';
 	import { renderBCUR } from '$lib/doichain/renderQR.js';
 
 	/** the PSBT to hand over, Base64, or undefined while there is nothing to hand over */
@@ -36,6 +39,34 @@
 
 	/** The QR code, brought into view on small screens once it is created */
 	let qrContainer;
+
+	/** 'simple' says what happens, 'technical' what the wallet will read */
+	let view = 'simple';
+
+	/** The PSBT as the wallet reads it; undefined while nothing is to be shown */
+	$: details = view === 'technical' && psbt ? read(psbt) : undefined;
+
+	/** @param {string} base64 */
+	function read(base64) {
+		try {
+			return describePsbt(base64, $network);
+		} catch (error) {
+			console.error('Could not read the PSBT:', error);
+			return undefined;
+		}
+	}
+
+	/** the transaction version, the way Doichain writes it */
+	const hex = (version) => '0x' + version.toString(16);
+
+	/** what an output pays to: the name, an address, or a script without one */
+	const payee = (output) =>
+		output.isName
+			? $_('psbt.technical.nameOutput') +
+				' (' +
+				(output.address ?? $_('psbt.technical.unknownAddress')) +
+				')'
+			: (output.address ?? $_('psbt.technical.unknownAddress'));
 
 	/** Sharing files (e.g. to DoiWallet on the same phone) works in this browser */
 	const canShareFiles = (() => {
@@ -239,9 +270,67 @@
 			<p class="mt-2 text-sm text-red-600">{$_('psbt.copyFailed')}</p>
 		{/if}
 	</div>
-	<ol class="mt-4 list-decimal space-y-1 break-words pl-5 text-sm leading-6 text-gray-800">
-		<slot name="steps" />
-	</ol>
+	<div class="mt-4 flex flex-wrap gap-2" role="group" aria-label={$_('psbt.views.label')}>
+		{#each ['simple', 'technical'] as which (which)}
+			<button
+				type="button"
+				on:click={() => (view = which)}
+				aria-pressed={view === which}
+				class="min-h-[44px] rounded-md px-3 text-sm font-semibold ring-1 ring-inset {view === which
+					? 'bg-indigo-600 text-white ring-indigo-600'
+					: 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50'} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+				>{$_(`psbt.views.${which}`)}</button
+			>
+		{/each}
+	</div>
+	{#if view === 'simple'}
+		<ol class="mt-4 list-decimal space-y-1 break-words pl-5 text-sm leading-6 text-gray-800">
+			<slot name="steps" />
+		</ol>
+	{:else if details}
+		<div class="mt-4 space-y-3 text-sm leading-6 text-gray-800">
+			<p>{$_('psbt.technical.version', { values: { version: hex(details.version) } })}</p>
+			<div>
+				<h4 class="font-semibold">{$_('psbt.technical.inputs')}</h4>
+				<ul class="mt-1 space-y-1">
+					{#each details.inputs as input (input.txid + input.n)}
+						<li class="break-all font-mono text-xs">
+							{$_('psbt.technical.input', {
+								values: {
+									txid: input.txid,
+									n: input.n,
+									amount: input.value === undefined ? '?' : sb.toBitcoin(input.value)
+								}
+							})}
+						</li>
+					{/each}
+				</ul>
+			</div>
+			<div>
+				<h4 class="font-semibold">{$_('psbt.technical.outputs')}</h4>
+				<ul class="mt-1 space-y-2">
+					{#each details.outputs as output, i (i)}
+						<li class="break-words">
+							{$_('psbt.technical.output', {
+								values: { amount: sb.toBitcoin(output.value), to: payee(output) }
+							})}
+							{#if output.isName}
+								<p class="mt-1 break-all font-mono text-xs text-gray-600">
+									{$_('psbt.technical.asm')}: {output.asm}
+								</p>
+								<p class="mt-1 break-all font-mono text-xs text-gray-600">
+									{$_('psbt.technical.script')}: {output.hex}
+								</p>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			</div>
+			{#if details.fee !== undefined}
+				<p>{$_('psbt.technical.fee', { values: { amount: sb.toBitcoin(details.fee) } })}</p>
+			{/if}
+		</div>
+	{/if}
 	<div class="mt-4">
 		<label for="psbt" class="block text-sm font-medium leading-6 text-gray-900"
 			>{$_('psbt.label')}</label

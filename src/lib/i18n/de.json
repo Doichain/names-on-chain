@@ -125,6 +125,23 @@
 			"check": "Prüfen Sie die Outputs in Ihrer Wallet: {locked} DOI mit dem Namen und {change} DOI Wechselgeld gehen an {address}.",
 			"send": "Signieren und senden Sie nur, wenn jeder Output Ihren Erwartungen entspricht."
 		},
+		"views": {
+			"label": "Zwei Blicke darauf",
+			"simple": "Was passiert",
+			"technical": "Was drinsteht"
+		},
+		"technical": {
+			"version": "Version {version}, eine Doichain-Namens-Transaktion",
+			"inputs": "Coins, die sie ausgibt",
+			"outputs": "Wohin die Coins gehen",
+			"fee": "Für die Miner übrig: {amount} DOI",
+			"nameOutput": "den Namen",
+			"unknownAddress": "ein Script ohne Adresse",
+			"script": "Script",
+			"asm": "Script, ausgeschrieben",
+			"input": "{txid}:{n}, {amount} DOI",
+			"output": "{amount} DOI an {to}"
+		},
 		"errors": {
 			"nameScript": "Es wurde keine Transaktion gebaut, der Namens-Output ließ sich nicht erzeugen: {error}",
 			"prevout": "Es wurde keine Transaktion gebaut: Der Server lieferte zu {txid} Daten, die nicht zu dieser Transaktion passen.",

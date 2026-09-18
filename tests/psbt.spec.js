@@ -59,3 +59,21 @@ test('hands the PSBT to the wallet as an animated QR code', async ({ page }) => 
 	await expect(page.getByRole('button', { name: 'Play' })).toBeVisible();
 	expect(errors).toEqual([]);
 });
+
+test('shows the PSBT as what happens, and as what is in it', async ({ page }) => {
+	await prepare(page);
+	await page.getByRole('button', { name: 'Create PSBT' }).click();
+	await expect(page.locator('.qr svg')).toBeVisible();
+
+	// the simple view is the one that opens
+	await expect(page.getByText(/Scan the QR code with DoiWallet/)).toBeVisible();
+
+	await page.getByRole('button', { name: "What's in it" }).click();
+	await expect(page.getByText('Version 0x7100, a Doichain name transaction')).toBeVisible();
+	await expect(page.getByText('Coins it spends')).toBeVisible();
+	await expect(page.getByText(/OP_10 [0-9a-f]+ OP_0 OP_2DROP OP_DROP/)).toBeVisible();
+	await expect(page.getByText(/Left for the miners: [\d.]+ DOI/)).toBeVisible();
+
+	await page.getByRole('button', { name: 'What happens' }).click();
+	await expect(page.getByText(/Scan the QR code with DoiWallet/)).toBeVisible();
+});
