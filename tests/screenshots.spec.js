@@ -96,10 +96,12 @@ test('lesson 4: the PSBT as a QR code the wallet reads', async ({ page }) => {
 
 	await page.getByRole('button', { name: 'Create PSBT' }).click();
 	await expect(page.locator('.qr svg')).toBeVisible();
-	// a still frame, so the picture does not depend on the moment it was taken
+	// the first frame, always, so only the fragments in it differ from run to run
 	await page.getByRole('button', { name: 'Pause' }).click();
 	await expect(page.getByRole('button', { name: 'Play' })).toBeVisible();
+	while (!(await page.getByText(/QR code frame 1 of/).isVisible()))
+		await page.getByRole('button', { name: 'Next' }).click();
 	await expect(page.getByLabel('PSBT (Base64)')).toHaveValue(/^cHNidP/);
 
-	await page.screenshot({ path: 'docs/img/lesson04.png', fullPage: true });
+	await shoot(page, 'lesson04.png');
 });
