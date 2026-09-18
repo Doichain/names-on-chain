@@ -47,7 +47,7 @@ test('speaks German when asked to', async ({ page }) => {
 
 test('does not use a server on the old chain', async ({ page }) => {
 	await speak(page, 'en');
-	await simulateElectrumX(page, { checkpointHex: headers.blockBeforeSplit.hex });
+	await simulateElectrumX(page, { checkpointHex: headers.oldChain.hex });
 	await page.goto('/');
 
 	await expect(page.getByRole('status')).toContainText('does not follow the valid Doichain chain');
