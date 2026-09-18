@@ -39,6 +39,15 @@
 		},
 		"offlineHelp": "The form opens as soon as a Doichain server on the valid chain answers."
 	},
+	"steps": {
+		"name": "Check a name",
+		"address": "Give your address",
+		"psbt": "Look at what it costs",
+		"wallet": "Sign it in your wallet",
+		"buy": "Buy the name",
+		"done": "done",
+		"next": "next"
+	},
 	"name": {
 		"intro": "Register your favorite Doichain name!",
 		"label": "Name to register",

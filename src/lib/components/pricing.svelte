@@ -2,6 +2,7 @@
 	import AddressField from '$lib/components/AddressField.svelte';
 	import PurchaseFields from '$lib/components/PurchaseFields.svelte';
 	import NameField from '$lib/components/NameField.svelte';
+	import Step from '$lib/components/Step.svelte';
 	import ConnectionStatus from '$lib/components/ConnectionStatus.svelte';
 	import PsbtQr from '$lib/components/PsbtQr.svelte';
 	import { getConnectionStatus } from '../doichain/connectElectrum.js';
@@ -64,6 +65,34 @@
 
 	/** The name in the field has not been asked about yet */
 	$: needsCheck = Boolean(name) && name !== checkedName && !isCheckingName;
+
+	/** The first step is answered once the name in the field has an answer */
+	$: nameStep = name && name === checkedName ? 'done' : 'next';
+
+	/**
+	 * The second step is answered by an address the app could read from the chain.
+	 * A purchase does not need it: the buyer's address stands in the purchase form.
+	 */
+	$: addressStep = buyStep
+		? 'later'
+		: !isAddressValid
+			? nameStep === 'done'
+				? 'next'
+				: 'later'
+			: addressError
+				? 'next'
+				: 'done';
+
+	/** The third step is answered once the app has a transaction to show */
+	$: costStep = shownPsbt ? 'done' : addressStep === 'done' ? 'next' : 'later';
+
+	/** The last step belongs to the wallet; the page can only hand the PSBT over */
+	$: walletStep = costStep === 'done' ? 'next' : 'later';
+
+	/** A name somebody holds asks for a step of its own, and pushes the others back */
+	$: buyStep = isNameExists && name === checkedName ? (tradeReady ? 'done' : 'next') : undefined;
+	$: costNumber = buyStep ? 4 : 3;
+	$: walletNumber = buyStep ? 5 : 4;
 
 	/** @type {string} - The Doichain address used for UTXOs, transaction recipient, and change
 	 * Used for:
@@ -449,264 +478,283 @@
 				<p class="mt-6 text-base leading-7 text-gray-600">{$_('name.intro')}</p>
 				{#if isConnected}
 					<p>&nbsp;</p>
-					<NameField
-						bind:value={name}
-						checking={isCheckingName}
-						invalid={!isNameValid}
-						checked={name === checkedName}
-						on:check={checkNow}
-					>
-						<svelte:fragment slot="status">
-							{#if !name}
-								<!-- nothing to say yet -->
-							{:else if isCheckingName}
-								<p class="mt-2 text-sm text-gray-600">
-									{$_('name.checking', { values: { name } })}
-								</p>
-							{:else if needsCheck}
-								<p class="mt-2 text-sm text-gray-700">{$_('name.notChecked')}</p>
-							{:else if !isNameValid}
-								<p class="mt-2 text-sm text-red-600">{nameErrorMessage}</p>
-							{:else}
-								<p class="mt-2 text-sm text-green-700">
-									{$_('name.available', { values: { name } })}
-									{nameNotice}
-								</p>
-								{#if doichainAddress}
-									<p class="mt-1 text-sm text-gray-600">
-										{$_('name.address', { values: { address: doichainAddress } })}
+					<Step number={1} title={$_('steps.name')} state={nameStep}>
+						<NameField
+							bind:value={name}
+							checking={isCheckingName}
+							invalid={!isNameValid}
+							checked={name === checkedName}
+							on:check={checkNow}
+						>
+							<svelte:fragment slot="status">
+								{#if !name}
+									<!-- nothing to say yet -->
+								{:else if isCheckingName}
+									<p class="mt-2 text-sm text-gray-600">
+										{$_('name.checking', { values: { name } })}
+									</p>
+								{:else if needsCheck}
+									<p class="mt-2 text-sm text-gray-700">{$_('name.notChecked')}</p>
+								{:else if !isNameValid}
+									<p class="mt-2 text-sm text-red-600">{nameErrorMessage}</p>
+								{:else}
+									<p class="mt-2 text-sm text-green-700">
+										{$_('name.available', { values: { name } })}
+										{nameNotice}
+									</p>
+									{#if doichainAddress}
+										<p class="mt-1 text-sm text-gray-600">
+											{$_('name.address', { values: { address: doichainAddress } })}
+										</p>
+									{/if}
+								{/if}
+								{#if name && nameBytes.mixesScripts}
+									<p class="mt-2 text-sm text-amber-800">
+										{$_('name.warnings.mixedScripts', { values: { hex: nameBytes.hex } })}
+									</p>
+								{:else if name && !nameBytes.isAscii}
+									<p class="mt-2 text-sm text-amber-800">
+										{$_('name.warnings.nonAscii', { values: { hex: nameBytes.hex } })}
 									</p>
 								{/if}
-							{/if}
-							{#if name && nameBytes.mixesScripts}
-								<p class="mt-2 text-sm text-amber-800">
-									{$_('name.warnings.mixedScripts', { values: { hex: nameBytes.hex } })}
-								</p>
-							{:else if name && !nameBytes.isAscii}
-								<p class="mt-2 text-sm text-amber-800">
-									{$_('name.warnings.nonAscii', { values: { hex: nameBytes.hex } })}
-								</p>
-							{/if}
-						</svelte:fragment>
-					</NameField>
+							</svelte:fragment>
+						</NameField>
+					</Step>
 				{:else}
 					<p class="mt-2 text-sm text-gray-700" id="connection-status">
 						{$_('status.offlineHelp')}
 					</p>
 				{/if}
 				<!-- nothing to look up before a server on the valid chain answers -->
-				<fieldset disabled={!isConnected} class="min-w-0">
-					<AddressField
-						id="address"
-						label={$_('address.label')}
-						scanLabel={$_('address.scan')}
-						invalid={addressLooksWrong}
-						bind:value={doichainAddress}
-						on:scan={() => ($scanOpen = true)}
-					>
-						<svelte:fragment slot="status">
-							{#if doichainAddress && !isAddressValid}
-								<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
-							{:else if addressError}
-								<p class="mt-2 text-sm text-red-600">
-									{$_('address.errors.lookupFailed', { values: addressError })}
-								</p>
-							{:else if utxoErrorMessage}
-								<p class="mt-2 text-sm text-red-600">
-									<b>{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}</b>
-									{utxoErrorMessage}
-								</p>
-							{:else}
-								<p class="mt-2 text-sm text-gray-600">
-									{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}
-								</p>
-								{#if nameOpTxs.length > 0}
-									<div class="mt-4">
-										<h4 class="text-sm font-medium text-gray-900 mb-2">{$_('address.names')}</h4>
-										<div class="flex flex-wrap gap-2">
-											{#each nameOpTxs as nameOp}
-												{@const expiry = nameExpiry(
-													nameOp.height,
-													$electrumBlockchainBlockHeadersSubscribe?.height,
-													$network
-												)}
-												<span
-													class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium {expiry.expired
-														? 'bg-gray-100 text-gray-700'
-														: 'bg-blue-100 text-blue-800'}"
-												>
-													{#if !expiry.confirmed}
-														{$_('address.namePending', { values: { name: nameOp.name } })}
-													{:else if expiry.expired}
-														{$_('address.nameExpired', {
-															values: { name: nameOp.name, height: expiry.expiresAt }
-														})}
-													{:else if expiry.blocksLeft !== undefined}
-														{$_('address.nameValidUntil', {
-															values: {
-																name: nameOp.name,
-																height: expiry.expiresAt,
-																blocksLeft: expiry.blocksLeft
-															}
-														})}
-													{:else}
-														{$_('address.expires', {
-															values: { name: nameOp.name, height: expiry.expiresAt }
-														})}
-													{/if}
-												</span>
-											{/each}
+				<Step number={2} title={$_('steps.address')} state={addressStep}>
+					<fieldset disabled={!isConnected} class="min-w-0">
+						<AddressField
+							id="address"
+							label={$_('address.label')}
+							scanLabel={$_('address.scan')}
+							invalid={addressLooksWrong}
+							bind:value={doichainAddress}
+							on:scan={() => ($scanOpen = true)}
+						>
+							<svelte:fragment slot="status">
+								{#if doichainAddress && !isAddressValid}
+									<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
+								{:else if addressError}
+									<p class="mt-2 text-sm text-red-600">
+										{$_('address.errors.lookupFailed', { values: addressError })}
+									</p>
+								{:else if utxoErrorMessage}
+									<p class="mt-2 text-sm text-red-600">
+										<b
+											>{$_('address.total', {
+												values: { amount: sb.toBitcoin(totalUtxoValue) }
+											})}</b
+										>
+										{utxoErrorMessage}
+									</p>
+								{:else}
+									<p class="mt-2 text-sm text-gray-600">
+										{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}
+									</p>
+									{#if nameOpTxs.length > 0}
+										<div class="mt-4">
+											<h4 class="text-sm font-medium text-gray-900 mb-2">{$_('address.names')}</h4>
+											<div class="flex flex-wrap gap-2">
+												{#each nameOpTxs as nameOp}
+													{@const expiry = nameExpiry(
+														nameOp.height,
+														$electrumBlockchainBlockHeadersSubscribe?.height,
+														$network
+													)}
+													<span
+														class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium {expiry.expired
+															? 'bg-gray-100 text-gray-700'
+															: 'bg-blue-100 text-blue-800'}"
+													>
+														{#if !expiry.confirmed}
+															{$_('address.namePending', { values: { name: nameOp.name } })}
+														{:else if expiry.expired}
+															{$_('address.nameExpired', {
+																values: { name: nameOp.name, height: expiry.expiresAt }
+															})}
+														{:else if expiry.blocksLeft !== undefined}
+															{$_('address.nameValidUntil', {
+																values: {
+																	name: nameOp.name,
+																	height: expiry.expiresAt,
+																	blocksLeft: expiry.blocksLeft
+																}
+															})}
+														{:else}
+															{$_('address.expires', {
+																values: { name: nameOp.name, height: expiry.expiresAt }
+															})}
+														{/if}
+													</span>
+												{/each}
+											</div>
 										</div>
-									</div>
+									{/if}
 								{/if}
-							{/if}
-						</svelte:fragment>
-					</AddressField>
-				</fieldset>
+							</svelte:fragment>
+						</AddressField>
+					</fieldset>
+				</Step>
 				<p>&nbsp;</p>
 				{#if isNameExists && name === checkedName}
-					<PurchaseFields
-						disabled={!isConnected}
-						seller={currentNameAddress}
-						heldBySegwit={nameHeldBySegwit}
-						bind:fundingAddress={fundingUTXOAddress}
-						fundingInvalid={fundingLooksWrong}
-						bind:price={priceText}
-						priceInvalid={Boolean(priceText) && price === undefined}
-						error={trade?.error ?? ''}
-						on:scan={() => (scanOpenFunding = true)}
-					>
-						<svelte:fragment slot="funding">
-							{#if fundingUTXOAddress && !isFundingAddressValid}
-								<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
-							{:else if fundingError}
-								<p class="mt-2 text-sm text-red-600">
-									{$_('address.errors.lookupFailed', { values: fundingError })}
-								</p>
-							{:else if fundingLoadedFor && fundingLoadedFor === fundingUTXOAddress}
-								<p
-									class="mt-2 text-sm {fundingUtxoAddresses.length > 0
-										? 'text-gray-600'
-										: 'text-red-600'}"
-								>
-									{$_('trade.fundingTotal', {
-										values: { amount: sb.toBitcoin(fundingTotalUtxoValue) }
-									})}
-									{#if fundingUtxoAddresses.length === 0}{$_('trade.fundingInvalid')}{/if}
-								</p>
-							{/if}
-						</svelte:fragment>
-					</PurchaseFields>
+					<Step number={3} title={$_('steps.buy')} state={buyStep}>
+						<PurchaseFields
+							disabled={!isConnected}
+							seller={currentNameAddress}
+							heldBySegwit={nameHeldBySegwit}
+							bind:fundingAddress={fundingUTXOAddress}
+							fundingInvalid={fundingLooksWrong}
+							bind:price={priceText}
+							priceInvalid={Boolean(priceText) && price === undefined}
+							error={trade?.error ?? ''}
+							on:scan={() => (scanOpenFunding = true)}
+						>
+							<svelte:fragment slot="funding">
+								{#if fundingUTXOAddress && !isFundingAddressValid}
+									<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
+								{:else if fundingError}
+									<p class="mt-2 text-sm text-red-600">
+										{$_('address.errors.lookupFailed', { values: fundingError })}
+									</p>
+								{:else if fundingLoadedFor && fundingLoadedFor === fundingUTXOAddress}
+									<p
+										class="mt-2 text-sm {fundingUtxoAddresses.length > 0
+											? 'text-gray-600'
+											: 'text-red-600'}"
+									>
+										{$_('trade.fundingTotal', {
+											values: { amount: sb.toBitcoin(fundingTotalUtxoValue) }
+										})}
+										{#if fundingUtxoAddresses.length === 0}{$_('trade.fundingInvalid')}{/if}
+									</p>
+								{/if}
+							</svelte:fragment>
+						</PurchaseFields>
+					</Step>
 				{/if}
 			</div>
 			<div
 				class="lg:w-1/3 mt-8 lg:mt-0 rounded-2xl bg-gray-50 py-10 text-left ring-1 ring-inset ring-gray-900/5 lg:flex lg:flex-col lg:justify-start lg:py-16"
 			>
 				<div class="mx-auto max-w-xs px-8">
-					<p class="text-base font-semibold text-gray-600">{$_('fees.heading')}</p>
-					<div class="mt-6">
-						<div class="flex justify-between mt-2">
-							<span class="text-sm font-bold tracking-tight text-gray-900">{$_('fees.locked')}</span
-							>
-							<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
-								>{sb.toBitcoin(DEFAULT_STORAGE_FEE)} DOI</span
-							>
+					<Step number={costNumber} title={$_('steps.psbt')} state={costStep}>
+						<p class="text-base font-semibold text-gray-600">{$_('fees.heading')}</p>
+						<div class="mt-6">
+							<div class="flex justify-between mt-2">
+								<span class="text-sm font-bold tracking-tight text-gray-900"
+									>{$_('fees.locked')}</span
+								>
+								<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
+									>{sb.toBitcoin(DEFAULT_STORAGE_FEE)} DOI</span
+								>
+							</div>
+							<div class="flex justify-between mt-2">
+								<span class="text-sm font-bold tracking-tight text-gray-900"
+									>{$_('fees.mining')}</span
+								>
+								<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
+									>{sb.toBitcoin(feeView.mining)} DOI</span
+								>
+							</div>
+							<div class="flex justify-between">
+								<span class="text-sm font-bold tracking-tight text-gray-900"
+									>{$_('fees.total')}</span
+								>
+								<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
+									>{sb.toBitcoin(feeView.fromCoins)} DOI</span
+								>
+							</div>
+							<div class="flex justify-between mt-2">
+								<span class="text-sm font-bold tracking-tight text-gray-900"
+									>{$_('fees.change')}</span
+								>
+								<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
+									>{sb.toBitcoin(feeView.change)} DOI</span
+								>
+							</div>
 						</div>
-						<div class="flex justify-between mt-2">
-							<span class="text-sm font-bold tracking-tight text-gray-900">{$_('fees.mining')}</span
-							>
-							<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
-								>{sb.toBitcoin(feeView.mining)} DOI</span
-							>
-						</div>
-						<div class="flex justify-between">
-							<span class="text-sm font-bold tracking-tight text-gray-900">{$_('fees.total')}</span>
-							<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
-								>{sb.toBitcoin(feeView.fromCoins)} DOI</span
-							>
-						</div>
-						<div class="flex justify-between mt-2">
-							<span class="text-sm font-bold tracking-tight text-gray-900">{$_('fees.change')}</span
-							>
-							<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
-								>{sb.toBitcoin(feeView.change)} DOI</span
-							>
-						</div>
-					</div>
-					{#if isNameExists && tradeReady}
-						<p class="mt-6 text-sm leading-6 text-gray-800">
-							{$_('trade.summary', {
-								values: {
-									price: sb.toBitcoin(price),
-									seller: trade.sellerAddress,
-									fee: sb.toBitcoin(trade.transactionFee),
-									buyer: fundingUTXOAddress,
-									locked: sb.toBitcoin(DEFAULT_STORAGE_FEE),
-									change: sb.toBitcoin(trade.changeAmount)
-								}
-							})}
-						</p>
-						{#if trade.surplus > 0}
-							<p class="mt-2 text-sm leading-6 text-gray-600">
-								{$_('trade.surplus', { values: { surplus: sb.toBitcoin(trade.surplus) } })}
+						{#if isNameExists && tradeReady}
+							<p class="mt-6 text-sm leading-6 text-gray-800">
+								{$_('trade.summary', {
+									values: {
+										price: sb.toBitcoin(price),
+										seller: trade.sellerAddress,
+										fee: sb.toBitcoin(trade.transactionFee),
+										buyer: fundingUTXOAddress,
+										locked: sb.toBitcoin(DEFAULT_STORAGE_FEE),
+										change: sb.toBitcoin(trade.changeAmount)
+									}
+								})}
 							</p>
-						{/if}
-						{#if trade.dust > 0}
-							<p class="mt-2 text-sm leading-6 text-gray-600">
-								{$_('fees.dust', { values: { amount: sb.toBitcoin(trade.dust) } })}
-							</p>
-						{/if}
-					{:else if psbtBaseText && !isNameExists}
-						<p class="mt-6 text-sm leading-6 text-gray-800">
-							{$_('fees.summary', {
-								values: {
-									fee: sb.toBitcoin(transactionFee),
-									locked: sb.toBitcoin(DEFAULT_STORAGE_FEE),
-									change: sb.toBitcoin(changeAmount)
-								}
-							})}
-						</p>
-						{#if dust > 0}
-							<p class="mt-2 text-sm leading-6 text-gray-600">
-								{$_('fees.dust', { values: { amount: sb.toBitcoin(dust) } })}
-							</p>
-						{/if}
-					{/if}
-					{#if shownFeeDetails}
-						<p class="mt-2 text-xs leading-5 text-gray-500">
-							{$_('fees.details', { values: shownFeeDetails })}
-						</p>
-					{/if}
-					<PsbtQr psbt={shownPsbt} fileBase={name}>
-						<svelte:fragment slot="steps">
-							{#if isNameExists && tradeReady}
-								<li>{$_('trade.steps.scan')}</li>
-								<li>
-									{$_('trade.steps.check', {
-										values: {
-											price: sb.toBitcoin(trade.sellerReceives),
-											seller: trade.sellerAddress,
-											change: sb.toBitcoin(trade.changeAmount),
-											buyer: fundingUTXOAddress
-										}
-									})}
-								</li>
-								<li>{$_('trade.steps.handOver')}</li>
-							{:else}
-								<li>{$_('psbt.steps.scan')}</li>
-								<li>
-									{$_('psbt.steps.check', {
-										values: {
-											locked: sb.toBitcoin(DEFAULT_STORAGE_FEE),
-											change: sb.toBitcoin(changeAmount),
-											address: doichainAddress
-										}
-									})}
-								</li>
-								<li>{$_('psbt.steps.send')}</li>
+							{#if trade.surplus > 0}
+								<p class="mt-2 text-sm leading-6 text-gray-600">
+									{$_('trade.surplus', { values: { surplus: sb.toBitcoin(trade.surplus) } })}
+								</p>
 							{/if}
-						</svelte:fragment>
-					</PsbtQr>
+							{#if trade.dust > 0}
+								<p class="mt-2 text-sm leading-6 text-gray-600">
+									{$_('fees.dust', { values: { amount: sb.toBitcoin(trade.dust) } })}
+								</p>
+							{/if}
+						{:else if psbtBaseText && !isNameExists}
+							<p class="mt-6 text-sm leading-6 text-gray-800">
+								{$_('fees.summary', {
+									values: {
+										fee: sb.toBitcoin(transactionFee),
+										locked: sb.toBitcoin(DEFAULT_STORAGE_FEE),
+										change: sb.toBitcoin(changeAmount)
+									}
+								})}
+							</p>
+							{#if dust > 0}
+								<p class="mt-2 text-sm leading-6 text-gray-600">
+									{$_('fees.dust', { values: { amount: sb.toBitcoin(dust) } })}
+								</p>
+							{/if}
+						{/if}
+						{#if shownFeeDetails}
+							<p class="mt-2 text-xs leading-5 text-gray-500">
+								{$_('fees.details', { values: shownFeeDetails })}
+							</p>
+						{/if}
+						<Step number={walletNumber} title={$_('steps.wallet')} state={walletStep}>
+							<PsbtQr psbt={shownPsbt} fileBase={name}>
+								<svelte:fragment slot="steps">
+									{#if isNameExists && tradeReady}
+										<li>{$_('trade.steps.scan')}</li>
+										<li>
+											{$_('trade.steps.check', {
+												values: {
+													price: sb.toBitcoin(trade.sellerReceives),
+													seller: trade.sellerAddress,
+													change: sb.toBitcoin(trade.changeAmount),
+													buyer: fundingUTXOAddress
+												}
+											})}
+										</li>
+										<li>{$_('trade.steps.handOver')}</li>
+									{:else}
+										<li>{$_('psbt.steps.scan')}</li>
+										<li>
+											{$_('psbt.steps.check', {
+												values: {
+													locked: sb.toBitcoin(DEFAULT_STORAGE_FEE),
+													change: sb.toBitcoin(changeAmount),
+													address: doichainAddress
+												}
+											})}
+										</li>
+										<li>{$_('psbt.steps.send')}</li>
+									{/if}
+								</svelte:fragment>
+							</PsbtQr>
+						</Step>
+					</Step>
 				</div>
 			</div>
 		</div>

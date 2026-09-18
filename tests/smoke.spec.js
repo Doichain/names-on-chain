@@ -22,11 +22,17 @@ test('names chain, block and server, then finds who holds a name', async ({ page
 		`https://doi-explorer.le-space.de/block/${headers.tip.hash}`
 	);
 
+	// the page numbers the steps and says which one is next
+	await expect(page.getByRole('heading', { name: /Check a name/ })).toBeVisible();
+	await expect(page.getByText('next', { exact: true })).toBeVisible();
+
 	// the name reaches a server only on demand
 	await page.getByLabel('Name to register').fill(recorded.name);
 	await expect(page.locator('#name-status')).toContainText('Not checked yet');
 	await page.getByRole('button', { name: 'Check name' }).click();
 	await expect(page.locator('#name-status')).toContainText(recorded.owner);
+	// the step is answered now
+	await expect(page.getByText('done', { exact: true })).toBeVisible();
 	expect(errors).toEqual([]);
 });
 
