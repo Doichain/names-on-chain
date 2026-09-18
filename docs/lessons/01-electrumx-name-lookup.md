@@ -36,7 +36,9 @@ You need Node 22 (see `.nvmrc`). Open the address that `pnpm dev` prints, usuall
 
 `src/routes/+layout.js` starts the connection when the page loads. `src/lib/doichain/connectElectrum.js` picks one of the servers listed in `doichain-store.js` at random and opens a WebSocket to it with `electrumx-client.js`. Requests and answers are JSON-RPC messages.
 
-A server answers with whatever chain its node follows, and it sends no proof. So before the app trusts any answer, it asks for block 431,017, the first block after Doichain's chain split, and compares that block's hash with the one it knows (`chainCheck.js`). A server on the old chain counts as a failed attempt, and the app tries another one. `ConnectionStatus.svelte` shows each step.
+A server answers with whatever chain its node follows, and it sends no proof. So before the app trusts any answer, it asks for block 431,018 and compares that block's hash with the one it knows (`chainCheck.js`). A server on the old chain counts as a failed attempt, and the app tries another one. `ConnectionStatus.svelte` shows each step.
+
+Why 431,018 and not 431,017, the block the new rules took effect with? Because that one is on both chains: Doichain never enforced the difficulty field, so the old nodes accepted it as well. Both chains build their next block on it, and there they part.
 
 ### 2. Checking a name
 
@@ -111,7 +113,7 @@ Then change the app: for a taken name, also show how many days are left, at ten 
 - **The index script, byte by byte.** For `doichain` it is `53 08 646f69636861696e 00 6d 75 6a`: `OP_3` (which Namecoin calls `OP_NAME_UPDATE`), a push of 8 bytes with the name, `OP_0` as the empty value, `OP_2DROP`, `OP_DROP`, `OP_RETURN`. The server stores the SHA-256 hash of these bytes in reverse byte order.
 - **Bytes, not characters.** Names are stored as UTF-8 bytes; `münchen` takes 8 of them. The app normalizes a name to Unicode NFC before it hashes it, and it warns about characters beyond ASCII and about names that mix alphabets: names that look the same can differ in their bytes.
 - **Requests and notifications.** A request carries an `id`, and its answer carries the same `id`. After `blockchain.headers.subscribe`, new blocks arrive as notifications without an `id`. The client pings every 90 seconds, because ElectrumX closes silent connections, and a request fails after 30 seconds without an answer.
-- **What the checkpoint proves.** Only that the server's chain contains block 431,017 of the valid chain. It proves nothing about newer blocks or about any transaction, and a server can still leave data out. The explorer link next to the server name lets you compare the newest block yourself.
+- **What the checkpoint proves.** Only that the server's chain contains block 431,018 of the valid chain – the first block the two chains do not share. It proves nothing about newer blocks or about any transaction, and a server can still leave data out. The explorer link next to the server name lets you compare the newest block yourself.
 - **Why the split matters for names.** Before block 431,017 the old rules let anybody overwrite a registered name. Since then only a transaction that spends the name's previous output can change it.
 
 </details>
