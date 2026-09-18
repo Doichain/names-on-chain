@@ -59,7 +59,7 @@ pnpm exec vitest run        # Unit-Tests
 pnpm exec playwright test   # Browser-Tests in Chromium, gegen ein simuliertes ElectrumX
 ```
 
-Die Browser-Tests machen auch die Bildschirmfotos, die in den Lektionstexten stehen, und schreiben sie nach `docs/img/`. Dabei prüfen sie den Zustand, den das Bild zeigt: Ein Bildschirmfoto, das sich nicht mehr erreichen lässt, lässt den Lauf scheitern, statt still zu veralten. Nach einer sichtbaren Änderung `pnpm exec playwright test screenshots` laufen lassen und committen, was dabei entsteht.
+Die Browser-Tests machen auch die Bildschirmfotos, die in den Lektionstexten stehen, und schreiben sie nach `docs/img/`. Dabei prüfen sie den Zustand, den das Bild zeigt: Ein Bildschirmfoto, das sich nicht mehr erreichen lässt, lässt den Lauf scheitern, statt still zu veralten. Geschrieben werden sie nur bei einem Lauf mit `SCREENSHOTS=1`, ein normaler Lauf lässt das Repository also sauber. Nach einer sichtbaren Änderung `SCREENSHOTS=1 pnpm exec playwright test screenshots` laufen lassen und committen, was dabei entsteht.
 
 Die CI führt alle vier bei jedem Push auf einen Lektions-Branch oder `main` aus. Die Smoke-Tests bauen die App und starten ihre eigene Vorschau auf Port 4180. Ist Playwrights eigenes Chromium nicht installiert, setzen Sie `CHROMIUM_PATH` auf ein anderes Chromium.
 
