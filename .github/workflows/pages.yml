@@ -56,6 +56,10 @@ jobs:
             cp -R "build/$lesson/public" "pages/$lesson"
           done
 
+      - name: Copy the picture a shared link shows
+        # The lessons ship it in static/; the overview page points at the root copy.
+        run: cp build/lesson05/public/og-image.png pages/og-image.png
+
       - name: Write the lesson overview
         run: |
           cat > pages/index.html <<'HTML'
@@ -65,6 +69,32 @@ jobs:
               <meta charset="utf-8" />
               <meta name="viewport" content="width=device-width, initial-scale=1" />
               <title>Names-On-Chain lessons</title>
+              <!--
+                What a link to this page looks like when somebody shares it. Static
+                and absolute on purpose: a crawler does not run scripts, and several
+                do not resolve a relative og:image. The picture comes from the lesson
+                builds, see "Copy the picture a shared link shows" below.
+              -->
+              <link rel="icon" href="./lesson05/favicon.png" />
+              <link rel="canonical" href="https://doichain.github.io/names-on-chain/" />
+              <meta name="description" content="A hands-on PSBT and NameOp workshop on Doichain: look up, register and trade names without a private key in the browser." />
+              <meta property="og:type" content="website" />
+              <meta property="og:site_name" content="Names-on-Chain" />
+              <meta property="og:url" content="https://doichain.github.io/names-on-chain/" />
+              <meta property="og:title" content="Names-on-Chain" />
+              <meta property="og:description" content="Five lessons on Doichain names: look up, register and trade them with PSBTs, without a private key in the browser." />
+              <meta property="og:image" content="https://doichain.github.io/names-on-chain/og-image.png" />
+              <meta property="og:image:type" content="image/png" />
+              <meta property="og:image:width" content="1200" />
+              <meta property="og:image:height" content="630" />
+              <meta property="og:image:alt" content="Names-on-Chain: register and trade Doichain names with PSBTs, in three steps" />
+              <meta property="og:locale" content="en_US" />
+              <meta property="og:locale:alternate" content="de_DE" />
+              <meta name="twitter:card" content="summary_large_image" />
+              <meta name="twitter:title" content="Names-on-Chain" />
+              <meta name="twitter:description" content="Five lessons on Doichain names: look up, register and trade them with PSBTs, without a private key in the browser." />
+              <meta name="twitter:image" content="https://doichain.github.io/names-on-chain/og-image.png" />
+              <meta name="twitter:image:alt" content="Names-on-Chain: register and trade Doichain names with PSBTs, in three steps" />
               <style>
                 :root { color-scheme: light dark; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; background: #f6f7f9; color: #15212a; }
                 body { margin: 0; }
@@ -112,7 +142,7 @@ jobs:
                 <p><span data-i18n="wallet">Sign the PSBTs with DoiWallet:</span>
                   <a href="https://play.google.com/store/apps/details?id=org.doichain.doiwallet">Google Play (Android)</a> ·
                   <a href="https://apps.apple.com/app/doiwallet/id1579900361">App Store (iPhone)</a> ·
-                  <a href="https://github.com/davidreband/DoiWallet" data-i18n="walletSource">Source code</a></p>
+                  <a href="https://github.com/Doichain/DoiWallet" data-i18n="walletSource">Source code</a></p>
                 <p><a href="https://github.com/Doichain/names-on-chain" data-i18n="source">Source code, lesson texts and known issues</a></p>
               </main>
               <script>
