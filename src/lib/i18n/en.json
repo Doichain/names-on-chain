@@ -125,6 +125,23 @@
 			"check": "Check the outputs in your wallet: {locked} DOI with the name and {change} DOI change go to {address}.",
 			"send": "Sign and send only if every output is what you expect."
 		},
+		"views": {
+			"label": "Two ways to look at it",
+			"simple": "What happens",
+			"technical": "What's in it"
+		},
+		"technical": {
+			"version": "Version {version}, a Doichain name transaction",
+			"inputs": "Coins it spends",
+			"outputs": "Where the coins go",
+			"fee": "Left for the miners: {amount} DOI",
+			"nameOutput": "the name",
+			"unknownAddress": "a script without an address",
+			"script": "Script",
+			"asm": "Script, read out",
+			"input": "{txid}:{n}, {amount} DOI",
+			"output": "{amount} DOI to {to}"
+		},
 		"errors": {
 			"nameScript": "No transaction was built, the name output failed: {error}",
 			"prevout": "No transaction was built: the server sent data for {txid} that does not match that transaction.",
