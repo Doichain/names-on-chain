@@ -5,7 +5,6 @@ import { buildNameTradePsbt } from './buildNameTradePsbt.js';
 import { parseDoiAmount } from './doiAmount.js';
 import { getNameOPStackScript } from './getNameOPStackScript.js';
 import { MIN_RELAY_FEE_RATE } from './fees.js';
-import { pushData } from './pushData.js';
 import { isNameScript, parseNameScript } from './transactionChecks.js';
 import { fixture } from './__fixtures__/fakeElectrumClient.js';
 
@@ -127,13 +126,13 @@ describe('name purchase', () => {
 		const tx = new Transaction();
 		tx.version = VERSION;
 		tx.addInput(Buffer.alloc(32, 1), 0);
-		tx.addOutput(
-			Buffer.concat([
-				Buffer.from('53' + pushData('update-me') + pushData('') + '6d75', 'hex'),
-				owner
-			]),
-			STORAGE_FEE
-		);
+		// OP_NAME_UPDATE <update-me> <empty value> OP_2DROP OP_DROP, written by hand
+		const nameUpdate = Buffer.concat([
+			Buffer.from([0x53, 'update-me'.length]),
+			Buffer.from('update-me', 'utf8'),
+			Buffer.from([0x00, 0x6d, 0x75])
+		]);
+		tx.addOutput(Buffer.concat([nameUpdate, owner]), STORAGE_FEE);
 		const updated = { hash: tx.getId(), n: 0, hex: tx.toHex(), height: 431000 };
 		expect(buy(updated, 'update-me', 50_000_000).error).toContain('name_doi');
 	});

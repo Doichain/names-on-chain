@@ -4,27 +4,11 @@ import { DOICHAIN } from './doichain.js';
 import { getNameOPStackScript, NAME_MAX_LENGTH, NAME_MIN_LENGTH } from './getNameOPStackScript.js';
 import { describeNameBytes, normalizeName } from './nameBytes.js';
 import { nameShow } from './nameShow.js';
-import { pushData } from './pushData.js';
 import { fakeElectrumClient, fixture } from './__fixtures__/fakeElectrumClient.js';
 
 const nameOutputs = Object.values(fixture.responses['blockchain.transaction.get'])
 	.flatMap((tx) => tx.vout)
 	.filter((vout) => vout.scriptPubKey.nameOp);
-
-describe('pushData', () => {
-	it('counts bytes, not characters', () => {
-		expect(pushData('münchen')).toBe('08' + Buffer.from('münchen', 'utf8').toString('hex'));
-	});
-
-	it('keeps a single small byte as a plain push instead of OP_1…OP_16', () => {
-		expect(pushData(new Uint8Array([0x05]))).toBe('0105');
-	});
-
-	it('writes an empty value as OP_0 and long data with OP_PUSHDATA1', () => {
-		expect(pushData('')).toBe('00');
-		expect(pushData('a'.repeat(76)).slice(0, 4)).toBe('4c4c');
-	});
-});
 
 describe('name bytes', () => {
 	it('looks up and registers names in NFC', () => {
@@ -65,7 +49,31 @@ describe('getNameOPStackScript', () => {
 		const { address } = payments.p2wpkh({ hash, network: DOICHAIN });
 		const script = getNameOPStackScript('hello', 'world', address, DOICHAIN).toString('hex');
 		expect(script).toBe(
-			'5a' + pushData('hello') + pushData('world') + '6d75' + '0014' + hash.toString('hex')
+			'5a' + '0568656c6c6f' + '05776f726c64' + '6d75' + '0014' + hash.toString('hex')
+		);
+	});
+
+	it('counts the name in bytes, not characters', () => {
+		const script = getNameOPStackScript('münchen', '', fixture.fundedAddress, DOICHAIN);
+		const name = Buffer.from('münchen', 'utf8').toString('hex');
+		expect(script.toString('hex').startsWith('5a08' + name)).toBe(true);
+	});
+
+	it('keeps a one-byte value as a plain push instead of OP_1…OP_16', () => {
+		const script = getNameOPStackScript(
+			'hello',
+			Buffer.from([0x05]),
+			fixture.fundedAddress,
+			DOICHAIN
+		);
+		expect(script.toString('hex').startsWith('5a' + '0568656c6c6f' + '0105' + '6d75')).toBe(true);
+	});
+
+	it('writes a name longer than 75 bytes with OP_PUSHDATA1', () => {
+		const long = 'a'.repeat(76);
+		const script = getNameOPStackScript(long, '', fixture.fundedAddress, DOICHAIN);
+		expect(script.toString('hex').startsWith('5a4c4c' + Buffer.from(long).toString('hex'))).toBe(
+			true
 		);
 	});
 
@@ -73,13 +81,13 @@ describe('getNameOPStackScript', () => {
 		const script = getNameOPStackScript('hello', '', fixture.fundedAddress, DOICHAIN).toString(
 			'hex'
 		);
-		expect(script.startsWith('5a' + pushData('hello') + '00' + '6d75')).toBe(true);
+		expect(script.startsWith('5a' + '0568656c6c6f' + '00' + '6d75')).toBe(true);
 	});
 
 	it('takes the value as bytes too and writes them unchanged', () => {
 		const bytes = Buffer.from([0xff, 0x00, 0x05]); // not valid UTF-8
 		const script = getNameOPStackScript('hello', bytes, fixture.fundedAddress, DOICHAIN);
-		expect(script.toString('hex').startsWith('5a' + pushData('hello') + '03ff0005' + '6d75')).toBe(
+		expect(script.toString('hex').startsWith('5a' + '0568656c6c6f' + '03ff0005' + '6d75')).toBe(
 			true
 		);
 	});
