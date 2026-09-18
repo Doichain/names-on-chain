@@ -1,16 +1,11 @@
-import { address } from '@doichain/doichainjs-lib';
+import { address, nameops } from '@doichain/doichainjs-lib';
 import { normalizeName } from './nameBytes.js';
-import { pushData } from './pushData.js';
 
 // Doichain Core accepts names of any length up to 255 bytes. The app asks for
 // at least four characters, and the name check and this builder share the rule.
 export const NAME_MIN_LENGTH = 4;
-export const NAME_MAX_LENGTH = 255;
-export const VALUE_MAX_LENGTH = 520;
-
-const OP_NAME_DOI = 0x5a; // OP_10
-const OP_2DROP = 0x6d;
-const OP_DROP = 0x75;
+export const NAME_MAX_LENGTH = nameops.MAX_NAME_LENGTH;
+export const VALUE_MAX_LENGTH = nameops.MAX_VALUE_LENGTH;
 
 const ERRORS = {
 	NAME_ID_DEFINED: 'nameId and nameValue must be defined',
@@ -44,17 +39,19 @@ const isP2WPKH = (output) => output.length === 22 && output[0] === 0x00 && outpu
  *
  *   OP_NAME_DOI <name> <value> OP_2DROP OP_DROP <output script of the address>
  *
- * Reference implementations:
- * - https://github.com/brandonrobertz/bitcore-namecoin/blob/master/lib/names.js
- * - https://github.com/doichain/doichain-transaction
+ * The bytes come from `nameops.nameDoiScript` in doichainjs-lib, which writes
+ * name and value with their length in bytes, never as a number opcode: a
+ * one-byte value such as 0x05 would otherwise become OP_5, which Doichain's
+ * name parser rejects. The app stays in front of it for three reasons:
  *
- * The script is put together from bytes instead of script.fromASM:
- * - fromASM drops an empty hex token, so an empty value could not be written,
- * - script.compile turns a 1-byte push 0x01–0x10 into OP_1…OP_16, which
- *   Doichain's name parser rejects,
- * - the address part comes from address.toOutputScript, which checks network
- *   and address type. Taking only the hash out of an address would turn a
- *   P2SH address into a P2PKH script that nobody can ever spend.
+ * - the address becomes an output script with address.toOutputScript, which
+ *   checks the network and the address type. Taking only the hash out of an
+ *   address would turn a P2SH address into a P2PKH script that nobody can ever
+ *   spend,
+ * - only P2PKH and P2WPKH owners are allowed. A name at any other script can be
+ *   registered, but never moved again – the coin and the name would be gone,
+ * - a name is registered in NFC and needs at least four characters, the rule the
+ *   name check uses.
  *
  * @param {string} nameId - The identifier for the name, stored in NFC.
  * @param {string | Buffer} nameValue - The value associated with the name, as text or as the bytes a name holds today; may be empty.
@@ -71,16 +68,15 @@ export const getNameOPStackScript = (nameId, nameValue, recipientAddress, networ
 		throw new Error(ERRORS.NETWORK_MISSING);
 	}
 
-	const name = Buffer.from(normalizeName(nameId), 'utf8');
+	const name = normalizeName(nameId);
 	// text is written as UTF-8; bytes, such as a value read from the chain, stay as they are
-	const value =
-		typeof nameValue === 'string' ? Buffer.from(nameValue, 'utf8') : Buffer.from(nameValue);
+	const value = typeof nameValue === 'string' ? nameValue : Buffer.from(nameValue);
 
-	if (name.length > NAME_MAX_LENGTH || normalizeName(nameId).length < NAME_MIN_LENGTH) {
+	if (Buffer.byteLength(name, 'utf8') > NAME_MAX_LENGTH || name.length < NAME_MIN_LENGTH) {
 		throw new Error(ERRORS.NAME_ID_LENGTH);
 	}
 
-	if (value.length > VALUE_MAX_LENGTH) {
+	if (Buffer.byteLength(value, 'utf8') > VALUE_MAX_LENGTH) {
 		throw new Error(ERRORS.NAME_VALUE_LENGTH);
 	}
 
@@ -95,11 +91,5 @@ export const getNameOPStackScript = (nameId, nameValue, recipientAddress, networ
 		throw new Error(ERRORS.UNSUPPORTED_ADDRESS + recipientAddress);
 	}
 
-	return Buffer.concat([
-		Buffer.from([OP_NAME_DOI]),
-		Buffer.from(pushData(name), 'hex'),
-		Buffer.from(pushData(value), 'hex'),
-		Buffer.from([OP_2DROP, OP_DROP]),
-		output
-	]);
+	return nameops.nameDoiScript(name, value, output);
 };
