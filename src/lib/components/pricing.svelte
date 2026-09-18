@@ -1,5 +1,6 @@
 <script>
 	import NameField from '$lib/components/NameField.svelte';
+	import Step from '$lib/components/Step.svelte';
 	import ConnectionStatus from '$lib/components/ConnectionStatus.svelte';
 	import { getConnectionStatus } from '../doichain/connectElectrum.js';
 	import { checkName } from '$lib/doichain/nameValidation.js';
@@ -56,6 +57,9 @@
 
 	/** The name in the field has not been asked about yet */
 	$: needsCheck = Boolean(name) && name !== checkedName && !isCheckingName;
+
+	/** The first step is answered once the name in the field has an answer */
+	$: nameStep = name && name === checkedName ? 'done' : 'next';
 
 	/**
 	 * Takes the answer to a check and puts it on screen, if it still belongs to
@@ -125,46 +129,48 @@
 				<p class="mt-6 text-base leading-7 text-gray-600">{$_('name.intro')}</p>
 				{#if isConnected}
 					<p>&nbsp;</p>
-					<NameField
-						bind:value={name}
-						checking={isCheckingName}
-						invalid={!isNameValid}
-						checked={name === checkedName}
-						on:check={checkNow}
-					>
-						<svelte:fragment slot="status">
-							{#if !name}
-								<!-- nothing to say yet -->
-							{:else if isCheckingName}
-								<p class="mt-2 text-sm text-gray-600">
-									{$_('name.checking', { values: { name } })}
-								</p>
-							{:else if needsCheck}
-								<p class="mt-2 text-sm text-gray-700">{$_('name.notChecked')}</p>
-							{:else if !isNameValid}
-								<p class="mt-2 text-sm text-red-600">{nameErrorMessage}</p>
-							{:else}
-								<p class="mt-2 text-sm text-green-700">
-									{$_('name.available', { values: { name } })}
-									{nameNotice}
-								</p>
-								{#if doichainAddress}
-									<p class="mt-1 text-sm text-gray-600">
-										{$_('name.address', { values: { address: doichainAddress } })}
+					<Step number={1} title={$_('steps.name')} state={nameStep}>
+						<NameField
+							bind:value={name}
+							checking={isCheckingName}
+							invalid={!isNameValid}
+							checked={name === checkedName}
+							on:check={checkNow}
+						>
+							<svelte:fragment slot="status">
+								{#if !name}
+									<!-- nothing to say yet -->
+								{:else if isCheckingName}
+									<p class="mt-2 text-sm text-gray-600">
+										{$_('name.checking', { values: { name } })}
+									</p>
+								{:else if needsCheck}
+									<p class="mt-2 text-sm text-gray-700">{$_('name.notChecked')}</p>
+								{:else if !isNameValid}
+									<p class="mt-2 text-sm text-red-600">{nameErrorMessage}</p>
+								{:else}
+									<p class="mt-2 text-sm text-green-700">
+										{$_('name.available', { values: { name } })}
+										{nameNotice}
+									</p>
+									{#if doichainAddress}
+										<p class="mt-1 text-sm text-gray-600">
+											{$_('name.address', { values: { address: doichainAddress } })}
+										</p>
+									{/if}
+								{/if}
+								{#if name && nameBytes.mixesScripts}
+									<p class="mt-2 text-sm text-amber-800">
+										{$_('name.warnings.mixedScripts', { values: { hex: nameBytes.hex } })}
+									</p>
+								{:else if name && !nameBytes.isAscii}
+									<p class="mt-2 text-sm text-amber-800">
+										{$_('name.warnings.nonAscii', { values: { hex: nameBytes.hex } })}
 									</p>
 								{/if}
-							{/if}
-							{#if name && nameBytes.mixesScripts}
-								<p class="mt-2 text-sm text-amber-800">
-									{$_('name.warnings.mixedScripts', { values: { hex: nameBytes.hex } })}
-								</p>
-							{:else if name && !nameBytes.isAscii}
-								<p class="mt-2 text-sm text-amber-800">
-									{$_('name.warnings.nonAscii', { values: { hex: nameBytes.hex } })}
-								</p>
-							{/if}
-						</svelte:fragment>
-					</NameField>
+							</svelte:fragment>
+						</NameField>
+					</Step>
 				{:else}
 					<p class="mt-2 text-sm text-gray-700" id="connection-status">
 						{$_('status.offlineHelp')}
