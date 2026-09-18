@@ -77,8 +77,15 @@
 	/** The name the answer on screen belongs to; empty while nothing has been checked */
 	let checkedName = '';
 
-	/** True while a check is on its way to a server */
-	let isCheckingName = false;
+	/** The name a check is on its way for; empty when nothing is on its way */
+	let checkingName = '';
+
+	/**
+	 * A check belongs to the field only as long as the name has not changed.
+	 * Typing on leaves the answer without a field to land in, and the form is
+	 * free again right away instead of waiting for an answer nobody wants.
+	 */
+	$: isCheckingName = Boolean(checkingName) && checkingName === name;
 
 	/** The name in the field has not been asked about yet */
 	$: needsCheck = Boolean(name) && name !== checkedName && !isCheckingName;
@@ -88,9 +95,9 @@
 	 * @param result
 	 */
 	export async function nameCheckCallback(result) {
+		if (result.name === checkingName) checkingName = '';
 		// an answer for a name typed earlier arrives too late to matter
 		if (result.name !== name) return;
-		isCheckingName = false;
 		checkedName = result.name;
 		isNameValid = result.isNameValid;
 		nameErrorMessage = result.nameErrorMessage;
@@ -112,7 +119,7 @@
 	 */
 	function checkNow() {
 		if (!name || isCheckingName) return;
-		isCheckingName = true;
+		checkingName = name;
 		checkName($electrumClient, name, totalUtxoValue, totalAmount, nameCheckCallback);
 	}
 
