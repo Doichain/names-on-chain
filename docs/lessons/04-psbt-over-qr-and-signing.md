@@ -4,6 +4,8 @@
 
 The registration PSBT from lesson 3 leaves the browser: as an animated QR code that DoiWallet scans, as text to copy, or as a `.psbt` file. DoiWallet signs and sends it. The app never signs and never sends.
 
+![The PSBT on screen: one frame of the animated QR code with its controls, buttons to copy, save and share, the three steps, and the PSBT in Base64](../img/lesson04.png)
+
 ## What you learn
 
 - How a PSBT that is too long for one QR code travels as a sequence of QR codes (BC-UR).

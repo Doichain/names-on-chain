@@ -69,3 +69,23 @@ test('lesson 3: what a registration costs', async ({ page }) => {
 	);
 	await page.screenshot({ path: 'docs/img/lesson03.png', fullPage: true });
 });
+
+test('lesson 4: the PSBT as a QR code the wallet reads', async ({ page }) => {
+	await page.goto('/');
+	await expect(page.getByRole('status')).toContainText('Connected');
+
+	await page.getByLabel('Name to register').fill('a-free-name');
+	await page.getByRole('button', { name: 'Check name' }).click();
+	await expect(page.locator('#name-status')).toContainText('is available');
+	await page.getByLabel('Doichain registration address').fill(recorded.fundedAddress);
+	await expect(page.getByText('Locked amount:')).toBeVisible();
+
+	await page.getByRole('button', { name: 'Create PSBT' }).click();
+	await expect(page.locator('.qr svg')).toBeVisible();
+	// a still frame, so the picture does not depend on the moment it was taken
+	await page.getByRole('button', { name: 'Pause' }).click();
+	await expect(page.getByRole('button', { name: 'Play' })).toBeVisible();
+	await expect(page.getByLabel('PSBT (Base64)')).toHaveValue(/^cHNidP/);
+
+	await page.screenshot({ path: 'docs/img/lesson04.png', fullPage: true });
+});
