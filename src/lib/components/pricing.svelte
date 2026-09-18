@@ -1,5 +1,6 @@
 <script>
 	import AddressField from '$lib/components/AddressField.svelte';
+	import PurchaseFields from '$lib/components/PurchaseFields.svelte';
 	import NameField from '$lib/components/NameField.svelte';
 	import ConnectionStatus from '$lib/components/ConnectionStatus.svelte';
 	import PsbtQr from '$lib/components/PsbtQr.svelte';
@@ -556,81 +557,38 @@
 				</fieldset>
 				<p>&nbsp;</p>
 				{#if isNameExists && name === checkedName}
-					<!-- a purchase needs the server: the fields wait while the connection is gone -->
-					<fieldset disabled={!isConnected} class="min-w-0 border-t border-gray-100 pt-6">
-						<h3 class="text-base font-semibold leading-7 text-gray-900">{$_('trade.heading')}</h3>
-						<p class="mt-2 text-sm leading-6 text-gray-600">
-							{$_('trade.intro', { values: { seller: currentNameAddress } })}
-						</p>
-						<p class="mt-2 text-sm leading-6 text-gray-500">{$_('trade.sellOfferOff')}</p>
-						{#if nameHeldBySegwit}
-							<p
-								class="mt-3 rounded-md bg-amber-50 p-3 text-sm leading-6 text-amber-900"
-								role="note"
-							>
-								{$_('trade.segwitName', { values: { address: currentNameAddress } })}
-							</p>
-						{/if}
-
-						<AddressField
-							id="fundingUTXOAddress"
-							label={$_('trade.fundingLabel')}
-							scanLabel={$_('trade.fundingScan')}
-							labelClass="mt-6 block text-sm font-medium leading-6 text-gray-900"
-							invalid={fundingLooksWrong}
-							bind:value={fundingUTXOAddress}
-							on:scan={() => (scanOpenFunding = true)}
-						>
-							<svelte:fragment slot="status">
-								{#if fundingUTXOAddress && !isFundingAddressValid}
-									<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
-								{:else if fundingError}
-									<p class="mt-2 text-sm text-red-600">
-										{$_('address.errors.lookupFailed', { values: fundingError })}
-									</p>
-								{:else if fundingLoadedFor && fundingLoadedFor === fundingUTXOAddress}
-									<p
-										class="mt-2 text-sm {fundingUtxoAddresses.length > 0
-											? 'text-gray-600'
-											: 'text-red-600'}"
-									>
-										{$_('trade.fundingTotal', {
-											values: { amount: sb.toBitcoin(fundingTotalUtxoValue) }
-										})}
-										{#if fundingUtxoAddresses.length === 0}{$_('trade.fundingInvalid')}{/if}
-									</p>
-								{/if}
-							</svelte:fragment>
-						</AddressField>
-
-						<label for="price" class="mt-6 block text-sm font-medium leading-6 text-gray-900"
-							>{$_('trade.priceLabel')}</label
-						>
-						<div class="relative mt-2 rounded-md shadow-sm">
-							<input
-								type="text"
-								inputmode="decimal"
-								bind:value={priceText}
-								name="price"
-								id="price"
-								autocomplete="off"
-								class="{priceText && price === undefined
-									? 'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'
-									: 'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6'} pr-12"
-								placeholder="1.5"
-								aria-invalid={Boolean(priceText) && price === undefined}
-								aria-describedby="price-currency trade-status"
-							/>
-							<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-								<span class="text-gray-500 sm:text-sm" id="price-currency">DOI</span>
-							</div>
-						</div>
-						<div id="trade-status" aria-live="polite">
-							{#if trade?.error}
-								<p class="mt-2 text-sm text-red-600">{trade.error}</p>
+					<PurchaseFields
+						disabled={!isConnected}
+						seller={currentNameAddress}
+						heldBySegwit={nameHeldBySegwit}
+						bind:fundingAddress={fundingUTXOAddress}
+						fundingInvalid={fundingLooksWrong}
+						bind:price={priceText}
+						priceInvalid={Boolean(priceText) && price === undefined}
+						error={trade?.error ?? ''}
+						on:scan={() => (scanOpenFunding = true)}
+					>
+						<svelte:fragment slot="funding">
+							{#if fundingUTXOAddress && !isFundingAddressValid}
+								<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
+							{:else if fundingError}
+								<p class="mt-2 text-sm text-red-600">
+									{$_('address.errors.lookupFailed', { values: fundingError })}
+								</p>
+							{:else if fundingLoadedFor && fundingLoadedFor === fundingUTXOAddress}
+								<p
+									class="mt-2 text-sm {fundingUtxoAddresses.length > 0
+										? 'text-gray-600'
+										: 'text-red-600'}"
+								>
+									{$_('trade.fundingTotal', {
+										values: { amount: sb.toBitcoin(fundingTotalUtxoValue) }
+									})}
+									{#if fundingUtxoAddresses.length === 0}{$_('trade.fundingInvalid')}{/if}
+								</p>
 							{/if}
-						</div>
-					</fieldset>
+						</svelte:fragment>
+					</PurchaseFields>
 				{/if}
 			</div>
 			<div
