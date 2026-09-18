@@ -64,7 +64,10 @@ does the app.
 
 ## The rules since the split
 
-Doichain split on 11 September 2026 at block 431,017. Since that block, Doichain
+The new rules took effect on 11 September 2026 with block 431,017. The old
+nodes accepted that block too – Doichain never enforced the difficulty field –
+so the chains carried on together for one more block and parted at 431,018,
+where each has a block of its own on the same parent. Since 431,017, Doichain
 Core v31.1.x applies strict ownership to `name_doi`:
 
 - A **free or expired** name is registered without a name input; a registration
@@ -115,8 +118,10 @@ why "trustless trading" only holds from block 431,017 on.
 ## What you still trust
 
 - **The chain of a server.** ElectrumX sends no proofs. The app asks every server
-  for block 431,017 and compares its hash with the one of the valid chain; a
-  server that fails counts as a failed attempt. That says nothing about newer
+  for block 431,018 – the first block the chain of the fork and the old chain do
+  not share, since the old nodes accepted the flag day block 431,017 as well –
+  and compares its hash with the one of the valid chain; a server that fails
+  counts as a failed attempt. That says nothing about newer
   blocks, and a server can still leave a transaction out. The status line links
   the newest block in the explorer, so you can compare it yourself.
 - **Amounts and addresses.** Neither comes from the server's JSON: amounts are

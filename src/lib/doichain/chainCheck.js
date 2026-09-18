@@ -4,17 +4,24 @@ import { crypto } from '@doichain/doichainjs-lib';
 export const EXPLORER = 'https://doi-explorer.le-space.de';
 
 /**
- * A block that only the valid Doichain chain has. Doichain Core v31.1.5 split
- * the chain at block 431,017 on 11 September 2026; a server that still follows
- * the old chain has another block at this height.
+ * The first block the two Doichain chains do not share.
  *
- * Checked on 17 September 2026 against doi-explorer.le-space.de and all four
- * ElectrumX servers of the app. Regtest and testnet have no checkpoint.
+ * The new rules of Doichain Core v31 took effect at height 431,017 on
+ * 11 September 2026, but that block is on both chains: Doichain never enforced
+ * the difficulty field, so the old 0.20 nodes accepted it too. Both chains
+ * build their next block on it, and there they part – at 431,018 the chain of
+ * the fork has 71d5…4b67, the old one bab4…2d34. A checkpoint at 431,017 would
+ * pass on either chain and prove nothing.
+ *
+ * Checked on 18 September 2026 against all four ElectrumX servers of the app,
+ * doi-explorer.le-space.de and the explorer of the old chain, which is by now
+ * some 12,000 blocks ahead because it kept mining at the old difficulty.
+ * Regtest and testnet have no checkpoint.
  */
 export const CHECKPOINTS = {
 	'doichain-mainnet': {
-		height: 431017,
-		hash: '75a4ca09bf092862061e0e1c9f066145962f222ef965f3e9ccc27c6bcd0da320'
+		height: 431018,
+		hash: '71d50ff12b090561cc918ddb560334b4350758c7eace3f058dd332fb112f4b67'
 	}
 };
 
@@ -36,7 +43,7 @@ export function blockHash(headerHex) {
  * Asks a server for the checkpoint block and compares its hash.
  *
  * ElectrumX serves whatever chain its node follows and sends no proof. This
- * check does not prove the newest blocks either, but a server on the old
+ * check does not prove the newest blocks either, but a server on the other
  * chain, or one that has not reached the split yet, fails it.
  *
  * @param {{request(method: string, params?: unknown[]): Promise<any>}} client

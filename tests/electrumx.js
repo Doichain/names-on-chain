@@ -18,7 +18,8 @@ export { recorded, headers };
  * @param {import('@playwright/test').Page} page
  * @param {object} [options]
  * @param {string} [options.checkpointHex] the header the server shows for block
- *   431,017; another block makes it a server on the old chain
+ *   431,018, the first block the two chains do not share; another one makes it
+ *   a server on the old chain
  * @param {number} [options.tipHeight] the newest block the server knows; a
  *   height far ahead of the recorded name operations lets names expire
  * @param {Record<string, number>} [options.delay] milliseconds a method waits
