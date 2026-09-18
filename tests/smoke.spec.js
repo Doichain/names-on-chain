@@ -53,3 +53,23 @@ test('does not use a server on the old chain', async ({ page }) => {
 	await expect(page.getByRole('status')).toContainText('does not follow the valid Doichain chain');
 	await expect(page.getByLabel('Name to register')).toHaveCount(0);
 });
+
+test('says what a shared link should look like', async ({ page }) => {
+	await simulateElectrumX(page);
+	await page.goto('/');
+
+	// a crawler reads the static head, so the tags must be there without the app running
+	const content = (selector) => page.locator(selector).getAttribute('content');
+	expect(await content('meta[property="og:title"]')).toBe('Names-on-Chain');
+	expect(await content('meta[property="og:url"]')).toBe(
+		'https://doichain.github.io/names-on-chain/'
+	);
+	expect(await content('meta[name="twitter:card"]')).toBe('summary_large_image');
+
+	// the picture has to be reachable, and absolute: a relative one is not resolved everywhere
+	const image = await content('meta[property="og:image"]');
+	expect(image).toMatch(/^https:\/\/doichain\.github\.io\/names-on-chain\/og-image\.png$/);
+	const response = await page.request.get('/og-image.png');
+	expect(response.status()).toBe(200);
+	expect(response.headers()['content-type']).toContain('image/png');
+});
