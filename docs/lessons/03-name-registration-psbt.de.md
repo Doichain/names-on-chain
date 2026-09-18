@@ -4,6 +4,8 @@
 
 Für einen freien Namen und eine Adresse mit Coins baut die App die Transaktion, die den Namen registriert, als unsigniertes PSBT. Ein Kasten rechts zeigt, was sie kostet. Das PSBT selbst erscheint in Lektion 4 auf dem Bildschirm.
 
+![Der Kostenkasten neben dem Formular: 0,01 DOI im Namen gebunden, die Mining-Gebühr, was von Ihren Coins abgeht und was als Wechselgeld zurückkommt](../img/lesson03.png)
+
 ## Was Sie lernen
 
 - Was ein PSBT ist: eine Transaktion, der nur noch die Signaturen fehlen.
