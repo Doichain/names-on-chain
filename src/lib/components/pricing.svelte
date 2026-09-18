@@ -1,6 +1,9 @@
 <script>
 	import AddressField from '$lib/components/AddressField.svelte';
+	import PurchaseFields from '$lib/components/PurchaseFields.svelte';
+	import NameField from '$lib/components/NameField.svelte';
 	import ConnectionStatus from '$lib/components/ConnectionStatus.svelte';
+	import PsbtQr from '$lib/components/PsbtQr.svelte';
 	import { getConnectionStatus } from '../doichain/connectElectrum.js';
 	import { _, locale, t } from '$lib/i18n/index.js';
 	import { checkName } from '$lib/doichain/nameValidation.js';
@@ -21,12 +24,10 @@
 		isP2WPKHAddress
 	} from '$lib/doichain/addressValidation.js';
 	import { nameExpiry } from '$lib/doichain/nameExpiry.js';
-	import { renderBCUR } from '$lib/doichain/renderQR.js';
 	import ScanModal from '$lib/doichain/ScanModal.svelte';
 
 	import { buildNameRegistrationPsbt } from '$lib/doichain/buildNameRegistrationPsbt.js';
 	import sb from 'satoshi-bitcoin';
-	import { onDestroy, tick } from 'svelte';
 	import { buildNameTradePsbt } from '$lib/doichain/buildNameTradePsbt.js';
 	import { parseDoiAmount } from '$lib/doichain/doiAmount.js';
 
@@ -307,17 +308,7 @@
 	$: feeRate = feeRateFor($electrumBlockchainRelayfee);
 
 	/**
-	 * @type {string|string[]} qrCodeData - The data to be encoded in the QR code. Can be a string for a single QR code or an array of strings for animated QR codes.
-	 */
-	let qrCodeData;
-
-	/**
-	 * @type {string} qrCode - The current QR code SVG string to be displayed. Used for animated QR codes.
-	 */
-	let qrCode;
-
-	/**
-	 * Reactive block for handling name registration transaction and QR code generation.
+	 * Reactive block for the name registration transaction.
 	 */
 	$: {
 		// nothing computed for an earlier name or address may stay on screen
@@ -368,156 +359,6 @@
 		}
 	}
 
-	/** time each QR code frame stays on screen, in milliseconds */
-	const FRAME_DELAY = 300;
-
-	/** The PSBT the QR code on screen belongs to (not reactive on purpose: it only decides what to keep) */
-	const shown = { psbt: undefined };
-
-	/** @type {ReturnType<typeof setTimeout> | undefined} animationTimeout - Holds the timeout ID for the QR code animation. */
-	let animationTimeout;
-
-	/** @type {number} frameIndex - The frame of the animated QR code on screen, counted from 0. */
-	let frameIndex = 0;
-
-	/** The animation stands still on the frame on screen */
-	let isPaused = false;
-
-	/** 'copied' or 'failed' for a moment after "Copy PSBT" */
-	let copyState;
-
-	/** The QR code, brought into view on small screens once it is created */
-	let qrContainer;
-
-	/** Sharing files (e.g. to DoiWallet on the same phone) works in this browser */
-	const canShareFiles = (() => {
-		try {
-			return Boolean(
-				navigator.canShare?.({
-					files: [new File([new Uint8Array(1)], 'check.psbt', { type: 'application/octet-stream' })]
-				})
-			);
-		} catch {
-			return false;
-		}
-	})();
-
-	/**
-	 * Renders the QR code for the PSBT that is on screen right now.
-	 * Splits it into BC-UR fragments, one QR code per animation frame.
-	 */
-	function createPsbt() {
-		const requested = shownPsbt;
-		if (!requested) return;
-		const stillCurrent = () => requested === shownPsbt;
-		renderBCUR(requested)
-			.then(async (_qr) => {
-				if (!_qr || !stillCurrent()) return;
-				shown.psbt = requested;
-				qrCodeData = _qr;
-				isPaused = false;
-				displayQrCodes();
-				await tick();
-				qrContainer?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			})
-			.catch((error) => {
-				console.error('Error generating QR code:', error);
-				qrCodeData = undefined;
-			});
-	}
-
-	/** Shows frame `index` of the animated QR code, wrapping around at both ends */
-	function showFrame(index) {
-		if (!qrCodeData?.length) return;
-		frameIndex = (index + qrCodeData.length) % qrCodeData.length;
-		qrCode = qrCodeData[frameIndex];
-	}
-
-	/**
-	 * Initializes and starts the QR code animation.
-	 * Resets the animation if it's already running.
-	 */
-	function displayQrCodes() {
-		showFrame(0);
-		scheduleNextFrame();
-	}
-
-	/**
-	 * Moves on to the next frame after FRAME_DELAY, unless paused.
-	 * Stops quietly when qrCodeData has been withdrawn in the meantime.
-	 */
-	function scheduleNextFrame() {
-		if (animationTimeout) clearTimeout(animationTimeout);
-		if (isPaused) return;
-		animationTimeout = setTimeout(() => {
-			// the PSBT can be withdrawn while the animation runs (qrCodeData = undefined)
-			if (!qrCodeData?.length) return;
-			showFrame(frameIndex + 1);
-			scheduleNextFrame();
-		}, FRAME_DELAY);
-	}
-
-	function stopQrCodes() {
-		if (animationTimeout) clearTimeout(animationTimeout);
-		qrCodeData = undefined;
-		qrCode = undefined;
-		shown.psbt = undefined;
-	}
-
-	function togglePause() {
-		isPaused = !isPaused;
-		scheduleNextFrame();
-	}
-
-	/** Pauses and shows the previous (-1) or next (+1) frame */
-	function stepFrame(delta) {
-		isPaused = true;
-		if (animationTimeout) clearTimeout(animationTimeout);
-		showFrame(frameIndex + delta);
-	}
-
-	const psbtBytes = (base64) => Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-	const psbtFileName = () => `${(name || 'transaction').replace(/[^a-z0-9._-]+/gi, '_')}.psbt`;
-
-	async function copyPsbt() {
-		try {
-			await navigator.clipboard.writeText(shownPsbt);
-			copyState = 'copied';
-		} catch {
-			copyState = 'failed';
-		}
-		setTimeout(() => (copyState = undefined), 3000);
-	}
-
-	/** Saves the PSBT as a binary .psbt file, the format wallets import */
-	function downloadPsbt() {
-		const url = URL.createObjectURL(
-			new Blob([psbtBytes(shownPsbt)], { type: 'application/octet-stream' })
-		);
-		const link = document.createElement('a');
-		link.href = url;
-		link.download = psbtFileName();
-		document.body.appendChild(link);
-		link.click();
-		link.remove();
-		setTimeout(() => URL.revokeObjectURL(url), 1000);
-	}
-
-	async function sharePsbt() {
-		const file = new File([psbtBytes(shownPsbt)], psbtFileName(), {
-			type: 'application/octet-stream'
-		});
-		try {
-			await navigator.share({ files: [file] });
-		} catch {
-			// closing the share sheet is not an error
-		}
-	}
-
-	onDestroy(() => {
-		if (animationTimeout) clearTimeout(animationTimeout);
-	});
-
 	$: totalUtxoValue = utxoAddresses.reduce((sum, utxo) => sum + utxo.value, 0);
 
 	/**
@@ -561,9 +402,6 @@
 	/** The PSBT on screen: the purchase of a taken name, or the registration of a free one */
 	$: shownPsbt = isNameExists ? (tradeReady ? trade.psbtBase64 : undefined) : psbtBaseText;
 
-	/** A new PSBT needs a new QR code; the same PSBT again (after reloading the coins) keeps the running one */
-	$: if (shownPsbt !== shown.psbt) stopQrCodes();
-
 	/** fee rate, size and coins of what the fee box shows */
 	$: shownFeeDetails = isNameExists
 		? tradeReady
@@ -603,78 +441,14 @@
 				<p class="mt-6 text-base leading-7 text-gray-600">{$_('name.intro')}</p>
 				{#if isConnected}
 					<p>&nbsp;</p>
-					<div>
-						<label for="name" class="block text-sm font-medium leading-6 text-gray-900"
-							>{$_('name.label')}</label
-						>
-						<div class="mt-2 flex items-start gap-2">
-							<div class="relative flex-1 rounded-md shadow-sm">
-								<input
-									bind:value={name}
-									name="name"
-									id="name"
-									type="text"
-									autocomplete="off"
-									autocapitalize="off"
-									spellcheck="false"
-									class={isCheckingName || isNameValid
-										? 'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6'
-										: 'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}
-									placeholder={$_('name.placeholder')}
-									aria-invalid={!isCheckingName && !isNameValid}
-									aria-describedby="name-status"
-									on:keydown={(event) => event.key === 'Enter' && checkNow()}
-								/>
-
-								{#if isCheckingName}
-									<!-- no verdict while the check runs -->
-								{:else if !isNameValid}
-									<div
-										class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
-									>
-										<svg
-											class="h-5 w-5 text-red-600"
-											viewBox="0 0 20 20"
-											fill="currentColor"
-											aria-hidden="true"
-										>
-											<path
-												fill-rule="evenodd"
-												d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z"
-												clip-rule="evenodd"
-											/>
-										</svg>
-									</div>
-								{:else if name && name === checkedName}
-									<div
-										class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
-									>
-										<svg
-											class="h-5 w-5 text-green-700"
-											viewBox="0 0 20 20"
-											fill="currentColor"
-											aria-hidden="true"
-										>
-											<path
-												fill-rule="evenodd"
-												d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z"
-												clip-rule="evenodd"
-											/>
-										</svg>
-									</div>
-								{/if}
-							</div>
-							<button
-								type="button"
-								on:click={checkNow}
-								disabled={!name || isCheckingName}
-								class="min-h-[44px] flex-none rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:bg-gray-300"
-								>{$_('name.check')}</button
-							>
-						</div>
-
-						<!-- room for two lines, so the fields below do not jump while the check answers -->
-						<div id="name-status" class="min-h-12" aria-live="polite">
+					<NameField
+						bind:value={name}
+						checking={isCheckingName}
+						invalid={!isNameValid}
+						checked={name === checkedName}
+						on:check={checkNow}
+					>
+						<svelte:fragment slot="status">
 							{#if !name}
 								<!-- nothing to say yet -->
 							{:else if isCheckingName}
@@ -705,8 +479,8 @@
 									{$_('name.warnings.nonAscii', { values: { hex: nameBytes.hex } })}
 								</p>
 							{/if}
-						</div>
-					</div>
+						</svelte:fragment>
+					</NameField>
 				{:else}
 					<p class="mt-2 text-sm text-gray-700" id="connection-status">
 						{$_('status.offlineHelp')}
@@ -783,81 +557,38 @@
 				</fieldset>
 				<p>&nbsp;</p>
 				{#if isNameExists && name === checkedName}
-					<!-- a purchase needs the server: the fields wait while the connection is gone -->
-					<fieldset disabled={!isConnected} class="min-w-0 border-t border-gray-100 pt-6">
-						<h3 class="text-base font-semibold leading-7 text-gray-900">{$_('trade.heading')}</h3>
-						<p class="mt-2 text-sm leading-6 text-gray-600">
-							{$_('trade.intro', { values: { seller: currentNameAddress } })}
-						</p>
-						<p class="mt-2 text-sm leading-6 text-gray-500">{$_('trade.sellOfferOff')}</p>
-						{#if nameHeldBySegwit}
-							<p
-								class="mt-3 rounded-md bg-amber-50 p-3 text-sm leading-6 text-amber-900"
-								role="note"
-							>
-								{$_('trade.segwitName', { values: { address: currentNameAddress } })}
-							</p>
-						{/if}
-
-						<AddressField
-							id="fundingUTXOAddress"
-							label={$_('trade.fundingLabel')}
-							scanLabel={$_('trade.fundingScan')}
-							labelClass="mt-6 block text-sm font-medium leading-6 text-gray-900"
-							invalid={fundingLooksWrong}
-							bind:value={fundingUTXOAddress}
-							on:scan={() => (scanOpenFunding = true)}
-						>
-							<svelte:fragment slot="status">
-								{#if fundingUTXOAddress && !isFundingAddressValid}
-									<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
-								{:else if fundingError}
-									<p class="mt-2 text-sm text-red-600">
-										{$_('address.errors.lookupFailed', { values: fundingError })}
-									</p>
-								{:else if fundingLoadedFor && fundingLoadedFor === fundingUTXOAddress}
-									<p
-										class="mt-2 text-sm {fundingUtxoAddresses.length > 0
-											? 'text-gray-600'
-											: 'text-red-600'}"
-									>
-										{$_('trade.fundingTotal', {
-											values: { amount: sb.toBitcoin(fundingTotalUtxoValue) }
-										})}
-										{#if fundingUtxoAddresses.length === 0}{$_('trade.fundingInvalid')}{/if}
-									</p>
-								{/if}
-							</svelte:fragment>
-						</AddressField>
-
-						<label for="price" class="mt-6 block text-sm font-medium leading-6 text-gray-900"
-							>{$_('trade.priceLabel')}</label
-						>
-						<div class="relative mt-2 rounded-md shadow-sm">
-							<input
-								type="text"
-								inputmode="decimal"
-								bind:value={priceText}
-								name="price"
-								id="price"
-								autocomplete="off"
-								class="{priceText && price === undefined
-									? 'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'
-									: 'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6'} pr-12"
-								placeholder="1.5"
-								aria-invalid={Boolean(priceText) && price === undefined}
-								aria-describedby="price-currency trade-status"
-							/>
-							<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-								<span class="text-gray-500 sm:text-sm" id="price-currency">DOI</span>
-							</div>
-						</div>
-						<div id="trade-status" aria-live="polite">
-							{#if trade?.error}
-								<p class="mt-2 text-sm text-red-600">{trade.error}</p>
+					<PurchaseFields
+						disabled={!isConnected}
+						seller={currentNameAddress}
+						heldBySegwit={nameHeldBySegwit}
+						bind:fundingAddress={fundingUTXOAddress}
+						fundingInvalid={fundingLooksWrong}
+						bind:price={priceText}
+						priceInvalid={Boolean(priceText) && price === undefined}
+						error={trade?.error ?? ''}
+						on:scan={() => (scanOpenFunding = true)}
+					>
+						<svelte:fragment slot="funding">
+							{#if fundingUTXOAddress && !isFundingAddressValid}
+								<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
+							{:else if fundingError}
+								<p class="mt-2 text-sm text-red-600">
+									{$_('address.errors.lookupFailed', { values: fundingError })}
+								</p>
+							{:else if fundingLoadedFor && fundingLoadedFor === fundingUTXOAddress}
+								<p
+									class="mt-2 text-sm {fundingUtxoAddresses.length > 0
+										? 'text-gray-600'
+										: 'text-red-600'}"
+								>
+									{$_('trade.fundingTotal', {
+										values: { amount: sb.toBitcoin(fundingTotalUtxoValue) }
+									})}
+									{#if fundingUtxoAddresses.length === 0}{$_('trade.fundingInvalid')}{/if}
+								</p>
 							{/if}
-						</div>
-					</fieldset>
+						</svelte:fragment>
+					</PurchaseFields>
 				{/if}
 			</div>
 			<div
@@ -938,88 +669,8 @@
 							{$_('fees.details', { values: shownFeeDetails })}
 						</p>
 					{/if}
-					<div id="qr-container"></div>
-					{#if shownPsbt && !qrCodeData}
-						<button
-							type="button"
-							on:click={createPsbt}
-							class="mt-6 w-full rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-							>{$_('psbt.create')}</button
-						>
-					{/if}
-					{#if qrCodeData && shownPsbt}
-						<div
-							bind:this={qrContainer}
-							class="qr mt-6 rounded-lg bg-white p-4 ring-1 ring-gray-200"
-						>
-							<!-- vk-qr draws this SVG from the PSBT the page built: squares only, no text from outside -->
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							{@html qrCode}
-						</div>
-						<div
-							class="mt-3 flex flex-wrap items-center gap-2"
-							role="group"
-							aria-label={$_('psbt.controls')}
-						>
-							<button
-								type="button"
-								on:click={() => stepFrame(-1)}
-								aria-label={$_('psbt.previous')}
-								title={$_('psbt.previous')}
-								class="min-h-[44px] min-w-[44px] rounded-md bg-white px-3 text-lg font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-								>‹</button
-							>
-							<button
-								type="button"
-								on:click={togglePause}
-								aria-pressed={isPaused}
-								class="min-h-[44px] rounded-md bg-white px-3 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-								>{isPaused ? $_('psbt.play') : $_('psbt.pause')}</button
-							>
-							<button
-								type="button"
-								on:click={() => stepFrame(1)}
-								aria-label={$_('psbt.next')}
-								title={$_('psbt.next')}
-								class="min-h-[44px] min-w-[44px] rounded-md bg-white px-3 text-lg font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-								>›</button
-							>
-							<span class="text-sm text-gray-600"
-								>{$_('psbt.frame', {
-									values: { current: frameIndex + 1, total: qrCodeData.length }
-								})}</span
-							>
-						</div>
-						<div class="mt-3 flex flex-wrap gap-2">
-							<button
-								type="button"
-								on:click={copyPsbt}
-								class="min-h-[44px] rounded-md bg-white px-3 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-								>{copyState === 'copied' ? $_('psbt.copied') : $_('psbt.copy')}</button
-							>
-							<button
-								type="button"
-								on:click={downloadPsbt}
-								class="min-h-[44px] rounded-md bg-white px-3 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-								>{$_('psbt.download')}</button
-							>
-							{#if canShareFiles}
-								<button
-									type="button"
-									on:click={sharePsbt}
-									class="min-h-[44px] rounded-md bg-white px-3 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-									>{$_('psbt.share')}</button
-								>
-							{/if}
-						</div>
-						<div role="status">
-							{#if copyState === 'failed'}
-								<p class="mt-2 text-sm text-red-600">{$_('psbt.copyFailed')}</p>
-							{/if}
-						</div>
-						<ol
-							class="mt-4 list-decimal space-y-1 break-words pl-5 text-sm leading-6 text-gray-800"
-						>
+					<PsbtQr psbt={shownPsbt} fileBase={name}>
+						<svelte:fragment slot="steps">
 							{#if isNameExists && tradeReady}
 								<li>{$_('trade.steps.scan')}</li>
 								<li>
@@ -1046,34 +697,10 @@
 								</li>
 								<li>{$_('psbt.steps.send')}</li>
 							{/if}
-						</ol>
-						<div class="mt-4">
-							<label for="psbt" class="block text-sm font-medium leading-6 text-gray-900"
-								>{$_('psbt.label')}</label
-							>
-							<div class="relative mt-2 rounded-md shadow-sm">
-								<textarea
-									value={shownPsbt}
-									readonly
-									rows="4"
-									name="psbt"
-									id="psbt"
-									class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
-									placeholder={$_('psbt.placeholder')}
-								></textarea>
-							</div>
-						</div>
-					{/if}
+						</svelte:fragment>
+					</PsbtQr>
 				</div>
 			</div>
 		</div>
 	</div>
 </div>
-
-<style>
-	.qr :global(svg) {
-		display: block;
-		width: 100%;
-		height: auto;
-	}
-</style>
