@@ -81,5 +81,5 @@ test('lesson 3: what a registration costs', async ({ page }) => {
 		(await page.getByRole('button', { name: 'Create PSBT' }).count()) > 0,
 		'a later lesson has more on the page'
 	);
-	await page.screenshot({ path: 'docs/img/lesson03.png', fullPage: true });
+	await shoot(page, 'lesson03.png');
 });
