@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@doichain/doichainjs-lib':
-        specifier: ^6.2.0
-        version: 6.2.0
+        specifier: ^6.3.0
+        version: 6.3.0
       '@keystonehq/bc-ur-registry':
         specifier: ^0.6.4
         version: 0.6.4
@@ -110,8 +110,8 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@doichain/doichainjs-lib@6.2.0':
-    resolution: {integrity: sha512-psJePdUZC6ROv2SYcfEHFjTIHir4pF/jnUnb+XesBbKEYem8QI93O/sfye7So4+X0lQMNfzAqox+20jFz1pl1g==}
+  '@doichain/doichainjs-lib@6.3.0':
+    resolution: {integrity: sha512-ZQUsFzxj0+K2DgJODFkm+hpJI5SSkUhW9tgeWmfnogBo/NfuyoCNb9qMnhEgq2wfTyH8VX1EUjfGMg7e5Ks1ZQ==}
     engines: {node: '>=8.0.0'}
 
   '@esbuild/aix-ppc64@0.19.12':
@@ -2416,7 +2416,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.31
 
-  '@doichain/doichainjs-lib@6.2.0':
+  '@doichain/doichainjs-lib@6.3.0':
     dependencies:
       '@noble/hashes': 1.8.0
       bech32: 2.0.0
