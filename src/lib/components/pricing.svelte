@@ -1,5 +1,6 @@
 <script>
 	import NameField from '$lib/components/NameField.svelte';
+	import Step from '$lib/components/Step.svelte';
 	import ConnectionStatus from '$lib/components/ConnectionStatus.svelte';
 	import { getConnectionStatus } from '../doichain/connectElectrum.js';
 	import { _, locale, t } from '$lib/i18n/index.js';
@@ -88,6 +89,21 @@
 
 	/** The name in the field has not been asked about yet */
 	$: needsCheck = Boolean(name) && name !== checkedName && !isCheckingName;
+
+	/** The first step is answered once the name in the field has an answer */
+	$: nameStep = name && name === checkedName ? 'done' : 'next';
+
+	/** The second step is answered by an address the app could read from the chain */
+	$: addressStep = !isAddressValid
+		? nameStep === 'done'
+			? 'next'
+			: 'later'
+		: addressError
+			? 'next'
+			: 'done';
+
+	/** The third step is answered once the app has a transaction to show */
+	$: costStep = psbtBaseText ? 'done' : addressStep === 'done' ? 'next' : 'later';
 
 	/**
 	 * The address the UTXOs in utxoAddresses belong to, once they are loaded
@@ -282,179 +298,185 @@
 						<p class="mt-6 text-base leading-7 text-gray-600">{$_('name.intro')}</p>
 						{#if isConnected}
 							<p>&nbsp;</p>
-							<NameField
-								bind:value={name}
-								checking={isCheckingName}
-								invalid={!isNameValid}
-								checked={name === checkedName}
-								on:check={checkNow}
-							>
-								<svelte:fragment slot="status">
-									{#if !name}
-										<!-- nothing to say yet -->
-									{:else if isCheckingName}
-										<p class="mt-2 text-sm text-gray-600">
-											{$_('name.checking', { values: { name } })}
-										</p>
-									{:else if needsCheck}
-										<p class="mt-2 text-sm text-gray-700">{$_('name.notChecked')}</p>
-									{:else if !isNameValid}
-										<p class="mt-2 text-sm text-red-600">{nameErrorMessage}</p>
-									{:else}
-										<p class="mt-2 text-sm text-green-700">
-											{$_('name.available', { values: { name } })}
-											{nameNotice}
-										</p>
-										{#if doichainAddress}
-											<p class="mt-1 text-sm text-gray-600">
-												{$_('name.address', { values: { address: doichainAddress } })}
+							<Step number={1} title={$_('steps.name')} state={nameStep}>
+								<NameField
+									bind:value={name}
+									checking={isCheckingName}
+									invalid={!isNameValid}
+									checked={name === checkedName}
+									on:check={checkNow}
+								>
+									<svelte:fragment slot="status">
+										{#if !name}
+											<!-- nothing to say yet -->
+										{:else if isCheckingName}
+											<p class="mt-2 text-sm text-gray-600">
+												{$_('name.checking', { values: { name } })}
+											</p>
+										{:else if needsCheck}
+											<p class="mt-2 text-sm text-gray-700">{$_('name.notChecked')}</p>
+										{:else if !isNameValid}
+											<p class="mt-2 text-sm text-red-600">{nameErrorMessage}</p>
+										{:else}
+											<p class="mt-2 text-sm text-green-700">
+												{$_('name.available', { values: { name } })}
+												{nameNotice}
+											</p>
+											{#if doichainAddress}
+												<p class="mt-1 text-sm text-gray-600">
+													{$_('name.address', { values: { address: doichainAddress } })}
+												</p>
+											{/if}
+										{/if}
+										{#if name && nameBytes.mixesScripts}
+											<p class="mt-2 text-sm text-amber-800">
+												{$_('name.warnings.mixedScripts', { values: { hex: nameBytes.hex } })}
+											</p>
+										{:else if name && !nameBytes.isAscii}
+											<p class="mt-2 text-sm text-amber-800">
+												{$_('name.warnings.nonAscii', { values: { hex: nameBytes.hex } })}
 											</p>
 										{/if}
-									{/if}
-									{#if name && nameBytes.mixesScripts}
-										<p class="mt-2 text-sm text-amber-800">
-											{$_('name.warnings.mixedScripts', { values: { hex: nameBytes.hex } })}
-										</p>
-									{:else if name && !nameBytes.isAscii}
-										<p class="mt-2 text-sm text-amber-800">
-											{$_('name.warnings.nonAscii', { values: { hex: nameBytes.hex } })}
-										</p>
-									{/if}
-								</svelte:fragment>
-							</NameField>
+									</svelte:fragment>
+								</NameField>
+							</Step>
 						{:else}
 							<p class="mt-2 text-sm text-gray-700" id="connection-status">
 								{$_('status.offlineHelp')}
 							</p>
 						{/if}
 						<!-- nothing to look up before a server on the valid chain answers -->
-						<fieldset disabled={!isConnected} class="min-w-0">
-							<label for="address" class="block text-sm font-medium leading-6 text-gray-900"
-								>{$_('address.label')}</label
-							>
-							<div class="relative mt-2 rounded-md shadow-sm flex items-center">
-								<input
-									bind:value={doichainAddress}
-									type="text"
-									name="address"
-									id="address"
-									autocomplete="off"
-									autocapitalize="off"
-									spellcheck="false"
-									class={!addressLooksWrong
-										? 'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6'
-										: 'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}
-									placeholder={$_('address.placeholder')}
-									aria-invalid={addressLooksWrong}
-									aria-describedby="address-status"
-								/>
-								{#if addressLooksWrong}
-									<div
-										class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
-									>
-										<svg
-											class="h-5 w-5 text-red-600"
-											viewBox="0 0 20 20"
-											fill="currentColor"
-											aria-hidden="true"
-										>
-											<path
-												fill-rule="evenodd"
-												d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z"
-												clip-rule="evenodd"
-											/>
-										</svg>
-									</div>
-								{/if}
-								<button
-									type="button"
-									aria-label={$_('address.scan')}
-									title={$_('address.scan')}
-									on:click={() => {
-										$scanOpen = true;
-									}}
-									class="ml-2 inline-flex h-11 w-11 flex-none items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:opacity-50"
-									><svg
-										class="h-8 w-8 text-orange-600"
-										width="24"
-										height="24"
-										viewBox="0 0 24 24"
-										stroke-width="2"
-										stroke="currentColor"
-										fill="none"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-									>
-										<path stroke="none" d="M0 0h24v24H0z" /> <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />
-										<path d="M4 17v1a2 2 0 0 0 2 2h2" /> <path d="M16 4h2a2 2 0 0 1 2 2v1" />
-										<path d="M16 20h2a2 2 0 0 0 2 -2v-1" />
-										<line x1="5" y1="12" x2="19" y2="12" /></svg
-									></button
+						<Step number={2} title={$_('steps.address')} state={addressStep}>
+							<fieldset disabled={!isConnected} class="min-w-0">
+								<label for="address" class="block text-sm font-medium leading-6 text-gray-900"
+									>{$_('address.label')}</label
 								>
-							</div>
-
-							<div id="address-status" class="min-h-12" aria-live="polite">
-								{#if doichainAddress && !isAddressValid}
-									<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
-								{:else if addressError}
-									<p class="mt-2 text-sm text-red-600">
-										{$_('address.errors.lookupFailed', { values: addressError })}
-									</p>
-								{:else if utxoErrorMessage}
-									<p class="mt-2 text-sm text-red-600">
-										<b
-											>{$_('address.total', {
-												values: { amount: sb.toBitcoin(totalUtxoValue) }
-											})}</b
+								<div class="relative mt-2 rounded-md shadow-sm flex items-center">
+									<input
+										bind:value={doichainAddress}
+										type="text"
+										name="address"
+										id="address"
+										autocomplete="off"
+										autocapitalize="off"
+										spellcheck="false"
+										class={!addressLooksWrong
+											? 'block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6'
+											: 'block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6'}
+										placeholder={$_('address.placeholder')}
+										aria-invalid={addressLooksWrong}
+										aria-describedby="address-status"
+									/>
+									{#if addressLooksWrong}
+										<div
+											class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
 										>
-										{utxoErrorMessage}
-									</p>
-								{:else}
-									<p class="mt-2 text-sm text-gray-600">
-										{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}
-									</p>
-									{#if nameOpTxs.length > 0}
-										<div class="mt-4">
-											<h4 class="text-sm font-medium text-gray-900 mb-2">{$_('address.names')}</h4>
-											<div class="flex flex-wrap gap-2">
-												{#each nameOpTxs as nameOp}
-													{@const expiry = nameExpiry(
-														nameOp.height,
-														$electrumBlockchainBlockHeadersSubscribe?.height,
-														$network
-													)}
-													<span
-														class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium {expiry.expired
-															? 'bg-gray-100 text-gray-700'
-															: 'bg-blue-100 text-blue-800'}"
-													>
-														{#if !expiry.confirmed}
-															{$_('address.namePending', { values: { name: nameOp.name } })}
-														{:else if expiry.expired}
-															{$_('address.nameExpired', {
-																values: { name: nameOp.name, height: expiry.expiresAt }
-															})}
-														{:else if expiry.blocksLeft !== undefined}
-															{$_('address.nameValidUntil', {
-																values: {
-																	name: nameOp.name,
-																	height: expiry.expiresAt,
-																	blocksLeft: expiry.blocksLeft
-																}
-															})}
-														{:else}
-															{$_('address.expires', {
-																values: { name: nameOp.name, height: expiry.expiresAt }
-															})}
-														{/if}
-													</span>
-												{/each}
-											</div>
+											<svg
+												class="h-5 w-5 text-red-600"
+												viewBox="0 0 20 20"
+												fill="currentColor"
+												aria-hidden="true"
+											>
+												<path
+													fill-rule="evenodd"
+													d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z"
+													clip-rule="evenodd"
+												/>
+											</svg>
 										</div>
 									{/if}
-								{/if}
-							</div>
-						</fieldset>
+									<button
+										type="button"
+										aria-label={$_('address.scan')}
+										title={$_('address.scan')}
+										on:click={() => {
+											$scanOpen = true;
+										}}
+										class="ml-2 inline-flex h-11 w-11 flex-none items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:opacity-50"
+										><svg
+											class="h-8 w-8 text-orange-600"
+											width="24"
+											height="24"
+											viewBox="0 0 24 24"
+											stroke-width="2"
+											stroke="currentColor"
+											fill="none"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										>
+											<path stroke="none" d="M0 0h24v24H0z" /> <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />
+											<path d="M4 17v1a2 2 0 0 0 2 2h2" /> <path d="M16 4h2a2 2 0 0 1 2 2v1" />
+											<path d="M16 20h2a2 2 0 0 0 2 -2v-1" />
+											<line x1="5" y1="12" x2="19" y2="12" /></svg
+										></button
+									>
+								</div>
+
+								<div id="address-status" class="min-h-12" aria-live="polite">
+									{#if doichainAddress && !isAddressValid}
+										<p class="mt-2 text-sm text-red-600">{$_('address.errors.invalid')}</p>
+									{:else if addressError}
+										<p class="mt-2 text-sm text-red-600">
+											{$_('address.errors.lookupFailed', { values: addressError })}
+										</p>
+									{:else if utxoErrorMessage}
+										<p class="mt-2 text-sm text-red-600">
+											<b
+												>{$_('address.total', {
+													values: { amount: sb.toBitcoin(totalUtxoValue) }
+												})}</b
+											>
+											{utxoErrorMessage}
+										</p>
+									{:else}
+										<p class="mt-2 text-sm text-gray-600">
+											{$_('address.total', { values: { amount: sb.toBitcoin(totalUtxoValue) } })}
+										</p>
+										{#if nameOpTxs.length > 0}
+											<div class="mt-4">
+												<h4 class="text-sm font-medium text-gray-900 mb-2">
+													{$_('address.names')}
+												</h4>
+												<div class="flex flex-wrap gap-2">
+													{#each nameOpTxs as nameOp}
+														{@const expiry = nameExpiry(
+															nameOp.height,
+															$electrumBlockchainBlockHeadersSubscribe?.height,
+															$network
+														)}
+														<span
+															class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium {expiry.expired
+																? 'bg-gray-100 text-gray-700'
+																: 'bg-blue-100 text-blue-800'}"
+														>
+															{#if !expiry.confirmed}
+																{$_('address.namePending', { values: { name: nameOp.name } })}
+															{:else if expiry.expired}
+																{$_('address.nameExpired', {
+																	values: { name: nameOp.name, height: expiry.expiresAt }
+																})}
+															{:else if expiry.blocksLeft !== undefined}
+																{$_('address.nameValidUntil', {
+																	values: {
+																		name: nameOp.name,
+																		height: expiry.expiresAt,
+																		blocksLeft: expiry.blocksLeft
+																	}
+																})}
+															{:else}
+																{$_('address.expires', {
+																	values: { name: nameOp.name, height: expiry.expiresAt }
+																})}
+															{/if}
+														</span>
+													{/each}
+												</div>
+											</div>
+										{/if}
+									{/if}
+								</div>
+							</fieldset>
+						</Step>
 						<p>&nbsp;</p>
 						<div class="mt-10 flex items-center gap-x-4">
 							<h4 class="flex-none text-sm font-semibold leading-6 text-indigo-600">
@@ -588,63 +610,65 @@
 					class="rounded-2xl bg-gray-50 py-10 text-left ring-1 ring-inset ring-gray-900/5 lg:flex lg:flex-col lg:justify-start lg:py-16"
 				>
 					<div class="mx-auto max-w-xs px-8">
-						<p class="text-base font-semibold text-gray-600">{$_('fees.heading')}</p>
-						<div class="mt-6">
-							<div class="flex justify-between mt-2">
-								<span class="text-sm font-bold tracking-tight text-gray-900"
-									>{$_('fees.locked')}</span
-								>
-								<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
-									>{sb.toBitcoin(storageFee)} DOI</span
-								>
+						<Step number={3} title={$_('steps.psbt')} state={costStep}>
+							<p class="text-base font-semibold text-gray-600">{$_('fees.heading')}</p>
+							<div class="mt-6">
+								<div class="flex justify-between mt-2">
+									<span class="text-sm font-bold tracking-tight text-gray-900"
+										>{$_('fees.locked')}</span
+									>
+									<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
+										>{sb.toBitcoin(storageFee)} DOI</span
+									>
+								</div>
+								<div class="flex justify-between mt-2">
+									<span class="text-sm font-bold tracking-tight text-gray-900"
+										>{$_('fees.mining')}</span
+									>
+									<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
+										>{sb.toBitcoin(transactionFee)} DOI</span
+									>
+								</div>
+								<div class="flex justify-between">
+									<span class="text-sm font-bold tracking-tight text-gray-900"
+										>{$_('fees.total')}</span
+									>
+									<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
+										>{sb.toBitcoin(totalAmount)} DOI</span
+									>
+								</div>
+								<div class="flex justify-between mt-2">
+									<span class="text-sm font-bold tracking-tight text-gray-900"
+										>{$_('fees.change')}</span
+									>
+									<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
+										>{sb.toBitcoin(changeAmount)} DOI</span
+									>
+								</div>
 							</div>
-							<div class="flex justify-between mt-2">
-								<span class="text-sm font-bold tracking-tight text-gray-900"
-									>{$_('fees.mining')}</span
-								>
-								<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
-									>{sb.toBitcoin(transactionFee)} DOI</span
-								>
-							</div>
-							<div class="flex justify-between">
-								<span class="text-sm font-bold tracking-tight text-gray-900"
-									>{$_('fees.total')}</span
-								>
-								<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
-									>{sb.toBitcoin(totalAmount)} DOI</span
-								>
-							</div>
-							<div class="flex justify-between mt-2">
-								<span class="text-sm font-bold tracking-tight text-gray-900"
-									>{$_('fees.change')}</span
-								>
-								<span class="text-sm font-semibold leading-6 tracking-wide text-gray-600"
-									>{sb.toBitcoin(changeAmount)} DOI</span
-								>
-							</div>
-						</div>
-						{#if psbtBaseText}
-							<p class="mt-6 text-sm leading-6 text-gray-800">
-								{$_('fees.summary', {
-									values: {
-										fee: sb.toBitcoin(transactionFee),
-										locked: sb.toBitcoin(storageFee),
-										change: sb.toBitcoin(changeAmount)
-									}
-								})}
-							</p>
-							{#if dust > 0}
-								<p class="mt-2 text-sm leading-6 text-gray-600">
-									{$_('fees.dust', { values: { amount: sb.toBitcoin(dust) } })}
+							{#if psbtBaseText}
+								<p class="mt-6 text-sm leading-6 text-gray-800">
+									{$_('fees.summary', {
+										values: {
+											fee: sb.toBitcoin(transactionFee),
+											locked: sb.toBitcoin(storageFee),
+											change: sb.toBitcoin(changeAmount)
+										}
+									})}
 								</p>
+								{#if dust > 0}
+									<p class="mt-2 text-sm leading-6 text-gray-600">
+										{$_('fees.dust', { values: { amount: sb.toBitcoin(dust) } })}
+									</p>
+								{/if}
+								{#if feeDetails}
+									<p class="mt-2 text-xs leading-5 text-gray-500">
+										{$_('fees.details', { values: feeDetails })}
+									</p>
+								{/if}
 							{/if}
-							{#if feeDetails}
-								<p class="mt-2 text-xs leading-5 text-gray-500">
-									{$_('fees.details', { values: feeDetails })}
-								</p>
-							{/if}
-						{/if}
-						<div id="qr-container"></div>
+							<div id="qr-container"></div>
+						</Step>
 					</div>
 				</div>
 			</div>
