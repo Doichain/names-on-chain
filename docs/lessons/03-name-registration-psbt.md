@@ -4,6 +4,8 @@
 
 For a free name and an address with coins, the app builds the transaction that registers the name, as an unsigned PSBT. A box on the right shows what it costs. The PSBT itself appears on screen in lesson 4.
 
+![The cost box next to the form: 0.01 DOI locked in the name, the mining fee, what it takes from your coins and what comes back as change](../img/lesson03.png)
+
 ## What you learn
 
 - What a PSBT is: a transaction that is complete except for the signatures.

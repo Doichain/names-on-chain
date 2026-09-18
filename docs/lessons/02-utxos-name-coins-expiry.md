@@ -4,6 +4,8 @@
 
 Below the name, the app gets an address field. For an address it shows the balance and the names the address holds, each with the block at which it expires.
 
+![The app with an address entered: below the field the balance, and under it the name the address holds with the block until which it is valid](../img/lesson02.png)
+
 ## What you learn
 
 - What UTXOs are: the separate coins an address owns.
