@@ -4,6 +4,8 @@
 
 Ein Name kann zwischen Menschen den Besitzer wechseln, die einander nicht vertrauen. Eine einzige Transaktion bezahlt den Halter und überträgt den Namen an den Käufer, also geschieht beides oder nichts. Namecoin nennt das [atomic name trading](https://www.namecoin.org/docs/name-owners/atomic-name-trading/). Die App baut einen solchen Kauf als PSBT.
 
+![Das Kaufformular für einen Namen, den jemand anderes hält: der Verkäufer, Ihre Adresse, der Preis, daneben was Sie zahlen, was im Namen gebunden bleibt und was als Wechselgeld zurückkommt](../img/lesson05.png)
+
 ## Was Sie lernen
 
 - Wie eine Transaktion beide Hälften eines Handels enthält.

@@ -89,3 +89,20 @@ test('lesson 4: the PSBT as a QR code the wallet reads', async ({ page }) => {
 
 	await page.screenshot({ path: 'docs/img/lesson04.png', fullPage: true });
 });
+
+test('lesson 5: buying a name somebody else holds', async ({ page }) => {
+	await page.goto('/');
+	await expect(page.getByRole('status')).toContainText('Connected');
+
+	await page.getByLabel('Name to register').fill(recorded.name);
+	await page.getByRole('button', { name: 'Check name' }).click();
+	await expect(page.getByRole('heading', { name: 'Buy this name' })).toBeVisible();
+
+	await page
+		.getByLabel('Your Doichain address: it pays for the name and receives it')
+		.fill(recorded.fundedAddress);
+	await page.getByLabel('Price').fill('1.5');
+	await expect(page.getByText(/You pay 1\.5 DOI to/)).toBeVisible();
+
+	await page.screenshot({ path: 'docs/img/lesson05.png', fullPage: true });
+});
