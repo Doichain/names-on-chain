@@ -39,6 +39,15 @@
 		},
 		"offlineHelp": "Das Formular öffnet sich, sobald ein Doichain-Server auf der gültigen Kette antwortet."
 	},
+	"steps": {
+		"name": "Namen prüfen",
+		"address": "Adresse angeben",
+		"psbt": "Kosten ansehen",
+		"wallet": "In der Wallet signieren",
+		"buy": "Namen kaufen",
+		"done": "erledigt",
+		"next": "als Nächstes"
+	},
 	"name": {
 		"intro": "Registrieren Sie Ihren Wunschnamen auf Doichain!",
 		"label": "Zu registrierender Name",
