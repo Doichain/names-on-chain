@@ -9,9 +9,23 @@ import { recorded, simulateElectrumX } from './electrumx.js';
  * Each lesson's picture is taken on the branch where that lesson is the whole
  * app: as soon as the next lesson has put something on the page, the test skips,
  * so a later branch does not overwrite an earlier lesson's picture with its own,
- * fuller page. The files land in docs/img/ and are committed; after a visible
- * change run `pnpm exec playwright test screenshots` and commit what it wrote.
+ * fuller page.
+ *
+ * The files land in docs/img/ and are committed. Every run walks to the state
+ * and checks it; only a run with SCREENSHOTS=1 writes the files, so a normal
+ * test run leaves the repository clean:
+ *
+ *     SCREENSHOTS=1 pnpm exec playwright test screenshots
+ *
+ * Then commit what it wrote.
  */
+
+/** a deliberate run writes the pictures; every run checks the state they show */
+const shoot = async (page, file) => {
+	if (process.env.SCREENSHOTS === '1')
+		await page.screenshot({ path: `docs/img/${file}`, fullPage: true });
+};
+
 test.use({ viewport: { width: 1100, height: 900 } });
 
 test.beforeEach(async ({ page }) => {
@@ -32,7 +46,7 @@ test('lesson 1: a name, and who holds it', async ({ page }) => {
 	await page.getByRole('button', { name: 'Check name' }).click();
 	await expect(page.locator('#name-status')).toContainText(recorded.owner);
 
-	await page.screenshot({ path: 'docs/img/lesson01.png', fullPage: true });
+	await shoot(page, 'lesson01.png');
 });
 
 test('lesson 2: an address, its coins and its names', async ({ page }) => {
@@ -48,7 +62,7 @@ test('lesson 2: an address, its coins and its names', async ({ page }) => {
 	await expect(page.locator('#address-status')).toContainText(/Balance: [\d.]+ DOI/);
 	await expect(page.locator('#address-status')).toContainText('Names registered to this address:');
 
-	await page.screenshot({ path: 'docs/img/lesson02.png', fullPage: true });
+	await shoot(page, 'lesson02.png');
 });
 
 test('lesson 3: what a registration costs', async ({ page }) => {
@@ -67,7 +81,7 @@ test('lesson 3: what a registration costs', async ({ page }) => {
 		(await page.getByRole('button', { name: 'Create PSBT' }).count()) > 0,
 		'a later lesson has more on the page'
 	);
-	await page.screenshot({ path: 'docs/img/lesson03.png', fullPage: true });
+	await shoot(page, 'lesson03.png');
 });
 
 test('lesson 4: the PSBT as a QR code the wallet reads', async ({ page }) => {
