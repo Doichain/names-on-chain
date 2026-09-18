@@ -4,6 +4,8 @@
 
 Unter dem Namen bekommt die App ein Adressfeld. Zu einer Adresse zeigt sie das Guthaben und die Namen, die sie hält, jeweils mit dem Block, bei dem der Name abläuft.
 
+![Die App mit eingetragener Adresse: unter dem Feld das Guthaben, darunter der Name, den die Adresse hält, mit dem Block, bis zu dem er gilt](../img/lesson02.png)
+
 ## Was Sie lernen
 
 - Was UTXOs sind: die einzelnen Coins, die einer Adresse gehören.
