@@ -4,6 +4,8 @@
 
 The app connects to a Doichain server and looks up names: who holds a name, and until which block.
 
+![The app after a name check: the status line names chain, block and server, and the message under the field names the address that holds the name](../img/lesson01.png)
+
 ## What you learn
 
 - How a web page talks to a blockchain server over a WebSocket.
@@ -24,8 +26,9 @@ You need Node 22 (see `.nvmrc`). Open the address that `pnpm dev` prints, usuall
 ## Checkpoint
 
 - Within a second or two the status line under the title says **Connected · Mainnet · block …** and names the server.
-- Type `doichain`. The app says the name is available: it was registered before and expired at block 389030.
-- Type `test/v31.1.4-canary-20260913`, a name registered after the chain split. The app names the address that holds it and the block until which it is theirs.
+- Type `doichain` and click **Check name**. The app says the name is available: it was registered before and expired at block 389030.
+- Type `test/v31.1.4-canary-20260913`, a name registered after the chain split, and check it. The app names the address that holds it and the block until which it is theirs.
+- Type something else. The message disappears and the field says **Not checked yet**: nothing goes to a server until you ask.
 
 ## How it works
 
@@ -37,7 +40,7 @@ A server answers with whatever chain its node follows, and it sends no proof. So
 
 ### 2. Checking a name
 
-`src/lib/components/pricing.svelte` hands what you type to `checkName` in `nameValidation.js`. It waits until you stop typing for 300 milliseconds (`debounce.js`), then:
+`src/lib/components/pricing.svelte` hands the name to `checkName` in `nameValidation.js` when you click **Check name** or press Enter – never while you type, because every check hands the name to a server. `debounce.js` still sits in front of it, so a second click within 300 milliseconds asks only once. Then:
 
 1. refuses names with spaces, with fewer than 4 characters or with more than 255 bytes,
 2. asks the server for the history of the name (`nameShow.js`),

@@ -4,6 +4,8 @@
 
 Die App verbindet sich mit einem Doichain-Server und schlägt Namen nach: wem ein Name gehört und bis zu welchem Block.
 
+![Die App nach einer Namensprüfung: Die Statuszeile nennt Kette, Block und Server, die Meldung unter dem Feld nennt die Adresse, der der Name gehört](../img/lesson01.png)
+
 ## Was Sie lernen
 
 - Wie eine Webseite über einen WebSocket mit einem Blockchain-Server spricht.
@@ -24,8 +26,9 @@ Sie brauchen Node 22 (siehe `.nvmrc`). Öffnen Sie die Adresse, die `pnpm dev` a
 ## Checkpoint
 
 - Nach ein, zwei Sekunden steht unter dem Titel **Verbunden · Mainnet · Block …**, dazu der Name des Servers.
-- Tippen Sie `doichain`. Die App meldet den Namen als frei: Er war schon registriert und ist bei Block 389030 abgelaufen.
-- Tippen Sie `test/v31.1.4-canary-20260913`, einen Namen, der nach dem Chain-Split registriert wurde. Die App nennt die Adresse, der er gehört, und den Block, bis zu dem er ihr gehört.
+- Tippen Sie `doichain` und klicken Sie auf **Name prüfen**. Die App meldet den Namen als frei: Er war schon registriert und ist bei Block 389030 abgelaufen.
+- Tippen Sie `test/v31.1.4-canary-20260913`, einen Namen, der nach dem Chain-Split registriert wurde, und prüfen Sie ihn. Die App nennt die Adresse, der er gehört, und den Block, bis zu dem er ihr gehört.
+- Tippen Sie etwas anderes. Die Meldung verschwindet, im Feld steht **Noch nicht geprüft**: Ohne Ihre Frage geht nichts an einen Server.
 
 ## So funktioniert es
 
@@ -37,7 +40,7 @@ Ein Server antwortet mit der Kette, der sein Knoten folgt, und schickt keinen Be
 
 ### 2. Einen Namen prüfen
 
-`src/lib/components/pricing.svelte` gibt Ihre Eingabe an `checkName` in `nameValidation.js` weiter. Die Funktion wartet, bis Sie 300 Millisekunden lang nicht tippen (`debounce.js`), und dann:
+`src/lib/components/pricing.svelte` gibt den Namen an `checkName` in `nameValidation.js` weiter, sobald Sie auf **Name prüfen** klicken oder Enter drücken – nie beim Tippen, denn jede Prüfung reicht den Namen an einen Server weiter. `debounce.js` sitzt weiter davor, damit ein zweiter Klick innerhalb von 300 Millisekunden nur einmal fragt. Dann:
 
 1. lehnt sie Namen mit Leerzeichen, mit weniger als 4 Zeichen oder mit mehr als 255 Bytes ab,
 2. fragt sie den Server nach der Geschichte des Namens (`nameShow.js`),

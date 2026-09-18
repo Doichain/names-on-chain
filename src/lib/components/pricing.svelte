@@ -91,7 +91,8 @@
 	$: needsCheck = Boolean(name) && name !== checkedName && !isCheckingName;
 
 	/**
-	 * Check a name, debounce every keyboard typing, return local variables by callback
+	 * Takes the answer to a check and puts it on screen, if it still belongs to
+	 * the name in the field
 	 * @param result
 	 */
 	export async function nameCheckCallback(result) {
