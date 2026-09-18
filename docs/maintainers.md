@@ -59,7 +59,7 @@ pnpm exec vitest run        # unit tests
 pnpm exec playwright test   # browser tests in Chromium, against a simulated ElectrumX
 ```
 
-The browser tests also take the screenshots the lesson texts show and write them to `docs/img/`. They check the state in the picture on the way, so a screenshot that can no longer be reached fails the run instead of ageing quietly. After a visible change, run `pnpm exec playwright test screenshots` and commit what it wrote.
+The browser tests also take the screenshots the lesson texts show and write them to `docs/img/`. They check the state in the picture on the way, so a screenshot that can no longer be reached fails the run instead of ageing quietly. Only a run with `SCREENSHOTS=1` writes them, so a normal run leaves the repository clean. After a visible change, run `SCREENSHOTS=1 pnpm exec playwright test screenshots` and commit what it wrote.
 
 CI runs all four on every push to a lesson branch or `main`. The smoke tests build the app and start their own preview on port 4180. If Playwright's own Chromium is not installed, set `CHROMIUM_PATH` to another Chromium.
 
