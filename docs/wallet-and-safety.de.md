@@ -11,7 +11,10 @@ hier, bevor Sie einen Namen registrieren oder handeln.
   bindet 0,01 DOI im Namens-Output und zahlt eine Transaktionsgebühr; ein Kauf
   überweist den Preis an den Verkäufer.
 - Doichain hat sich am 11. September 2026 geteilt. Gültig ist die Kette von
-  Doichain Core v31.1.5 ab Block 431.017, und die Server der App folgen ihr.
+  Doichain Core v31: Ihre Regeln griffen mit Block 431.017, und bei Block 431.018
+  trennte sie sich von der Kette, die die alten Knoten weiterminen – dort hat sie
+  `71d50ff1…4b67`, die alte `bab49c13…2d34`. Die Server der App folgen ihr, und
+  die App fragt jeden von ihnen nach diesem Block, bevor sie etwas glaubt.
 - Transaktionen und Namen schlagen Sie auf
   [doi-explorer.le-space.de](https://doi-explorer.le-space.de) nach. Der alte
   Explorer unter explorer.doichain.org zeigt noch die andere Kette, mit anderen
