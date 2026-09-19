@@ -20,6 +20,9 @@
 		"appStore": "App Store (iPhone)",
 		"source": "Source code"
 	},
+	"credit": {
+		"madeBy": "Made with ❤️ by"
+	},
 	"status": {
 		"connecting": "Connecting to a Doichain server …",
 		"connected": "Connected · {network} · block {height}",
