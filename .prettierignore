@@ -2,7 +2,11 @@
 *.md
 
 # Recorded server answers stay byte for byte as they were recorded
-src/lib/doichain/__fixtures__/
+packages/doichain/testing/__fixtures__/
+
+# Build output of the apps
+apps/*/public/
+apps/*/.svelte-kit/
 
 # Ignore files for PNPM, NPM and YARN
 pnpm-lock.yaml

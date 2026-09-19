@@ -1,0 +1,124 @@
+import { expect, test } from '@playwright/test';
+import { recorded, simulateElectrumX } from '@names-on-chain/doichain/testing';
+
+/**
+ * Takes the pictures the lesson texts show, and checks on the way that what is
+ * in the picture is really the state it claims to be. A screenshot that can no
+ * longer be reached fails here instead of ageing quietly in docs/.
+ *
+ * Each lesson's picture is taken on the branch where that lesson is the whole
+ * app: as soon as the next lesson has put something on the page, the test skips,
+ * so a later branch does not overwrite an earlier lesson's picture with its own,
+ * fuller page.
+ *
+ * The files land in the repository's docs/img/ and are committed. Every run walks to the state
+ * and checks it; only a run with SCREENSHOTS=1 writes the files, so a normal
+ * test run leaves the repository clean:
+ *
+ *     SCREENSHOTS=1 pnpm exec playwright test screenshots
+ *
+ * Then commit what it wrote.
+ */
+
+/** a deliberate run writes the pictures; every run checks the state they show */
+const shoot = async (page, file) => {
+	if (process.env.SCREENSHOTS === '1')
+		await page.screenshot({ path: `../../docs/img/${file}`, fullPage: true });
+};
+
+test.use({ viewport: { width: 1100, height: 900 } });
+
+test.beforeEach(async ({ page }) => {
+	await page.addInitScript(() => localStorage.setItem('namesOnChain.locale', 'en'));
+	await simulateElectrumX(page);
+});
+
+test('lesson 1: a name, and who holds it', async ({ page }) => {
+	await page.goto('/');
+	await expect(page.getByRole('status')).toContainText('Connected');
+	// lesson 2 adds the address field
+	test.skip(
+		(await page.getByLabel('Doichain registration address').count()) > 0,
+		'a later lesson has more on the page'
+	);
+
+	await page.getByLabel('Name to register').fill(recorded.name);
+	await page.getByRole('button', { name: 'Check name' }).click();
+	await expect(page.locator('#name-status')).toContainText(recorded.owner);
+
+	await shoot(page, 'lesson01.png');
+});
+
+test('lesson 2: an address, its coins and its names', async ({ page }) => {
+	await page.goto('/');
+	await expect(page.getByRole('status')).toContainText('Connected');
+	// lesson 3 adds the cost box
+	test.skip(
+		(await page.getByText('Locked amount:').count()) > 0,
+		'a later lesson has more on the page'
+	);
+
+	await page.getByLabel('Doichain registration address').fill(recorded.owner);
+	await expect(page.locator('#address-status')).toContainText(/Balance: [\d.]+ DOI/);
+	await expect(page.locator('#address-status')).toContainText('Names registered to this address:');
+
+	await shoot(page, 'lesson02.png');
+});
+
+test('lesson 3: what a registration costs', async ({ page }) => {
+	await page.goto('/');
+	await expect(page.getByRole('status')).toContainText('Connected');
+
+	await page.getByLabel('Name to register').fill('a-free-name');
+	await page.getByRole('button', { name: 'Check name' }).click();
+	await expect(page.locator('#name-status')).toContainText('is available');
+	await page.getByLabel('Doichain registration address').fill(recorded.fundedAddress);
+	await expect(page.getByText('Locked amount:')).toBeVisible();
+	await expect(page.getByText(/0\.01 DOI stay locked in the name output/)).toBeVisible();
+
+	// lesson 4 turns the PSBT into a QR code
+	test.skip(
+		(await page.getByRole('button', { name: 'Create PSBT' }).count()) > 0,
+		'a later lesson has more on the page'
+	);
+	await shoot(page, 'lesson03.png');
+});
+
+test('lesson 4: the PSBT as a QR code the wallet reads', async ({ page }) => {
+	await page.goto('/');
+	await expect(page.getByRole('status')).toContainText('Connected');
+
+	await page.getByLabel('Name to register').fill('a-free-name');
+	await page.getByRole('button', { name: 'Check name' }).click();
+	await expect(page.locator('#name-status')).toContainText('is available');
+	await page.getByLabel('Doichain registration address').fill(recorded.fundedAddress);
+	await expect(page.getByText('Locked amount:')).toBeVisible();
+
+	await page.getByRole('button', { name: 'Create PSBT' }).click();
+	await expect(page.locator('.qr svg')).toBeVisible();
+	// the first frame, always, so only the fragments in it differ from run to run
+	await page.getByRole('button', { name: 'Pause' }).click();
+	await expect(page.getByRole('button', { name: 'Play' })).toBeVisible();
+	while (!(await page.getByText(/QR code frame 1 of/).isVisible()))
+		await page.getByRole('button', { name: 'Next' }).click();
+	await expect(page.getByLabel('PSBT (Base64)')).toHaveValue(/^cHNidP/);
+
+	await shoot(page, 'lesson04.png');
+});
+
+test('lesson 5: buying a name somebody else holds', async ({ page }) => {
+	await page.goto('/');
+	await expect(page.getByRole('status')).toContainText('Connected');
+
+	await page.getByLabel('Name to register').fill(recorded.name);
+	await page.getByRole('button', { name: 'Check name' }).click();
+	await expect(page.getByRole('heading', { name: 'Buy this name' })).toBeVisible();
+
+	await page
+		.getByLabel('Your Doichain address: it pays for the name and receives it')
+		.fill(recorded.fundedAddress);
+	await page.getByLabel('Price').fill('1.5');
+	await expect(page.getByText(/You pay 1\.5 DOI to/)).toBeVisible();
+
+	await shoot(page, 'lesson05.png');
+});

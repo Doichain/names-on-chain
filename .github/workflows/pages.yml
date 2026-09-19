@@ -1,9 +1,9 @@
 name: GitHub Pages
 
-# Builds every lesson branch and publishes each one under its own path:
-#   https://doichain.github.io/names-on-chain/lesson01/ ... /lesson05/
-# Fixes reach main through the forward merges (lesson01 -> ... -> main), so a
-# push to main rebuilds all lessons from the current heads of their branches.
+# Builds every lesson app of the workspace and publishes each one under its own
+# path: https://doichain.github.io/names-on-chain/lesson01/ ... /lesson05/
+# The apps live in apps/ and share packages/doichain, so one push to main
+# rebuilds all five from the same tree.
 #
 # The same folder is pinned on IPFS through Aleph (job ipfs) once the
 # repository secret ALEPH_PRIVATE_KEY is set, and a custom domain follows the
@@ -43,22 +43,19 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Build every lesson from its branch
+      - name: Build every lesson app from the workspace
         run: |
           mkdir -p pages
           touch pages/.nojekyll
+          pnpm install --frozen-lockfile
+          pnpm run build
           for lesson in lesson01 lesson02 lesson03 lesson04 lesson05; do
-            git fetch --depth 1 origin "$lesson"
-            mkdir -p "build/$lesson"
-            git archive FETCH_HEAD | tar -x -C "build/$lesson"
-            pnpm --dir "build/$lesson" install --frozen-lockfile
-            pnpm --dir "build/$lesson" run build
-            cp -R "build/$lesson/public" "pages/$lesson"
+            cp -R "apps/$lesson/public" "pages/$lesson"
           done
 
       - name: Copy the picture a shared link shows
-        # The lessons ship it in static/; the overview page points at the root copy.
-        run: cp build/lesson05/public/og-image.png pages/og-image.png
+        # The apps ship it in static/; the overview page points at the root copy.
+        run: cp apps/lesson05/public/og-image.png pages/og-image.png
 
       - name: Write the lesson overview
         run: |

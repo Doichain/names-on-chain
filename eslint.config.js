@@ -20,7 +20,7 @@ export default [
 		}
 	},
 	{
-		// public/ is the build output (adapter-static pages: 'public')
-		ignores: ['build/', '.svelte-kit/', 'dist/', 'public/']
+		// public/ is the build output of every app (adapter-static pages: 'public')
+		ignores: ['**/build/', '**/.svelte-kit/', '**/dist/', '**/public/', '**/node_modules/']
 	}
 ];

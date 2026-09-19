@@ -1,0 +1,27 @@
+{
+	"name": "@names-on-chain/doichain",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"description": "What every lesson of the workshop shares: the connection, the stores, the name helpers, the components and the recorded answers the tests speak to.",
+	"exports": {
+		".": "./src/index.js",
+		"./components/*": "./src/components/*",
+		"./i18n": "./src/i18n/index.js",
+		"./testing": "./testing/electrumx.js",
+		"./testing/fake-client": "./testing/__fixtures__/fakeElectrumClient.js",
+		"./testing/*": "./testing/*",
+		"./*": "./src/*"
+	},
+	"scripts": {
+		"test:unit": "vitest run"
+	},
+	"dependencies": {
+		"@doichain/doichainjs-lib": "^6.4.0",
+		"jsqr": "^1.4.0",
+		"svelte-i18n": "^4.0.1"
+	},
+	"devDependencies": {
+		"vitest": "^3.2.7"
+	}
+}

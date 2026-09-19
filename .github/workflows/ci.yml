@@ -1,5 +1,8 @@
 name: CI
 
+# One workspace, one run: the shared package and all five lesson apps.
+# The lesson branches keep their own copy of this file until they are retired.
+
 on:
   push:
     branches: [main, 'lesson*']
@@ -21,13 +24,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Lint (Prettier and ESLint)
         run: pnpm run lint
-      - name: Type check (svelte-check)
+      - name: Type check (svelte-check, every app)
         run: pnpm run check
-      - name: Unit tests
-        run: pnpm exec vitest run
-      - name: Build
+      - name: Unit tests (the package once, then every app)
+        run: pnpm run test:unit
+      - name: Build every app
         run: pnpm run build
-      - name: Browser for the smoke test
+      - name: Browser for the tests
         run: pnpm exec playwright install --with-deps chromium
-      - name: Smoke test in the browser, against a simulated ElectrumX
-        run: pnpm exec playwright test
+      - name: Browser tests, against a simulated ElectrumX
+        run: pnpm run test:integration
