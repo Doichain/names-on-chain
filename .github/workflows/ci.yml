@@ -30,6 +30,8 @@ jobs:
       - name: Build every app
         run: pnpm run build
       - name: Browser for the tests
-        run: pnpm exec playwright install --with-deps chromium
+        # Playwright is a dependency of the apps, not of the workspace root, and
+        # one install serves all five of them.
+        run: pnpm --filter @names-on-chain/lesson01 exec playwright install --with-deps chromium
       - name: Browser tests, against a simulated ElectrumX
         run: pnpm run test:integration

@@ -60,8 +60,8 @@ pnpm --filter @names-on-chain/lesson03 test:integration
 
 Each app builds and previews on a port of its own — 4181 for lesson01 up to 4185
 for lesson05 — so the five browser suites never answer each other's requests. If
-Playwright's own Chromium is not installed, `pnpm exec playwright install
-chromium` fetches it, or point `CHROMIUM_PATH` at another Chromium.
+Playwright's own Chromium is not installed, `pnpm --filter @names-on-chain/lesson01 exec
+playwright install chromium` fetches it, or point `CHROMIUM_PATH` at another Chromium.
 
 The browser tests also take the screenshots the lesson texts show and write them
 to `docs/img/`. They check the state in the picture on the way, so a screenshot

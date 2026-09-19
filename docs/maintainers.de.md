@@ -62,7 +62,8 @@ pnpm --filter @names-on-chain/lesson03 test:integration
 Jede App baut und previewt auf einem eigenen Port – 4181 für lesson01 bis 4185
 für lesson05 –, damit die fünf Browser-Suiten nie die Anfragen der jeweils
 anderen beantworten. Wenn Playwrights eigenes Chromium nicht installiert ist,
-holt `pnpm exec playwright install chromium` es, oder Sie zeigen mit
+holt `pnpm --filter @names-on-chain/lesson01 exec playwright install chromium`
+es, oder Sie zeigen mit
 `CHROMIUM_PATH` auf ein anderes Chromium.
 
 Die Browser-Tests nehmen auch die Screenshots auf, die in den Lektionstexten
