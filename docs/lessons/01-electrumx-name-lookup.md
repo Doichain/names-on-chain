@@ -34,9 +34,9 @@ You need Node 22 (see `.nvmrc`). Open the address that `pnpm dev` prints, usuall
 
 ### 1. Connecting to a server
 
-`src/routes/+layout.js` starts the connection when the page loads. `src/lib/doichain/connectElectrum.js` picks one of the servers listed in `doichain-store.js` at random and opens a WebSocket to it with `electrumx-client.js`. Requests and answers are JSON-RPC messages.
+`src/routes/+layout.js` starts the connection when the page loads. `src/lib/doichain/connectElectrum.js` picks one of the servers listed in `doichain-store.js` at random and opens a WebSocket to it with `electrum.ElectrumClient` from `@doichain/doichainjs-lib`. Requests and answers are JSON-RPC messages; the client gives up on one that stays unanswered, pings a silent server so the connection is not dropped, and says through `onclose` when it is gone. Which server to try next stays the app's decision.
 
-A server answers with whatever chain its node follows, and it sends no proof. So before the app trusts any answer, it asks for block 431,018 and compares that block's hash with the one it knows (`chainCheck.js`). A server on the old chain counts as a failed attempt, and the app tries another one. `ConnectionStatus.svelte` shows each step.
+A server answers with whatever chain its node follows, and it sends no proof. So before the app trusts any answer, it asks for block 431,018 and compares that block's hash with the one it knows (`electrum.verifyChain`, with the checkpoint the library carries). A server on the old chain counts as a failed attempt, and the app tries another one. `ConnectionStatus.svelte` shows each step.
 
 Why 431,018 and not 431,017, the block the new rules took effect with? Because that one is on both chains: Doichain never enforced the difficulty field, so the old nodes accepted it as well. Both chains build their next block on it, and there they part.
 
