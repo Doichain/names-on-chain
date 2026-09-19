@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { _ } from '@names-on-chain/doichain/i18n';
 	import LanguageSwitcher from '@names-on-chain/doichain/components/LanguageSwitcher.svelte';
+	import Footer from '@names-on-chain/doichain/components/Footer.svelte';
 </script>
 
 <!-- This app talks to Doichain mainnet. Say so before anyone scans a PSBT. -->
@@ -17,16 +18,4 @@
 
 <slot />
 
-<!-- The app never signs: point to the wallet that does, and to its current source code. -->
-<footer class="border-t border-gray-200 bg-gray-50 px-4 py-4 text-center text-sm text-gray-700">
-	{$_('wallet.intro')}
-	<a class="underline" href="https://play.google.com/store/apps/details?id=org.doichain.doiwallet"
-		>{$_('wallet.googlePlay')}</a
-	>
-	·
-	<a class="underline" href="https://apps.apple.com/app/doiwallet/id1579900361"
-		>{$_('wallet.appStore')}</a
-	>
-	·
-	<a class="underline" href="https://github.com/Doichain/DoiWallet">{$_('wallet.source')}</a>
-</footer>
+<Footer />

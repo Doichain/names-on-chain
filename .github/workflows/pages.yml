@@ -72,7 +72,9 @@ jobs:
                 do not resolve a relative og:image. The picture comes from the lesson
                 builds, see "Copy the picture a shared link shows" below.
               -->
-              <link rel="icon" href="./lesson05/favicon.png" />
+              <link rel="icon" href="./lesson05/favicon.ico" sizes="48x48" />
+              <link rel="icon" href="./lesson05/le-space-favicon.svg" type="image/svg+xml" />
+              <link rel="apple-touch-icon" href="./lesson05/apple-touch-icon.png" />
               <link rel="canonical" href="https://doichain.github.io/names-on-chain/" />
               <meta name="description" content="A hands-on PSBT and NameOp workshop on Doichain: look up, register and trade names without a private key in the browser." />
               <meta property="og:type" content="website" />
