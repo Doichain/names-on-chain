@@ -166,6 +166,7 @@ export const buildNameTradePsbt = (
 		return { error: t('trade.errors.insufficient', { address: buyerAddress }) };
 	}
 
+	// --8<-- trade-psbt · assemble the trade: the coins, the price, the name, the change
 	const psbt = new Psbt({ network: network });
 	// Set the version for name operations
 	psbt.setVersion(VERSION);
@@ -224,4 +225,5 @@ export const buildNameTradePsbt = (
 		coinsUsed: selection.selected.length,
 		coinsAvailable: coins.length
 	};
+	// -->8--
 };

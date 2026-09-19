@@ -23,6 +23,7 @@ import { normalizeName } from '@names-on-chain/doichain/nameBytes.js';
  * const utxos = await nameShow(electrumClient, nameId);
  */
 export const nameShow = async (electrumClient, nameToCheck) => {
+	// --8<-- name-lookup · ask the server for every operation on this name, and keep the block heights
 	const scriptHash = nameops.nameIndexScriptHash(normalizeName(nameToCheck));
 	let results = [];
 	await electrumClient.connect();
@@ -35,4 +36,5 @@ export const nameShow = async (electrumClient, nameToCheck) => {
 		results = [...detailResults, ...results];
 	}
 	return results;
+	// -->8--
 };

@@ -31,6 +31,20 @@ eine eigene Fassung. Lektion 5 importiert alle drei von hier.
 pnpm --filter @names-on-chain/lesson04 dev
 ```
 
+### Selbst schreiben
+
+```bash
+pnpm start-state lesson04
+```
+
+Das leert die Stelle in `renderQR.js`, um die es in dieser Lektion geht – das Zerlegen des PSBT in QR-Bilder –, und
+hinterlässt ein TODO. Die App baut und startet weiterhin und hält genau dort an. Wenn Sie
+die Lösung zurückhaben wollen:
+
+```bash
+git checkout apps/lesson04
+```
+
 ## Checkpoint
 
 - Mit einem freien Namen und einer Adresse mit Coins erscheint der Button **PSBT erstellen**. Er zeichnet einen animierten QR-Code auf weißem Grund.

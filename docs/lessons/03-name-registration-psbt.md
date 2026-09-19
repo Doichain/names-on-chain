@@ -30,6 +30,20 @@ registration.
 pnpm --filter @names-on-chain/lesson03 dev
 ```
 
+### Write it yourself
+
+```bash
+pnpm start-state lesson03
+```
+
+That empties the part of `fees.js` this lesson is about — choosing the coins and their fee — and leaves a
+TODO in its place. The app still builds and still starts; it stops exactly there. When
+you want the answer back:
+
+```bash
+git checkout apps/lesson03
+```
+
 ## Checkpoint
 
 - Type a free name and enter an address with at least 0.02 DOI.

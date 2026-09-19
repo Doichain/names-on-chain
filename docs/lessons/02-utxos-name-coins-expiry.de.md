@@ -30,6 +30,20 @@ deshalb hat diese App eigene.
 pnpm --filter @names-on-chain/lesson02 dev
 ```
 
+### Selbst schreiben
+
+```bash
+pnpm start-state lesson02
+```
+
+Das leert die Stelle in `utxoHelpers.js`, um die es in dieser Lektion geht – das Sortieren einer Adresse in Coins und Namen –, und
+hinterlässt ein TODO. Die App baut und startet weiterhin und hält genau dort an. Wenn Sie
+die Lösung zurückhaben wollen:
+
+```bash
+git checkout apps/lesson02
+```
+
 ## Checkpoint
 
 - Geben Sie eine Doichain-Adresse aus DoiWallet ein: `M…` oder `N…` (P2PKH) oder `dc1q…` (P2WPKH). Eine falsche oder eine Bitcoin-Adresse wird als ungültig markiert.

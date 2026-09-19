@@ -33,6 +33,20 @@ reads outputs comes along: `nameShow.js`, `nameDoi.js`, `utxoHelpers.js`,
 pnpm --filter @names-on-chain/lesson05 dev
 ```
 
+### Write it yourself
+
+```bash
+pnpm start-state lesson05
+```
+
+That empties the part of `buildNameTradePsbt.js` this lesson is about — assembling the trade — and leaves a
+TODO in its place. The app still builds and still starts; it stops exactly there. When
+you want the answer back:
+
+```bash
+git checkout apps/lesson05
+```
+
 ## Checkpoint
 
 - Type a name that is taken. Further down, **Buy this name** opens.

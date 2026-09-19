@@ -14,7 +14,8 @@
 		"format": "prettier --write .",
 		"test": "pnpm run test:unit && pnpm run test:integration",
 		"test:unit": "pnpm -r test:unit",
-		"test:integration": "pnpm -r --filter \"./apps/*\" --workspace-concurrency=1 test:integration"
+		"test:integration": "pnpm -r --filter \"./apps/*\" --workspace-concurrency=1 test:integration",
+		"start-state": "node scripts/start-state.mjs"
 	},
 	"devDependencies": {
 		"@eslint/js": "^8.57.1",

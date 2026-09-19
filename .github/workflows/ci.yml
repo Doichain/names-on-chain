@@ -35,3 +35,25 @@ jobs:
         run: pnpm --filter @names-on-chain/lesson01 exec playwright install --with-deps chromium
       - name: Browser tests, against a simulated ElectrumX
         run: pnpm run test:integration
+
+  start-states:
+    name: Start states still build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Every lesson marks the code it teaches
+        run: pnpm start-state --check
+      # A start state that does not compile is worse than none: blank every lesson
+      # and let svelte-check and the build have their say. Nothing is committed.
+      - name: Blank them all
+        run: pnpm start-state --all
+      - name: They still type-check
+        run: pnpm run check
+      - name: They still build
+        run: pnpm run build

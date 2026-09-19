@@ -42,6 +42,20 @@ pnpm --filter @names-on-chain/lesson01 dev
 
 Sie brauchen Node 22 (siehe `.nvmrc`). Öffnen Sie die Adresse, die der Befehl ausgibt, meist http://localhost:5173.
 
+### Selbst schreiben
+
+```bash
+pnpm start-state lesson01
+```
+
+Das leert die Stelle in `nameShow.js`, um die es in dieser Lektion geht – das Nachschlagen eines Namens auf dem Server –, und
+hinterlässt ein TODO. Die App baut und startet weiterhin und hält genau dort an. Wenn Sie
+die Lösung zurückhaben wollen:
+
+```bash
+git checkout apps/lesson01
+```
+
 ## Checkpoint
 
 - Nach ein, zwei Sekunden steht unter dem Titel **Verbunden · Mainnet · Block …**, dazu der Name des Servers.
