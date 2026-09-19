@@ -2,9 +2,9 @@
 	import { onDestroy, tick } from 'svelte';
 	import sb from 'satoshi-bitcoin';
 	import { _ } from '@names-on-chain/doichain/i18n';
-	import { describePsbt } from '$lib/doichain/describePsbt.js';
+	import { describePsbt } from '../doichain/describePsbt.js';
 	import { network } from '@names-on-chain/doichain/doichain-store.js';
-	import { renderBCUR } from '$lib/doichain/renderQR.js';
+	import { renderBCUR } from '../doichain/renderQR.js';
 
 	/** the PSBT to hand over, Base64, or undefined while there is nothing to hand over */
 	export let psbt = undefined;

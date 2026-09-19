@@ -8,7 +8,7 @@ import {
 	MAX_INPUTS,
 	MIN_RELAY_FEE_RATE,
 	selectCoins
-} from '$lib/doichain/fees.js';
+} from '@names-on-chain/lesson03/doichain/fees.js';
 import { getNameOPStackScript } from '@names-on-chain/doichain/getNameOPStackScript.js';
 import { normalizeName } from '@names-on-chain/doichain/nameBytes.js';
 import {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DOICHAIN } from '@names-on-chain/doichain/doichain.js';
 import { buildNameRegistrationPsbt } from './buildNameRegistrationPsbt.js';
-import { describePsbt } from './describePsbt.js';
+import { describePsbt } from '@names-on-chain/lesson04/doichain/describePsbt.js';
 import { getUtxosAndNamesOfAddress } from './utxoHelpers.js';
 import { fakeElectrumClient, fixture } from '@names-on-chain/doichain/testing/fake-client';
 

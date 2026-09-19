@@ -9,8 +9,14 @@ import {
 	isNameScript,
 	isP2WPKHScript,
 	verifiedOutput
-} from './transactionChecks.js';
-import { estimateVsize, feeFor, MAX_INPUTS, MIN_RELAY_FEE_RATE, selectCoins } from './fees.js';
+} from '@names-on-chain/lesson03/doichain/transactionChecks.js';
+import {
+	estimateVsize,
+	feeFor,
+	MAX_INPUTS,
+	MIN_RELAY_FEE_RATE,
+	selectCoins
+} from '@names-on-chain/lesson03/doichain/fees.js';
 
 /**
  * Builds the PSBT (partially signed transaction) that registers a Doichain name.

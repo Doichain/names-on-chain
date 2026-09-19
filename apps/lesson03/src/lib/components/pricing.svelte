@@ -5,7 +5,7 @@
 	import { getConnectionStatus } from '@names-on-chain/doichain/connectElectrum.js';
 	import { _, locale, t } from '@names-on-chain/doichain/i18n';
 	import { checkName } from '$lib/doichain/nameValidation.js';
-	import { getUtxosAndNamesOfAddress } from '$lib/doichain/utxoHelpers.js';
+	import { getUtxosAndNamesOfAddress } from '@names-on-chain/lesson02/doichain/utxoHelpers.js';
 	import {
 		electrumClient,
 		connectedServer,
@@ -17,7 +17,10 @@
 	import { feeRateFor } from '$lib/doichain/fees.js';
 	import ScanModal from '@names-on-chain/doichain/components/ScanModal.svelte';
 	import { describeNameBytes } from '@names-on-chain/doichain/nameBytes.js';
-	import { cleanAddressInput, isAddressOf } from '$lib/doichain/addressValidation.js';
+	import {
+		cleanAddressInput,
+		isAddressOf
+	} from '@names-on-chain/lesson02/doichain/addressValidation.js';
 	import { nameExpiry } from '@names-on-chain/doichain/nameExpiry.js';
 	import { buildNameRegistrationPsbt } from '$lib/doichain/buildNameRegistrationPsbt.js';
 	import sb from 'satoshi-bitcoin';

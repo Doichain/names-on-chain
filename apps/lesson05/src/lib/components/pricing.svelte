@@ -4,7 +4,7 @@
 	import NameField from '@names-on-chain/doichain/components/NameField.svelte';
 	import Step from '@names-on-chain/doichain/components/Step.svelte';
 	import ConnectionStatus from '@names-on-chain/doichain/components/ConnectionStatus.svelte';
-	import PsbtQr from '$lib/components/PsbtQr.svelte';
+	import PsbtQr from '@names-on-chain/lesson04/components/PsbtQr.svelte';
 	import { getConnectionStatus } from '@names-on-chain/doichain/connectElectrum.js';
 	import { _, locale, t } from '@names-on-chain/doichain/i18n';
 	import { checkName } from '$lib/doichain/nameValidation.js';
@@ -17,13 +17,13 @@
 		electrumBlockchainBlockHeadersSubscribe,
 		electrumBlockchainRelayfee
 	} from '@names-on-chain/doichain/doichain-store.js';
-	import { feeRateFor } from '$lib/doichain/fees.js';
+	import { feeRateFor } from '@names-on-chain/lesson03/doichain/fees.js';
 	import { describeNameBytes } from '@names-on-chain/doichain/nameBytes.js';
 	import {
 		cleanAddressInput,
 		isAddressOf,
 		isP2WPKHAddress
-	} from '$lib/doichain/addressValidation.js';
+	} from '@names-on-chain/lesson02/doichain/addressValidation.js';
 	import { nameExpiry } from '@names-on-chain/doichain/nameExpiry.js';
 	import ScanModal from '@names-on-chain/doichain/components/ScanModal.svelte';
 

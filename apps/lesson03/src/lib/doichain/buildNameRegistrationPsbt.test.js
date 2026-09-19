@@ -5,7 +5,7 @@ import { getNameOPStackScript } from '@names-on-chain/doichain/getNameOPStackScr
 import { buildNameRegistrationPsbt } from './buildNameRegistrationPsbt.js';
 import { DUST_LIMIT, isNameScript } from './transactionChecks.js';
 import { MAX_INPUTS, MIN_RELAY_FEE_RATE } from './fees.js';
-import { getUtxosAndNamesOfAddress } from './utxoHelpers.js';
+import { getUtxosAndNamesOfAddress } from '@names-on-chain/lesson02/doichain/utxoHelpers.js';
 import { fakeElectrumClient, fixture } from '@names-on-chain/doichain/testing/fake-client';
 
 const STORAGE_FEE = 1_000_000;
