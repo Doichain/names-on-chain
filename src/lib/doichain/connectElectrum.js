@@ -8,8 +8,7 @@ import {
 	electrumServerVersion,
 	connectedServer
 } from './doichain-store.js';
-import { ElectrumxClient } from '$lib/doichain/electrumx-client.js';
-import { verifyChain } from '$lib/doichain/chainCheck.js';
+import { electrum } from '@doichain/doichainjs-lib';
 
 let _electrumClient;
 electrumClient.subscribe((value) => (_electrumClient = value));
@@ -60,17 +59,15 @@ async function connect(_network) {
 		const candidates = networkNodes.filter((n) => !refused.has(n.host));
 		const pool = candidates.length > 0 ? candidates : networkNodes;
 		randomServer = pool[Math.floor(Math.random() * pool.length)];
-		_electrumClient = new ElectrumxClient(
-			randomServer.host,
-			randomServer.port,
-			randomServer.protocol
+		_electrumClient = new electrum.ElectrumClient(
+			`${randomServer.protocol}://${randomServer.host}:${randomServer.port}/`
 		);
 
 		try {
 			electrumClient.set(_electrumClient);
 			await _electrumClient.connect();
 			// ElectrumX serves whatever chain its node follows: check before trusting any answer
-			const chain = await verifyChain(_electrumClient, _network);
+			const chain = await electrum.verifyChain(_electrumClient, _network);
 			if (!chain.ok) {
 				_electrumClient.close();
 				throw Object.assign(new Error(`chain check failed: ${chain.reason}`), {
@@ -98,7 +95,7 @@ async function connect(_network) {
 	const client = _electrumClient;
 
 	// new blocks arrive as notifications once the headers are subscribed below
-	client.subscribe.on('blockchain.headers.subscribe', (params) => {
+	client.on('blockchain.headers.subscribe', (params) => {
 		if (client === _electrumClient && params?.[0])
 			electrumBlockchainBlockHeadersSubscribe.set(params[0]);
 	});

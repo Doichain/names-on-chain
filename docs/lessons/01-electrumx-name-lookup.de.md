@@ -34,9 +34,9 @@ Sie brauchen Node 22 (siehe `.nvmrc`). Öffnen Sie die Adresse, die `pnpm dev` a
 
 ### 1. Verbindung zu einem Server
 
-`src/routes/+layout.js` startet die Verbindung, sobald die Seite lädt. `src/lib/doichain/connectElectrum.js` wählt zufällig einen der Server aus `doichain-store.js` und öffnet mit `electrumx-client.js` einen WebSocket zu ihm. Anfragen und Antworten sind JSON-RPC-Nachrichten.
+`src/routes/+layout.js` startet die Verbindung, sobald die Seite lädt. `src/lib/doichain/connectElectrum.js` wählt zufällig einen der Server aus `doichain-store.js` und öffnet mit `electrum.ElectrumClient` aus `@doichain/doichainjs-lib` einen WebSocket zu ihm. Anfragen und Antworten sind JSON-RPC-Nachrichten; der Client gibt eine unbeantwortete Anfrage auf, hält eine stille Verbindung mit einem Ping offen und meldet über `onclose`, wenn sie weg ist. Welchen Server die App als Nächstes nimmt, entscheidet sie selbst.
 
-Ein Server antwortet mit der Kette, der sein Knoten folgt, und schickt keinen Beweis mit. Bevor die App einer Antwort traut, fragt sie deshalb nach Block 431.018 und vergleicht dessen Hash mit dem, den sie kennt (`chainCheck.js`). Ein Server auf der alten Kette zählt als Fehlversuch, und die App versucht einen anderen. `ConnectionStatus.svelte` zeigt jeden Schritt an.
+Ein Server antwortet mit der Kette, der sein Knoten folgt, und schickt keinen Beweis mit. Bevor die App einer Antwort traut, fragt sie deshalb nach Block 431.018 und vergleicht dessen Hash mit dem, den sie kennt (`electrum.verifyChain`, mit dem Prüfpunkt aus der Bibliothek). Ein Server auf der alten Kette zählt als Fehlversuch, und die App versucht einen anderen. `ConnectionStatus.svelte` zeigt jeden Schritt an.
 
 Warum 431.018 und nicht 431.017, der Block, mit dem die neuen Regeln griffen? Weil dieser auf beiden Ketten steht: Doichain hat das Schwierigkeitsfeld nie durchgesetzt, also haben ihn die alten Knoten ebenfalls angenommen. Beide Ketten setzen ihren nächsten Block darauf – und dort trennen sie sich.
 
