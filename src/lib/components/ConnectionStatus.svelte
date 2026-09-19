@@ -4,7 +4,8 @@
 		electrumBlockchainBlockHeadersSubscribe as tip,
 		network
 	} from '$lib/doichain/doichain-store.js';
-	import { blockHash, EXPLORER } from '$lib/doichain/chainCheck.js';
+	import { electrum } from '@doichain/doichainjs-lib';
+	import { EXPLORER } from '$lib/doichain/explorer.js';
 	import { _ } from '$lib/i18n/index.js';
 
 	/** Each tone has a colour and an icon, so the state reads without colour too. */
@@ -52,7 +53,7 @@
 	/** the newest block in the explorer, to compare the height with what the server says */
 	$: explorerLink =
 		status === 'connected' && networkKey === 'mainnet' && $tip?.hex
-			? `${EXPLORER}/block/${blockHash($tip.hex)}`
+			? `${EXPLORER}/block/${electrum.blockHash($tip.hex)}`
 			: undefined;
 </script>
 
