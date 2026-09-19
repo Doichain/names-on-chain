@@ -12,6 +12,19 @@ The registration PSBT from lesson 3 leaves the browser: as an animated QR code t
 - What to check in the wallet before you sign.
 - Why the app hands the transaction over instead of sending it.
 
+## What you bring along
+
+From the lessons before — this lesson writes no PSBT of its own:
+
+- `@names-on-chain/lesson03/doichain/buildNameRegistrationPsbt.js` — the registration
+  you built in lesson 3, unchanged.
+- `@names-on-chain/lesson03/doichain/fees.js` and `transactionChecks.js`.
+- `@names-on-chain/lesson02/doichain/addressValidation.js` and `utxoHelpers.js`.
+
+New in `apps/lesson04`: `describePsbt.js`, `PsbtQr.svelte` and this lesson's own
+`renderQR.js` — a frame grows from 50 to 120 bytes here, which is why the app keeps
+its own. Lesson 5 imports all three from here.
+
 ## Start
 
 ```bash

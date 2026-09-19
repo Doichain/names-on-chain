@@ -1,5 +1,5 @@
 import { address, crypto } from '@doichain/doichainjs-lib';
-import { getNameOpUTXOsOfTxHash } from '$lib/doichain/getNameOpUTXOsOfTxHash.js';
+import { getNameOpUTXOsOfTxHash } from './getNameOpUTXOsOfTxHash.js';
 
 /**
  * The unspent outputs of an address, each with the transaction that created it.

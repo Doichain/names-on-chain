@@ -12,6 +12,21 @@ Ein Name kann zwischen Menschen den Besitzer wechseln, die einander nicht vertra
 - Wer was signiert, und in welcher Reihenfolge.
 - Was ein Verkäufer prüfen muss, bevor er den letzten Input signiert.
 
+## Was Sie mitbringen
+
+Aus den Lektionen davor:
+
+- `@names-on-chain/lesson04/components/PsbtQr.svelte` und
+  `@names-on-chain/lesson04/doichain/describePsbt.js` – der QR-Code aus Lektion 4.
+- `@names-on-chain/lesson03/doichain/fees.js` und
+  `@names-on-chain/lesson02/doichain/addressValidation.js`.
+
+Neu in `apps/lesson05`: `buildNameTradePsbt.js`, `doiAmount.js` und die
+Kauf-Komponenten. Und diese Lektion hat ein eigenes `getNameOpUTXOsOfTxHash.js`, das
+den Wert eines Outputs in Swartz zurückgibt – ein Handel rechnet damit, deshalb kommt
+alles mit, was Outputs liest: `nameShow.js`, `nameDoi.js`, `utxoHelpers.js`,
+`transactionChecks.js` und die Registrierung.
+
 ## Start
 
 ```bash

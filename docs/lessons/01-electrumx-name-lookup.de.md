@@ -12,6 +12,25 @@ Die App verbindet sich mit einem Doichain-Server und schlägt Namen nach: wem ei
 - Wie ein Server einen Namen findet: nicht über den Text, sondern über den Hash eines kleinen Skripts, das aus dem Namen entsteht.
 - Wann ein Name frei, vergeben oder abgelaufen ist.
 
+## Wo der Code liegt
+
+Der Workshop ist ein Repository. Diese Lektion ist die App `apps/lesson01`, und darin
+steht, was diese Lektion schreibt: das Nachschlagen eines Namens (`nameShow.js`), die
+Coins einer Adresse (`nameDoi.js`), die Namensprüfung und die Seite. Zweierlei kommt
+von außerhalb, und der Import sagt immer, woher:
+
+- `packages/doichain` – was keine Lektion für sich lehrt: die ElectrumX-Verbindung, der
+  Store, die kleinen Komponenten, die beiden Übersetzungskataloge und die
+  aufgezeichneten Serverantworten, mit denen die Tests sprechen.
+- Die späteren Lektionen importieren aus **dieser** App. Lektion 2 kopiert das
+  Nachschlagen nicht, sie schreibt
+  `import { nameShow } from '@names-on-chain/lesson01/doichain/nameShow.js'`. Wenn in
+  Lektion 4 also `@names-on-chain/lesson03` steht, heißt das: Das haben Sie in
+  Lektion 3 geschrieben.
+
+Eine eigene Fassung einer Datei behält eine Lektion nur, wenn sie sie ändert – und dann
+ist die Änderung der Lehrinhalt.
+
 ## Start
 
 ```bash

@@ -2,6 +2,10 @@
 	"name": "@names-on-chain/lesson01",
 	"version": "0.0.1",
 	"private": true,
+	"exports": {
+		"./doichain/*": "./src/lib/doichain/*",
+		"./components/*": "./src/lib/components/*"
+	},
 	"engines": {
 		"node": ">=20"
 	},

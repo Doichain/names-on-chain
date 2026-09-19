@@ -1,4 +1,4 @@
-import { getUTXOSFromAddress } from '$lib/doichain/nameDoi.js';
+import { getUTXOSFromAddress } from '@names-on-chain/lesson01/doichain/nameDoi.js';
 import { getScriptPubKeyAddress } from '@names-on-chain/doichain/scriptPubKeyAddress.js';
 
 /**

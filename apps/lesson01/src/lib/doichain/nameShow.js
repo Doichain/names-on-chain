@@ -1,5 +1,5 @@
 import { nameops } from '@doichain/doichainjs-lib';
-import { getNameOpUTXOsOfTxHash } from '$lib/doichain/getNameOpUTXOsOfTxHash.js';
+import { getNameOpUTXOsOfTxHash } from './getNameOpUTXOsOfTxHash.js';
 import { normalizeName } from '@names-on-chain/doichain/nameBytes.js';
 
 /**

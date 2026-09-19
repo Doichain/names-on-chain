@@ -4,7 +4,7 @@ import { DOICHAIN, VERSION } from '@names-on-chain/doichain/doichain.js';
 import { buildNameTradePsbt } from './buildNameTradePsbt.js';
 import { parseDoiAmount } from './doiAmount.js';
 import { getNameOPStackScript } from '@names-on-chain/doichain/getNameOPStackScript.js';
-import { MIN_RELAY_FEE_RATE } from './fees.js';
+import { MIN_RELAY_FEE_RATE } from '@names-on-chain/lesson03/doichain/fees.js';
 import { isNameScript, parseNameScript } from './transactionChecks.js';
 import { fixture } from '@names-on-chain/doichain/testing/fake-client';
 

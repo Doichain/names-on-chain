@@ -12,6 +12,21 @@ A name can change hands between people who do not trust each other. One transact
 - Who signs what, and in which order.
 - What a seller has to check before signing the last input.
 
+## What you bring along
+
+From the lessons before:
+
+- `@names-on-chain/lesson04/components/PsbtQr.svelte` and
+  `@names-on-chain/lesson04/doichain/describePsbt.js` — the QR code of lesson 4.
+- `@names-on-chain/lesson03/doichain/fees.js` and
+  `@names-on-chain/lesson02/doichain/addressValidation.js`.
+
+New in `apps/lesson05`: `buildNameTradePsbt.js`, `doiAmount.js` and the purchase
+components. And this lesson has its own `getNameOpUTXOsOfTxHash.js`, which returns
+the value of an output in swartz — a trade computes with it, so everything that
+reads outputs comes along: `nameShow.js`, `nameDoi.js`, `utxoHelpers.js`,
+`transactionChecks.js` and the registration.
+
 ## Start
 
 ```bash

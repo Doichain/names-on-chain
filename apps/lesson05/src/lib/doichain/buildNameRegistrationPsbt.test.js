@@ -4,7 +4,7 @@ import { DOICHAIN, VERSION } from '@names-on-chain/doichain/doichain.js';
 import { getNameOPStackScript } from '@names-on-chain/doichain/getNameOPStackScript.js';
 import { buildNameRegistrationPsbt } from './buildNameRegistrationPsbt.js';
 import { DUST_LIMIT, isNameScript } from './transactionChecks.js';
-import { MAX_INPUTS, MIN_RELAY_FEE_RATE } from './fees.js';
+import { MAX_INPUTS, MIN_RELAY_FEE_RATE } from '@names-on-chain/lesson03/doichain/fees.js';
 import { getUtxosAndNamesOfAddress } from './utxoHelpers.js';
 import { fakeElectrumClient, fixture } from '@names-on-chain/doichain/testing/fake-client';
 

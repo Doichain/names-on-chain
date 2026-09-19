@@ -120,6 +120,9 @@ importers:
       '@names-on-chain/doichain':
         specifier: workspace:*
         version: link:../../packages/doichain
+      '@names-on-chain/lesson01':
+        specifier: workspace:*
+        version: link:../lesson01
       '@ngraveio/bc-ur':
         specifier: ^1.1.13
         version: 1.1.13
@@ -190,6 +193,12 @@ importers:
       '@names-on-chain/doichain':
         specifier: workspace:*
         version: link:../../packages/doichain
+      '@names-on-chain/lesson01':
+        specifier: workspace:*
+        version: link:../lesson01
+      '@names-on-chain/lesson02':
+        specifier: workspace:*
+        version: link:../lesson02
       '@ngraveio/bc-ur':
         specifier: ^1.1.13
         version: 1.1.13
@@ -260,6 +269,15 @@ importers:
       '@names-on-chain/doichain':
         specifier: workspace:*
         version: link:../../packages/doichain
+      '@names-on-chain/lesson01':
+        specifier: workspace:*
+        version: link:../lesson01
+      '@names-on-chain/lesson02':
+        specifier: workspace:*
+        version: link:../lesson02
+      '@names-on-chain/lesson03':
+        specifier: workspace:*
+        version: link:../lesson03
       '@ngraveio/bc-ur':
         specifier: ^1.1.13
         version: 1.1.13
@@ -330,6 +348,15 @@ importers:
       '@names-on-chain/doichain':
         specifier: workspace:*
         version: link:../../packages/doichain
+      '@names-on-chain/lesson02':
+        specifier: workspace:*
+        version: link:../lesson02
+      '@names-on-chain/lesson03':
+        specifier: workspace:*
+        version: link:../lesson03
+      '@names-on-chain/lesson04':
+        specifier: workspace:*
+        version: link:../lesson04
       '@ngraveio/bc-ur':
         specifier: ^1.1.13
         version: 1.1.13

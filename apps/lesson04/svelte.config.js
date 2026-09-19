@@ -6,6 +6,9 @@ const config = {
 	kit: {
 		// The workspace package, so Vite and svelte-check resolve it the same way.
 		alias: {
+			'@names-on-chain/lesson01/*': '../lesson01/src/lib/*',
+			'@names-on-chain/lesson02/*': '../lesson02/src/lib/*',
+			'@names-on-chain/lesson03/*': '../lesson03/src/lib/*',
 			'@names-on-chain/doichain': '../../packages/doichain/src/index.js',
 			'@names-on-chain/doichain/i18n': '../../packages/doichain/src/i18n/index.js',
 			'@names-on-chain/doichain/testing': '../../packages/doichain/testing/electrumx.js',

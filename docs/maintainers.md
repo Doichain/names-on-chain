@@ -11,18 +11,36 @@ docs/                           the lesson texts, English and German
 ```
 
 A lesson app contains what that lesson teaches, and nothing else: its routes, the
-Doichain code the text walks through, its own tests. Everything a later lesson
-only *uses* — the ElectrumX connection, the stores, the name helpers, the small
-components, the translations, the recorded server answers and the simulator the
-tests speak to — lives in `@names-on-chain/doichain` and is imported from there.
+Doichain code the text walks through, its own tests. Two rules keep it that way.
 
-That is the rule for the split:
+**What no lesson teaches lives in `packages/doichain`** — the ElectrumX connection,
+the store, the name helpers, the small components, the translations, the recorded
+server answers and the simulator the tests speak to. Every app imports it.
 
-> What a lesson teaches stays in that lesson's app. What the next lesson builds
-> on moves into the package.
+**What a lesson teaches stays in that lesson's app, and later lessons import it
+from there.** Each app is a workspace package, so lesson 4 writes
 
-The package is not a hiding place. It is the sentence "you wrote this in the
-lesson before" made into code, so the lesson text can point at the import.
+```js
+import { feeRateFor } from '@names-on-chain/lesson03/doichain/fees.js';
+```
+
+instead of carrying a copy. The import is the sentence "you wrote this in lesson 3",
+in a line the reader can follow.
+
+A lesson keeps its own copy of a file only when it **changes** it — and then the
+change is what the lesson is about: lesson 5 has its own `getNameOpUTXOsOfTxHash.js`
+because a trade needs the value in swartz, and with it everything that reads outputs.
+So before you copy a file into a later lesson, ask whether you are changing it. If
+not, import it; the check below fails on a second copy of the same code anyway, by
+way of the tests that would then run twice.
+
+Two things to watch when a file is shared:
+
+- A shared file must not use `$lib`. That alias resolves against whoever imports
+  the file, so the same source would mean a different dependency per lesson. Inside
+  a shared file, write `./name.js` or name the lesson it comes from.
+- When you share a file, its dependencies travel with it. A file is only the same
+  in two lessons when everything it reaches is the same too.
 
 ## Fixing something
 
@@ -30,9 +48,12 @@ Fix it once, in the app that has the problem or in the package, with a test if
 code changes. There is no forward merging any more: one file, one fix, one CI
 run.
 
-The five lesson branches are frozen. They stay reachable for old links and for
-`git log`, and they will get a `lessonNN-branch-final` tag (see issue #14); they
-are no longer the place to change anything.
+The five lesson branches are frozen, and so is `step1`, the first version of the
+workshop. Each head carries a tag — `lesson01-branch-final` … `lesson05-branch-final`
+and `step1-branch-final` — and a repository ruleset refuses every push, force-push
+and deletion on them. They are not deleted: links of the form `…/tree/lesson03`
+keep resolving, and `git log` keeps the history. The tags are what to check out
+when you want to see how a lesson looked before the workspace.
 
 ## Texts and translations
 

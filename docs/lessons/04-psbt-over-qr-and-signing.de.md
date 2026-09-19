@@ -12,6 +12,19 @@ Das Registrierungs-PSBT aus Lektion 3 verlässt den Browser: als animierter QR-C
 - Was Sie in der Wallet prüfen, bevor Sie signieren.
 - Warum die App die Transaktion übergibt, statt sie zu senden.
 
+## Was Sie mitbringen
+
+Aus den Lektionen davor – diese Lektion schreibt kein eigenes PSBT:
+
+- `@names-on-chain/lesson03/doichain/buildNameRegistrationPsbt.js` – die Registrierung
+  aus Lektion 3, unverändert.
+- `@names-on-chain/lesson03/doichain/fees.js` und `transactionChecks.js`.
+- `@names-on-chain/lesson02/doichain/addressValidation.js` und `utxoHelpers.js`.
+
+Neu in `apps/lesson04`: `describePsbt.js`, `PsbtQr.svelte` und ein eigenes
+`renderQR.js` – ein Einzelbild wächst hier von 50 auf 120 Bytes, deshalb hat die App
+eine eigene Fassung. Lektion 5 importiert alle drei von hier.
+
 ## Start
 
 ```bash

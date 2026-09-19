@@ -1,4 +1,4 @@
-import { nameShow } from '$lib/doichain/nameShow.js';
+import { nameShow } from '@names-on-chain/lesson01/doichain/nameShow.js';
 import { describeNameBytes } from '@names-on-chain/doichain/nameBytes.js';
 import { NAME_MAX_LENGTH, NAME_MIN_LENGTH } from '@names-on-chain/doichain/getNameOPStackScript.js';
 import { getScriptPubKeyAddress } from '@names-on-chain/doichain/scriptPubKeyAddress.js';

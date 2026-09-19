@@ -2,6 +2,10 @@
 	"name": "@names-on-chain/lesson04",
 	"version": "0.0.4",
 	"private": true,
+	"exports": {
+		"./doichain/*": "./src/lib/doichain/*",
+		"./components/*": "./src/lib/components/*"
+	},
 	"engines": {
 		"node": ">=20"
 	},
@@ -34,6 +38,9 @@
 		"@doichain/doichainjs-lib": "^6.4.0",
 		"@keystonehq/bc-ur-registry": "^0.6.4",
 		"@names-on-chain/doichain": "workspace:*",
+		"@names-on-chain/lesson01": "workspace:*",
+		"@names-on-chain/lesson02": "workspace:*",
+		"@names-on-chain/lesson03": "workspace:*",
 		"@ngraveio/bc-ur": "^1.1.13",
 		"@vkontakte/vk-qr": "^2.1.1",
 		"jsqr": "^1.4.0",

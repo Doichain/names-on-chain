@@ -11,19 +11,39 @@ docs/                           die Lektionstexte, englisch und deutsch
 ```
 
 Eine Lektions-App enthält das, was diese Lektion lehrt, und sonst nichts: ihre
-Routen, den Doichain-Code, den der Text durchgeht, ihre eigenen Tests. Alles, was
-eine spätere Lektion nur noch *benutzt* – die ElectrumX-Verbindung, die Stores,
-die Namens-Helfer, die kleinen Komponenten, die Übersetzungen, die
-aufgezeichneten Serverantworten und der Simulator, mit dem die Tests sprechen –
-liegt in `@names-on-chain/doichain` und wird von dort importiert.
+Routen, den Doichain-Code, den der Text durchgeht, ihre eigenen Tests. Zwei Regeln
+halten das so.
 
-Das ist die Regel für die Aufteilung:
+**Was keine Lektion lehrt, liegt in `packages/doichain`** – die
+ElectrumX-Verbindung, der Store, die Namens-Helfer, die kleinen Komponenten, die
+Übersetzungen, die aufgezeichneten Serverantworten und der Simulator, mit dem die
+Tests sprechen. Jede App importiert es.
 
-> Was eine Lektion lehrt, bleibt in der App dieser Lektion. Worauf die nächste
-> Lektion aufbaut, wandert ins Paket.
+**Was eine Lektion lehrt, bleibt in ihrer App, und spätere Lektionen importieren es
+von dort.** Jede App ist ein Workspace-Paket, Lektion 4 schreibt also
 
-Das Paket ist kein Versteck. Es ist der Satz „das haben Sie in der Lektion davor
-geschrieben“ als Code, damit der Lektionstext auf den Import zeigen kann.
+```js
+import { feeRateFor } from '@names-on-chain/lesson03/doichain/fees.js';
+```
+
+statt eine Kopie mitzuschleppen. Der Import ist der Satz „das haben Sie in
+Lektion 3 geschrieben“, in einer Zeile, der man folgen kann.
+
+Eine eigene Fassung einer Datei behält eine Lektion nur, wenn sie sie **ändert** –
+und dann ist die Änderung der Lehrinhalt: Lektion 5 hat ein eigenes
+`getNameOpUTXOsOfTxHash.js`, weil ein Handel den Wert in Swartz braucht, und mit ihm
+alles, was Outputs liest. Fragen Sie sich also, bevor Sie eine Datei in eine spätere
+Lektion kopieren, ob Sie sie ändern. Wenn nicht, importieren Sie sie; sonst laufen
+die zugehörigen Tests ohnehin doppelt.
+
+Zweierlei ist zu beachten, wenn eine Datei geteilt wird:
+
+- Eine geteilte Datei darf kein `$lib` benutzen. Dieser Alias löst gegen den auf,
+  der die Datei importiert – dieselbe Quelle hieße dann pro Lektion etwas anderes.
+  In einer geteilten Datei schreiben Sie `./name.js` oder nennen die Lektion, aus
+  der es kommt.
+- Mit einer geteilten Datei reisen ihre Abhängigkeiten. Zwei Lektionen haben nur
+  dann dieselbe Datei, wenn auch alles gleich ist, was sie erreicht.
 
 ## Etwas korrigieren
 
@@ -31,9 +51,12 @@ Korrigieren Sie es einmal – in der App, die das Problem hat, oder im Paket, mi
 einem Test, wenn sich Code ändert. Es gibt keine Vorwärts-Merges mehr: eine
 Datei, eine Korrektur, ein CI-Lauf.
 
-Die fünf Lektions-Branches sind eingefroren. Sie bleiben für alte Links und für
-`git log` erreichbar und bekommen ein Tag `lessonNN-branch-final` (siehe Issue
-#14); geändert wird dort nichts mehr.
+Die fünf Lektions-Branches sind eingefroren, ebenso `step1`, die erste Fassung des
+Workshops. Jeder Head trägt ein Tag – `lesson01-branch-final` … `lesson05-branch-final`
+und `step1-branch-final` –, und ein Repository-Ruleset weist jeden Push, Force-Push
+und jedes Löschen darauf zurück. Gelöscht sind sie nicht: Links der Form
+`…/tree/lesson03` funktionieren weiter, und `git log` behält die Historie. Wer sehen
+will, wie eine Lektion vor dem Workspace aussah, checkt das Tag aus.
 
 ## Texte und Übersetzungen
 
