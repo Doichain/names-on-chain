@@ -10,6 +10,7 @@
 		"./i18n": "./src/i18n/index.js",
 		"./testing": "./testing/electrumx.js",
 		"./testing/fake-client": "./testing/__fixtures__/fakeElectrumClient.js",
+		"./testing/styles": "./testing/styles.js",
 		"./testing/*": "./testing/*",
 		"./*": "./src/*"
 	},

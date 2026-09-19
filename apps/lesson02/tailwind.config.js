@@ -1,6 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-	content: ['./src/**/*.{html,js,svelte,ts}'],
+	// Tailwind only keeps the classes it can see. The shared components live in
+	// packages/doichain, and a later lesson uses components of an earlier one, so
+	// those paths belong here too — otherwise their classes are silently dropped.
+	content: [
+		'./src/**/*.{html,js,svelte,ts}',
+		'../../packages/doichain/src/**/*.{html,js,svelte,ts}',
+		'../lesson01/src/**/*.{html,js,svelte,ts}'
+	],
 	theme: {
 		screens: {
 			sm: '480px',
