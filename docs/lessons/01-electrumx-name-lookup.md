@@ -12,6 +12,24 @@ The app connects to a Doichain server and looks up names: who holds a name, and 
 - How a server finds a name: not by its text, but by the hash of a small script built from it.
 - When a name is free, taken or expired.
 
+## Where the code lives
+
+The workshop is one repository. This lesson is the app `apps/lesson01`, and it holds
+what this lesson writes: the name lookup (`nameShow.js`), the coins of an address
+(`nameDoi.js`), the name check and the page. Two kinds of code come from outside it,
+and the import always says which:
+
+- `packages/doichain` — what no lesson teaches on its own: the ElectrumX connection,
+  the store, the small components, the two translation catalogues, and the recorded
+  server answers the tests speak to.
+- The later lessons import from **this** app. Lesson 2 does not copy the name lookup,
+  it writes `import { nameShow } from '@names-on-chain/lesson01/doichain/nameShow.js'`.
+  So when lesson 4 reads `@names-on-chain/lesson03`, it means: you wrote this in
+  lesson 3.
+
+A lesson keeps its own copy of a file only when it changes it — and then the change
+is the lesson.
+
 ## Start
 
 ```bash

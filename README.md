@@ -10,10 +10,12 @@ A hands-on PSBT and NameOp workshop on Doichain: register and trade names withou
 > DoiWallet signs every transaction, so check each output there before you sign.
 > Read [Wallet and safety](docs/wallet-and-safety.md) first.
 
-**One repository, five apps.** Every lesson is an app of its own under `apps/`, and what more
-than one lesson uses lives in `packages/doichain` – the connection, the stores, the name
-helpers, the shared components and the recorded server answers the tests speak to. A lesson
-app therefore holds exactly what that lesson adds.
+**One repository, five apps.** Every lesson is an app of its own under `apps/`. The plumbing
+no lesson teaches – the connection, the stores, the name helpers, the shared components and
+the recorded server answers the tests speak to – lives in `packages/doichain`. Everything a
+lesson teaches stays in that lesson's app, and the next lesson imports it from there:
+`import { feeRateFor } from '@names-on-chain/lesson03/doichain/fees.js'`. A lesson app
+therefore holds exactly what that lesson adds or changes.
 
 Live demos of all lessons: https://doichain.github.io/names-on-chain/
 

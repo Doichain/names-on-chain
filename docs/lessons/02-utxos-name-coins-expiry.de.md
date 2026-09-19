@@ -12,6 +12,18 @@ Unter dem Namen bekommt die App ein Adressfeld. Zu einer Adresse zeigt sie das G
 - Wie ein Server die Coins einer Adresse findet und wie sich ein Coin mit Namen von einem gewöhnlichen unterscheidet.
 - Wie die App eine Adresse aus einem QR-Code liest oder eingefügt übernimmt.
 
+## Was Sie mitbringen
+
+Aus Lektion 1, importiert statt kopiert:
+
+- `@names-on-chain/lesson01/doichain/nameShow.js` – wem ein Name gehört und bis zu
+  welchem Block.
+- `@names-on-chain/lesson01/doichain/nameDoi.js` – die Coins einer Adresse.
+
+Neu in `apps/lesson02`: `addressValidation.js`, das die Lektionen 3 bis 5 von hier
+importieren. `nameValidation.js` und `utxoHelpers.js` ändern sich in dieser Lektion,
+deshalb hat diese App eigene.
+
 ## Start
 
 ```bash

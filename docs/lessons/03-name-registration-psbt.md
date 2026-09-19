@@ -12,6 +12,18 @@ For a free name and an address with coins, the app builds the transaction that r
 - How the app chooses coins and computes a fee that nodes accept.
 - What a name output looks like, byte by byte, and what makes one unspendable.
 
+## What you bring along
+
+From the lessons before:
+
+- `@names-on-chain/lesson01/doichain/nameShow.js` — the name lookup.
+- `@names-on-chain/lesson02/doichain/addressValidation.js` — is this a Doichain address.
+- `@names-on-chain/lesson02/doichain/utxoHelpers.js` — the coins and names of an address.
+
+New in `apps/lesson03`: `fees.js`, `buildNameRegistrationPsbt.js` and
+`transactionChecks.js`. Lessons 4 and 5 import the fees from here, lesson 4 the whole
+registration.
+
 ## Start
 
 ```bash

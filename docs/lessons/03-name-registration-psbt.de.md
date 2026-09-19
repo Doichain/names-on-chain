@@ -12,6 +12,19 @@ Für einen freien Namen und eine Adresse mit Coins baut die App die Transaktion,
 - Wie die App Coins auswählt und eine Gebühr berechnet, die Knoten annehmen.
 - Wie ein Namens-Output Byte für Byte aussieht und was ihn unausgebbar macht.
 
+## Was Sie mitbringen
+
+Aus den Lektionen davor:
+
+- `@names-on-chain/lesson01/doichain/nameShow.js` – das Nachschlagen eines Namens.
+- `@names-on-chain/lesson02/doichain/addressValidation.js` – ist das eine
+  Doichain-Adresse.
+- `@names-on-chain/lesson02/doichain/utxoHelpers.js` – Coins und Namen einer Adresse.
+
+Neu in `apps/lesson03`: `fees.js`, `buildNameRegistrationPsbt.js` und
+`transactionChecks.js`. Die Lektionen 4 und 5 importieren die Gebühren von hier,
+Lektion 4 die ganze Registrierung.
+
 ## Start
 
 ```bash

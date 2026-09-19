@@ -23,7 +23,7 @@
 		isAddressOf
 	} from '@names-on-chain/lesson02/doichain/addressValidation.js';
 	import { nameExpiry } from '@names-on-chain/doichain/nameExpiry.js';
-	import { buildNameRegistrationPsbt } from '$lib/doichain/buildNameRegistrationPsbt.js';
+	import { buildNameRegistrationPsbt } from '@names-on-chain/lesson03/doichain/buildNameRegistrationPsbt.js';
 	import sb from 'satoshi-bitcoin';
 
 	/**

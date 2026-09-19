@@ -12,6 +12,17 @@ Below the name, the app gets an address field. For an address it shows the balan
 - How a server finds the coins of an address, and how a coin that holds a name differs from an ordinary one.
 - How to read an address from a QR code, or take it pasted.
 
+## What you bring along
+
+From lesson 1, imported rather than copied:
+
+- `@names-on-chain/lesson01/doichain/nameShow.js` — who holds a name, and until which
+  block.
+- `@names-on-chain/lesson01/doichain/nameDoi.js` — the coins of an address.
+
+New in `apps/lesson02`: `addressValidation.js`, which lessons 3 to 5 import from here.
+`nameValidation.js` and `utxoHelpers.js` change in this lesson, so this app has its own.
+
 ## Start
 
 ```bash
