@@ -3,8 +3,9 @@
 A hands-on PSBT and NameOp workshop on Doichain: register and trade names without keys in the browser.
 
 > [!WARNING]
-> The app works on Doichain mainnet with real DOI, on the chain that is valid since block
-> 431,017 (Doichain Core v31.1.5). Look names and transactions up on
+> The app works on Doichain mainnet with real DOI, on the chain of Doichain Core v31: its
+> rules took effect at block 431,017, and at 431,018 it parted from the chain the old nodes
+> kept mining. Look names and transactions up on
 > [doi-explorer.le-space.de](https://doi-explorer.le-space.de), not on explorer.doichain.org.
 > DoiWallet signs every transaction, so check each output there before you sign.
 > Read [Wallet and safety](docs/wallet-and-safety.md) first.
