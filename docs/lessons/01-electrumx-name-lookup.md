@@ -41,6 +41,20 @@ pnpm --filter @names-on-chain/lesson01 dev
 
 You need Node 22 (see `.nvmrc`). Open the address the command prints, usually http://localhost:5173.
 
+### Write it yourself
+
+```bash
+pnpm start-state lesson01
+```
+
+That empties the part of `nameShow.js` this lesson is about — looking a name up on the server — and leaves a
+TODO in its place. The app still builds and still starts; it stops exactly there. When
+you want the answer back:
+
+```bash
+git checkout apps/lesson01
+```
+
 ## Checkpoint
 
 - Within a second or two the status line under the title says **Connected · Mainnet · block …** and names the server.

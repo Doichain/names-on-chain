@@ -54,12 +54,16 @@ function scan(lesson) {
 		lines.forEach((line, i) => {
 			const m = OPEN.exec(line);
 			if (m) {
-				if (open) throw new Error(`${relative(ROOT, file)}:${i + 1}: region "${m[2]}" starts inside "${open.id}"`);
+				if (open)
+					throw new Error(
+						`${relative(ROOT, file)}:${i + 1}: region "${m[2]}" starts inside "${open.id}"`
+					);
 				open = { indent: m[1], id: m[2], hint: m[3], from: i };
 				return;
 			}
 			if (CLOSE.test(line)) {
-				if (!open) throw new Error(`${relative(ROOT, file)}:${i + 1}: a region ends that never started`);
+				if (!open)
+					throw new Error(`${relative(ROOT, file)}:${i + 1}: a region ends that never started`);
 				regions.push({ ...open, to: i });
 				open = null;
 			}
@@ -103,7 +107,9 @@ if (args.includes('--check')) {
 		const n = found.reduce((sum, f) => sum + f.regions.length, 0);
 		total += n;
 		if (n === 0) empty.push(lesson);
-		console.log(`${lesson}: ${n} region${n === 1 ? '' : 's'} in ${found.length} file${found.length === 1 ? '' : 's'}`);
+		console.log(
+			`${lesson}: ${n} region${n === 1 ? '' : 's'} in ${found.length} file${found.length === 1 ? '' : 's'}`
+		);
 		for (const { file, regions } of found)
 			for (const r of regions) console.log(`    ${relative(ROOT, file)}  ${r.id} — ${r.hint}`);
 	}
@@ -131,6 +137,11 @@ for (const lesson of targets) {
 	}
 	console.log(`${lesson}:`);
 	const { files, regions } = blank(lesson);
-	console.log(`  ${regions} region${regions === 1 ? '' : 's'} in ${files} file${files === 1 ? '' : 's'} are yours to write now.`);
+	console.log(
+		`  ${regions} region${regions === 1 ? '' : 's'} in ${files} file${files === 1 ? '' : 's'} ` +
+			`${regions === 1 ? 'is' : 'are'} yours to write now.`
+	);
 }
-console.log(`\nThe solution is one command away:  git checkout ${targets.map((l) => `apps/${l}`).join(' ')}`);
+console.log(
+	`\nThe solution is one command away:  git checkout ${targets.map((l) => `apps/${l}`).join(' ')}`
+);

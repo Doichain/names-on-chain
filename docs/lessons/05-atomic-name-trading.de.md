@@ -33,6 +33,20 @@ alles mit, was Outputs liest: `nameShow.js`, `nameDoi.js`, `utxoHelpers.js`,
 pnpm --filter @names-on-chain/lesson05 dev
 ```
 
+### Selbst schreiben
+
+```bash
+pnpm start-state lesson05
+```
+
+Das leert die Stelle in `buildNameTradePsbt.js`, um die es in dieser Lektion geht – das Zusammensetzen des Handels –, und
+hinterlässt ein TODO. Die App baut und startet weiterhin und hält genau dort an. Wenn Sie
+die Lösung zurückhaben wollen:
+
+```bash
+git checkout apps/lesson05
+```
+
 ## Checkpoint
 
 - Tippen Sie einen vergebenen Namen. Weiter unten öffnet sich **Diesen Namen kaufen**.

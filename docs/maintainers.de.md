@@ -58,6 +58,36 @@ und jedes Löschen darauf zurück. Gelöscht sind sie nicht: Links der Form
 `…/tree/lesson03` funktionieren weiter, und `git log` behält die Historie. Wer sehen
 will, wie eine Lektion vor dem Workspace aussah, checkt das Tag aus.
 
+## Startzustände
+
+Eine Lektion markiert den Code, den sie lehrt, damit man ihn selbst schreiben
+kann:
+
+```js
+export function selectCoins(coins, amount, feeFor, maxInputs = MAX_INPUTS) {
+	// --8<-- coin-selection · Coins nehmen, bis sie Betrag und Gebühr decken
+	...
+	// -->8--
+}
+```
+
+`pnpm start-state lesson03` ersetzt jede markierte Stelle durch ein TODO und ein
+`throw`. Die App prüft, baut und startet weiterhin und hält genau dort an, wo die
+Übung beginnt; `git checkout apps/lesson03` holt die Lösung zurück. Doppelt liegt
+nichts herum – der fertige Code ist die einzige Fassung.
+
+Zwei Regeln, beide von der CI durchgesetzt:
+
+- **Eine markierte Stelle reicht bis zum Ende ihres Funktionsrumpfs.** Sonst
+  spräche der Code danach über Variablen, die das Leeren entfernt hat, und der
+  Startzustand ließe sich nicht mehr übersetzen.
+- **Jede Lektion hat mindestens eine Stelle.** `pnpm start-state --check` listet
+  sie auf und schlägt fehl, wenn eine Lektion keine hat.
+
+Der zweite CI-Job leert alle fünf Lektionen und lässt `check` und `build` darüber
+laufen; ein Startzustand, der sich nicht übersetzen ließe, bringt den Pull
+Request zu Fall.
+
 ## Texte und Übersetzungen
 
 - Die Texte der Apps liegen in `packages/doichain/src/i18n/en.json` und

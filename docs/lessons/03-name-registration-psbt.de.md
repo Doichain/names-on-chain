@@ -31,6 +31,20 @@ Lektion 4 die ganze Registrierung.
 pnpm --filter @names-on-chain/lesson03 dev
 ```
 
+### Selbst schreiben
+
+```bash
+pnpm start-state lesson03
+```
+
+Das leert die Stelle in `fees.js`, um die es in dieser Lektion geht – die Wahl der Coins und ihrer Gebühr –, und
+hinterlässt ein TODO. Die App baut und startet weiterhin und hält genau dort an. Wenn Sie
+die Lösung zurückhaben wollen:
+
+```bash
+git checkout apps/lesson03
+```
+
 ## Checkpoint
 
 - Tippen Sie einen freien Namen und geben Sie eine Adresse mit mindestens 0,02 DOI ein.

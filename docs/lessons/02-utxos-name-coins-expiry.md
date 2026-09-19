@@ -29,6 +29,20 @@ New in `apps/lesson02`: `addressValidation.js`, which lessons 3 to 5 import from
 pnpm --filter @names-on-chain/lesson02 dev
 ```
 
+### Write it yourself
+
+```bash
+pnpm start-state lesson02
+```
+
+That empties the part of `utxoHelpers.js` this lesson is about — sorting an address into coins and names — and leaves a
+TODO in its place. The app still builds and still starts; it stops exactly there. When
+you want the answer back:
+
+```bash
+git checkout apps/lesson02
+```
+
 ## Checkpoint
 
 - Enter a Doichain address from DoiWallet: `M…` or `N…` (P2PKH) or `dc1q…` (P2WPKH). A wrong or Bitcoin address is marked as invalid.

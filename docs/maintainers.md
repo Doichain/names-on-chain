@@ -55,6 +55,34 @@ and deletion on them. They are not deleted: links of the form `…/tree/lesson03
 keep resolving, and `git log` keeps the history. The tags are what to check out
 when you want to see how a lesson looked before the workspace.
 
+## Start states
+
+A lesson marks the code it teaches, so that somebody can write it themselves:
+
+```js
+export function selectCoins(coins, amount, feeFor, maxInputs = MAX_INPUTS) {
+	// --8<-- coin-selection · take coins until they cover the amount and the fee
+	...
+	// -->8--
+}
+```
+
+`pnpm start-state lesson03` replaces every marked region with a TODO and a
+throw. The app still type-checks, builds and starts, and stops where the
+exercise begins; `git checkout apps/lesson03` brings the solution back. Nothing
+is duplicated — the finished code is the only copy there is.
+
+Two rules, and CI enforces both:
+
+- **A region runs to the end of its function body.** Otherwise the code after it
+  would refer to variables the blanking removed, and the start state would not
+  compile.
+- **Every lesson has at least one region.** `pnpm start-state --check` lists them
+  and fails when a lesson has none.
+
+The second CI job blanks all five lessons and runs `check` and `build` over the
+result, so a start state that would not compile fails the pull request.
+
 ## Texts and translations
 
 - The apps' texts live in `packages/doichain/src/i18n/en.json` and `de.json` —

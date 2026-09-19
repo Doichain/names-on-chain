@@ -31,6 +31,20 @@ its own. Lesson 5 imports all three from here.
 pnpm --filter @names-on-chain/lesson04 dev
 ```
 
+### Write it yourself
+
+```bash
+pnpm start-state lesson04
+```
+
+That empties the part of `renderQR.js` this lesson is about — turning the PSBT into QR frames — and leaves a
+TODO in its place. The app still builds and still starts; it stops exactly there. When
+you want the answer back:
+
+```bash
+git checkout apps/lesson04
+```
+
 ## Checkpoint
 
 - With a free name and an address with coins, the button **Create PSBT** appears. It draws an animated QR code on a white background.
