@@ -74,6 +74,7 @@ export const feeFor = (vsize, feeRate) => Math.ceil(vsize * feeRate);
  *   the coins, their total and the fee; or error, with needed for 'tooFragmented'
  */
 export function selectCoins(coins, amount, feeFor, maxInputs = MAX_INPUTS) {
+	// --8<-- coin-selection · take coins until they cover the amount and the fee for exactly those coins
 	const confirmed = (coin) => (coin.height > 0 ? 1 : 0);
 	const ordered = [...coins].sort((a, b) => confirmed(b) - confirmed(a) || b.value - a.value);
 	const selected = [];
@@ -88,4 +89,5 @@ export function selectCoins(coins, amount, feeFor, maxInputs = MAX_INPUTS) {
 		}
 	}
 	return { error: 'insufficient' };
+	// -->8--
 }

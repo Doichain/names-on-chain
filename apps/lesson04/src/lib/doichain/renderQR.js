@@ -32,6 +32,7 @@ export const renderBCUR = async (qrData) => {
 		console.error('No QR data provided');
 		return;
 	}
+	// --8<-- psbt-to-frames · split the PSBT into BC-UR frames and draw every frame as a QR code
 	// bytes per animated frame: 50 made a registration with 25 coins 161 frames long;
 	// 120 still gives QR codes that phone cameras read from a laptop screen
 	const maxFragmentLength = 120;
@@ -65,6 +66,7 @@ export const renderBCUR = async (qrData) => {
 	});
 	console.log(` generated ${qrSvgs.length} qrcode svgs `);
 	return qrSvgs;
+	// -->8--
 
 	// Returns SVG code of generated 256x256 QR code with VK logo
 	// const qrSvg = vkQr.createQR(part, {

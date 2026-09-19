@@ -19,6 +19,7 @@ import { getScriptPubKeyAddress } from '@names-on-chain/doichain/scriptPubKeyAdd
  * const { nameOpTxs } = await getUtxosAndNamesOfAddress(electrumClient, myAddress, network);
  */
 export async function getUtxosAndNamesOfAddress(electrumClient, doichainAddress, network) {
+	// --8<-- coins-and-names · sort the outputs of an address into plain coins and names
 	let nameOpTxs = [];
 	let utxoAddresses = [];
 	let totalUtxoValue = 0;
@@ -48,4 +49,5 @@ export async function getUtxosAndNamesOfAddress(electrumClient, doichainAddress,
 		totalUtxoValue += utxo.value;
 	}
 	return { nameOpTxs, utxoAddresses, totalUtxoValue };
+	// -->8--
 }
