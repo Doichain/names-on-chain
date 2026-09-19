@@ -1,3 +1,0 @@
-# Every lesson branch keeps its own README when an earlier lesson is merged in.
-# Needs once per clone: git config merge.ours.driver true (see docs/maintainers.md)
-README.md merge=ours

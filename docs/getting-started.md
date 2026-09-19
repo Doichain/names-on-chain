@@ -20,32 +20,33 @@ code still works.
 ## Start a lesson
 
 ```bash
-git clone -b lesson01 https://github.com/Doichain/names-on-chain.git
+git clone https://github.com/Doichain/names-on-chain.git
 cd names-on-chain
 corepack enable && pnpm install --frozen-lockfile
-pnpm dev
+pnpm --filter @names-on-chain/lesson01 dev
 ```
 
-`--frozen-lockfile` installs exactly the versions in `pnpm-lock.yaml`. Without
-it, a fresh install would pick newer ones, and the lesson would differ from the
-text.
+One clone holds all five lessons. `--frozen-lockfile` installs exactly the
+versions in `pnpm-lock.yaml`. Without it, a fresh install would pick newer ones,
+and the lesson would differ from the text.
 
 ## Switch to the next lesson
 
 ```bash
-git switch lesson02
-pnpm install --frozen-lockfile
-pnpm dev
+pnpm --filter @names-on-chain/lesson02 dev
 ```
 
-Each lesson is a branch, and each branch contains everything of the one before
-it. The [lesson texts](README.md) say what changes.
+Each lesson is an app of its own under `apps/`, and it contains what that lesson
+adds. What it inherits from the lessons before comes from
+`packages/doichain` — the imports in the code are the seams between the lessons.
+The [lesson texts](README.md) say what changes.
 
 ## Build and publish
 
 ```bash
-pnpm run build          # writes the static site to public/
-pnpm run preview        # serves that build
+pnpm run build                                    # all five, into apps/lessonNN/public
+pnpm --filter @names-on-chain/lesson01 build      # just this one
+pnpm --filter @names-on-chain/lesson01 preview    # serves that build
 ```
 
 The build needs no server of its own: it works under any path, so it can live on
@@ -54,11 +55,14 @@ GitHub Pages or on IPFS. [Publish a lesson on IPFS](ipfs.md) shows how.
 ## Check your changes
 
 ```bash
-pnpm run lint               # Prettier and ESLint
-pnpm run check              # svelte-check
-pnpm exec vitest run        # unit tests
-pnpm exec playwright test   # the app in a browser, against a simulated server
+pnpm run lint                 # Prettier and ESLint
+pnpm run check                # svelte-check
+pnpm -r test:unit             # unit tests
+pnpm run test:integration     # the apps in a browser, against a simulated server
 ```
+
+For a single app, put `--filter @names-on-chain/lessonNN` in front of the script
+instead of running the whole workspace.
 
 The browser tests bring their own answers, so they need no network. If
 Playwright's own Chromium is not installed, point `CHROMIUM_PATH` at another
@@ -75,4 +79,5 @@ Chromium.
   WebSockets on port 50004; some networks block that.
 - **The camera does not start.** Browsers allow it only on HTTPS pages and on
   `localhost`. The scan dialog lets you paste the address instead.
-- **Port 5173 is busy.** `pnpm dev --port 5174` uses another one.
+- **Port 5173 is busy.** `pnpm --filter @names-on-chain/lesson01 dev --port 5174`
+  uses another one.

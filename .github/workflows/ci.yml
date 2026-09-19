@@ -1,13 +1,12 @@
 name: CI
 
 # One workspace, one run: the shared package and all five lesson apps.
-# The lesson branches keep their own copy of this file until they are retired.
+# The frozen lesson branches keep their own copy of this file.
 
 on:
   push:
-    branches: [main, 'lesson*']
+    branches: [main]
   pull_request:
-    branches: [main, 'lesson*']
   workflow_dispatch:
 
 jobs:

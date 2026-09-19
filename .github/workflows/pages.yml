@@ -127,7 +127,7 @@ jobs:
                     <button type="button" data-lang="en" lang="en" aria-label="English" title="English" aria-pressed="true">🇬🇧</button>
                   </div>
                 </div>
-                <p data-i18n="intro">A hands-on PSBT and NameOp workshop on Doichain: look up, register and trade names without a private key in the browser. Each lesson is a branch of the repository, built and published here.</p>
+                <p data-i18n="intro">A hands-on PSBT and NameOp workshop on Doichain: look up, register and trade names without a private key in the browser. Each lesson is an app in this repository, built and published here.</p>
                 <p class="note" data-i18n="note">The apps talk to Doichain mainnet. A PSBT you sign in your wallet spends real DOI, so check every output before you sign.</p>
                 <ol>
                   <li><a class="lesson" href="./lesson01/"><strong data-i18n="l1">Lesson 1 – Talk to the chain</strong><span data-i18n="l1d">Connect to ElectrumX and look up a Doichain name.</span></a></li>
@@ -147,7 +147,7 @@ jobs:
                 const KEY = 'namesOnChain.locale';
                 const de = {
                   title: 'Names-On-Chain – Lektionen',
-                  intro: 'Ein praktischer Workshop zu PSBTs und NameOps auf Doichain: Namen nachschlagen, registrieren und handeln – ohne privaten Schlüssel im Browser. Jede Lektion ist ein Branch des Repositorys und wird hier gebaut und veröffentlicht.',
+                  intro: 'Ein praktischer Workshop zu PSBTs und NameOps auf Doichain: Namen nachschlagen, registrieren und handeln – ohne privaten Schlüssel im Browser. Jede Lektion ist eine eigene App in diesem Repository und wird hier gebaut und veröffentlicht.',
                   note: 'Die Apps arbeiten mit dem Doichain-Mainnet. Ein PSBT, das Sie in Ihrer Wallet signieren, gibt echte DOI aus – prüfen Sie deshalb jede Ausgabe, bevor Sie signieren.',
                   l1: 'Lektion 1 – Mit der Kette sprechen', l1d: 'Mit ElectrumX verbinden und einen Doichain-Namen nachschlagen.',
                   l2: 'Lektion 2 – UTXOs, Namens-Coins und Ablauf', l2d: 'Coins und Namen einer Adresse lesen, den QR-Code einer Adresse scannen.',

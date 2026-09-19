@@ -1,6 +1,6 @@
 # Lesson 5: Atomic name trading
 
-[Deutsch](05-atomic-name-trading.de.md) · Branch [`lesson05`](https://github.com/Doichain/names-on-chain/tree/lesson05) · [Live demo](https://doichain.github.io/names-on-chain/lesson05/) · Previous: [Lesson 4](04-psbt-over-qr-and-signing.md)
+[Deutsch](05-atomic-name-trading.de.md) · App [`apps/lesson05`](../../apps/lesson05) · [Live demo](https://doichain.github.io/names-on-chain/lesson05/) · Previous: [Lesson 4](04-psbt-over-qr-and-signing.md)
 
 A name can change hands between people who do not trust each other. One transaction pays the holder and moves the name to the buyer, so either both happen or nothing does. Namecoin calls this [atomic name trading](https://www.namecoin.org/docs/name-owners/atomic-name-trading/). The app builds such a purchase as a PSBT.
 
@@ -15,9 +15,7 @@ A name can change hands between people who do not trust each other. One transact
 ## Start
 
 ```bash
-git switch lesson05
-pnpm install --frozen-lockfile
-pnpm dev
+pnpm --filter @names-on-chain/lesson05 dev
 ```
 
 ## Checkpoint
@@ -36,7 +34,7 @@ pnpm dev
 3. You sign your inputs in DoiWallet and hand the PSBT to the holder.
 4. The holder checks the outputs, signs the name input and sends the transaction.
 
-Nothing that decides where money goes comes from the ElectrumX server: your address is the one you typed, the holder's address is read from the name script, and every amount is read from raw transactions whose hashes match their txids. The builder is `buildNameTradePsbt` in `src/lib/doichain/buildNameTradePsbt.js`; `parseDoiAmount` in `doiAmount.js` reads the price.
+Nothing that decides where money goes comes from the ElectrumX server: your address is the one you typed, the holder's address is read from the name script, and every amount is read from raw transactions whose hashes match their txids. The builder is `buildNameTradePsbt` in `apps/lesson05/src/lib/doichain/buildNameTradePsbt.js`; `parseDoiAmount` in `doiAmount.js` reads the price.
 
 Lesson 5 needs an address field twice, for the name and for the coins that pay
 for it, so that field became `AddressField.svelte`: label, input, scan button and

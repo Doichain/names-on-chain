@@ -1,6 +1,7 @@
 name: Links
 
-# Checks the links in the README and the docs of every lesson once a week.
+# Checks the links in the README and in docs/ once a week. One workspace, one run:
+# the lesson branches are frozen and no longer checked.
 # Local addresses and public IPFS gateways are never requested.
 
 on:
@@ -14,14 +15,9 @@ permissions:
 jobs:
   links:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        branch: [lesson01, lesson02, lesson03, lesson04, lesson05, main]
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ matrix.branch }}
           persist-credentials: false
       - name: Check links
         uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0

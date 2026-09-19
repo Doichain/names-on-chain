@@ -56,9 +56,6 @@ importers:
       '@vkontakte/vk-qr':
         specifier: ^2.1.1
         version: 2.1.1
-      events:
-        specifier: ^3.3.0
-        version: 3.3.0
       jsqr:
         specifier: ^1.4.0
         version: 1.4.0
@@ -129,9 +126,6 @@ importers:
       '@vkontakte/vk-qr':
         specifier: ^2.1.1
         version: 2.1.1
-      events:
-        specifier: ^3.3.0
-        version: 3.3.0
       jsqr:
         specifier: ^1.4.0
         version: 1.4.0
@@ -202,9 +196,6 @@ importers:
       '@vkontakte/vk-qr':
         specifier: ^2.1.1
         version: 2.1.1
-      events:
-        specifier: ^3.3.0
-        version: 3.3.0
       jsqr:
         specifier: ^1.4.0
         version: 1.4.0
@@ -275,9 +266,6 @@ importers:
       '@vkontakte/vk-qr':
         specifier: ^2.1.1
         version: 2.1.1
-      events:
-        specifier: ^3.3.0
-        version: 3.3.0
       jsqr:
         specifier: ^1.4.0
         version: 1.4.0
@@ -348,9 +336,6 @@ importers:
       '@vkontakte/vk-qr':
         specifier: ^2.1.1
         version: 2.1.1
-      events:
-        specifier: ^3.3.0
-        version: 3.3.0
       jsqr:
         specifier: ^1.4.0
         version: 1.4.0

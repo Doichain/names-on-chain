@@ -20,32 +20,33 @@ und zu prüfen, dass der Code noch läuft.
 ## Eine Lektion starten
 
 ```bash
-git clone -b lesson01 https://github.com/Doichain/names-on-chain.git
+git clone https://github.com/Doichain/names-on-chain.git
 cd names-on-chain
 corepack enable && pnpm install --frozen-lockfile
-pnpm dev
+pnpm --filter @names-on-chain/lesson01 dev
 ```
 
-`--frozen-lockfile` installiert genau die Versionen aus `pnpm-lock.yaml`. Ohne
-das würde eine frische Installation neuere wählen, und die Lektion wiche vom
-Text ab.
+Ein Clone enthält alle fünf Lektionen. `--frozen-lockfile` installiert genau die
+Versionen aus `pnpm-lock.yaml`. Ohne das würde eine frische Installation neuere
+wählen, und die Lektion wiche vom Text ab.
 
 ## Zur nächsten Lektion wechseln
 
 ```bash
-git switch lesson02
-pnpm install --frozen-lockfile
-pnpm dev
+pnpm --filter @names-on-chain/lesson02 dev
 ```
 
-Jede Lektion ist ein Branch, und jeder Branch enthält alles aus dem vorigen. Was
-sich ändert, steht in den [Lektionstexten](README.de.md).
+Jede Lektion ist eine eigene App unter `apps/` und enthält das, was diese Lektion
+hinzufügt. Was sie von den Lektionen davor erbt, kommt aus `packages/doichain` –
+die Importe im Code sind die Nahtstellen zwischen den Lektionen. Was sich ändert,
+steht in den [Lektionstexten](README.de.md).
 
 ## Bauen und veröffentlichen
 
 ```bash
-pnpm run build          # schreibt die statische Seite nach public/
-pnpm run preview        # liefert diesen Build aus
+pnpm run build                                    # alle fünf, nach apps/lessonNN/public
+pnpm --filter @names-on-chain/lesson01 build      # nur diese eine
+pnpm --filter @names-on-chain/lesson01 preview    # liefert diesen Build aus
 ```
 
 Der Build braucht keinen eigenen Server und läuft unter jedem Pfad, also auch auf
@@ -55,11 +56,14 @@ GitHub Pages oder IPFS. Wie das geht, steht in
 ## Ihre Änderungen prüfen
 
 ```bash
-pnpm run lint               # Prettier und ESLint
-pnpm run check              # svelte-check
-pnpm exec vitest run        # Unit-Tests
-pnpm exec playwright test   # die App im Browser, gegen einen simulierten Server
+pnpm run lint                 # Prettier und ESLint
+pnpm run check                # svelte-check
+pnpm -r test:unit             # Unit-Tests
+pnpm run test:integration     # die Apps im Browser, gegen einen simulierten Server
 ```
+
+Für eine einzelne App stellen Sie `--filter @names-on-chain/lessonNN` vor das
+Skript, statt den ganzen Workspace laufen zu lassen.
 
 Die Browser-Tests bringen ihre Antworten mit und brauchen kein Netz. Ist
 Playwrights eigenes Chromium nicht installiert, zeigen Sie mit `CHROMIUM_PATH`
@@ -76,4 +80,5 @@ auf ein anderes Chromium.
   WebSockets auf Port 50004; manche Netze blockieren das.
 - **Die Kamera startet nicht.** Browser erlauben sie nur auf HTTPS-Seiten und auf
   `localhost`. Im Scan-Dialog können Sie die Adresse stattdessen einfügen.
-- **Port 5173 ist belegt.** `pnpm dev --port 5174` nimmt einen anderen.
+- **Port 5173 ist belegt.** `pnpm --filter @names-on-chain/lesson01 dev --port 5174`
+  nimmt einen anderen.

@@ -56,8 +56,8 @@ through Aleph, see [below](#how-this-repository-publishes-the-lessons).
 
 `.github/workflows/pages.yml` runs on every push to `main`:
 
-1. **Build:** it builds lesson01 to lesson05 from the heads of their branches,
-   adds the overview page and deploys the folder to
+1. **Build:** it builds the five lesson apps of the workspace, adds the
+   overview page and deploys the folder to
    [GitHub Pages](https://doichain.github.io/names-on-chain/).
 2. **IPFS:** the job `ipfs` pins the same folder through
    [Aleph](https://aleph.cloud), with the `aleph-site-publish` action from

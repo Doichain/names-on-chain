@@ -36,7 +36,6 @@
 		"@names-on-chain/doichain": "workspace:*",
 		"@ngraveio/bc-ur": "^1.1.13",
 		"@vkontakte/vk-qr": "^2.1.1",
-		"events": "^3.3.0",
 		"jsqr": "^1.4.0",
 		"satoshi-bitcoin": "^1.0.7",
 		"svelte-i18n": "^4.0.1"

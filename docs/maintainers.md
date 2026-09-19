@@ -2,69 +2,89 @@
 
 [Deutsch](maintainers.de.md)
 
-## One branch per lesson
-
-The lessons build on each other, and so do the branches:
+## One workspace, five apps
 
 ```
-lesson01 → lesson02 → lesson03 → lesson04 → lesson05 → main
+apps/lesson01 … apps/lesson05   one SvelteKit app per lesson
+packages/doichain               what more than one lesson uses
+docs/                           the lesson texts, English and German
 ```
 
-Each branch contains everything of the branch before it. `main` is lesson 5 plus the workflows that publish every lesson and check links.
+A lesson app contains what that lesson teaches, and nothing else: its routes, the
+Doichain code the text walks through, its own tests. Everything a later lesson
+only *uses* — the ElectrumX connection, the stores, the name helpers, the small
+components, the translations, the recorded server answers and the simulator the
+tests speak to — lives in `@names-on-chain/doichain` and is imported from there.
+
+That is the rule for the split:
+
+> What a lesson teaches stays in that lesson's app. What the next lesson builds
+> on moves into the package.
+
+The package is not a hiding place. It is the sentence "you wrote this in the
+lesson before" made into code, so the lesson text can point at the import.
 
 ## Fixing something
 
-1. Fix it on the earliest branch that has the problem, with a test if code changes.
-2. Merge it forward, one branch after the other:
+Fix it once, in the app that has the problem or in the package, with a test if
+code changes. There is no forward merging any more: one file, one fix, one CI
+run.
 
-   ```bash
-   git switch lesson02 && git merge lesson01
-   git switch lesson03 && git merge lesson02
-   git switch lesson04 && git merge lesson03
-   git switch lesson05 && git merge lesson04
-   git switch main && git merge lesson05
-   ```
-
-3. Run the checks on every branch, then push each branch with its own `git push`, `main` last. A single push of several branches starts CI for only one of them.
-
-Three rules keep the forward merges cheap:
-
-- **Never squash** a pull request into a lesson branch. The next forward merge would bring its changes a second time, as conflicts. Use a merge commit or a rebase.
-- **Turn on rerere** with `git config rerere.enabled true`. Git then remembers how you resolved a conflict and resolves the same conflict in the next branch by itself.
-- **`src/lib/components/pricing.svelte` differs in every lesson.** On a conflict there, keep the lesson's own version and apply your change to it again.
-
-## Each branch keeps its README
-
-Every branch has a README about its own lesson. `.gitattributes` marks `README.md` with `merge=ours`, so a forward merge keeps the README of the branch you merge into. Git needs this driver once per clone:
-
-```bash
-git config merge.ours.driver true
-```
-
-Without it, git merges READMEs like any other file, and the conflicts show up.
-
-The lesson texts in `docs/lessons/` and the other pages in `docs/` are the same on every branch and merge forward like code.
+The five lesson branches are frozen. They stay reachable for old links and for
+`git log`, and they will get a `lessonNN-branch-final` tag (see issue #14); they
+are no longer the place to change anything.
 
 ## Texts and translations
 
-- The app's texts live in `src/lib/i18n/en.json` and `de.json`, identical on every branch. Add a key on `lesson01` and merge it forward, even if only a later lesson uses it. `catalogue.test.js` fails when a key is missing in one language.
-- Every page in `docs/` has a German twin with `.de.md`. The READMEs are English only.
+- The apps' texts live in `packages/doichain/src/i18n/en.json` and `de.json` —
+  one catalogue for all five apps. `catalogue.test.js` fails when a key is
+  missing in one language.
+- Every page in `docs/` has a German twin with `.de.md`. The README is English
+  only.
 
 ## Checks
 
 ```bash
-pnpm run lint               # Prettier and ESLint
-pnpm run check              # svelte-check
-pnpm exec vitest run        # unit tests
-pnpm exec playwright test   # browser tests in Chromium, against a simulated ElectrumX
+pnpm run lint                 # Prettier and ESLint, whole workspace
+pnpm run check                # svelte-check, every app
+pnpm -r test:unit             # unit tests: the package once, then every app
+pnpm run test:integration     # browser tests, against a simulated ElectrumX
 ```
 
-The browser tests also take the screenshots the lesson texts show and write them to `docs/img/`. They check the state in the picture on the way, so a screenshot that can no longer be reached fails the run instead of ageing quietly. Only a run with `SCREENSHOTS=1` writes them, so a normal run leaves the repository clean. After a visible change, run `SCREENSHOTS=1 pnpm exec playwright test screenshots` and commit what it wrote.
+A single app, while you work on it:
 
-CI runs all four on every push to a lesson branch or `main`. The smoke tests build the app and start their own preview on port 4180. If Playwright's own Chromium is not installed, set `CHROMIUM_PATH` to another Chromium.
+```bash
+pnpm --filter @names-on-chain/lesson03 dev
+pnpm --filter @names-on-chain/lesson03 test:integration
+```
+
+Each app builds and previews on a port of its own — 4181 for lesson01 up to 4185
+for lesson05 — so the five browser suites never answer each other's requests. If
+Playwright's own Chromium is not installed, `pnpm exec playwright install
+chromium` fetches it, or point `CHROMIUM_PATH` at another Chromium.
+
+The browser tests also take the screenshots the lesson texts show and write them
+to `docs/img/`. They check the state in the picture on the way, so a screenshot
+that can no longer be reached fails the run instead of ageing quietly. Only a run
+with `SCREENSHOTS=1` writes them, so a normal run leaves the repository clean.
+After a visible change:
+
+```bash
+SCREENSHOTS=1 pnpm --filter @names-on-chain/lesson03 test:integration screenshots
+```
+
+CI runs lint, check, unit tests, build and the browser tests once for the whole
+workspace on every push and pull request.
 
 ## Publishing
 
-- **GitHub Pages:** every push to `main` builds all five lessons from their branch heads (`.github/workflows/pages.yml`) and publishes them under https://doichain.github.io/names-on-chain/.
-- **IPFS:** the same workflow pins the site through Aleph once the repository secret `ALEPH_PRIVATE_KEY` is set. How to publish a lesson from your own node: [IPFS](ipfs.md).
-- **Links:** `.github/workflows/links.yml` checks the links in the README and in `docs/` of every branch once a week.
+- **GitHub Pages:** every push to `main` builds all five apps and publishes
+  `apps/lessonNN/public` under
+  https://doichain.github.io/names-on-chain/lessonNN/
+  (`.github/workflows/pages.yml`). The paths are the same as before the
+  workspace.
+- **IPFS:** the same workflow pins the site through Aleph once the repository
+  secret `ALEPH_PRIVATE_KEY` is set. How to publish a lesson from your own node:
+  [IPFS](ipfs.md).
+- **Links:** `.github/workflows/links.yml` checks the links in the README and in
+  `docs/` once a week.

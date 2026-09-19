@@ -1,6 +1,6 @@
 # Lesson 3: A registration as a PSBT, without a key
 
-[Deutsch](03-name-registration-psbt.de.md) · Branch [`lesson03`](https://github.com/Doichain/names-on-chain/tree/lesson03) · [Live demo](https://doichain.github.io/names-on-chain/lesson03/) · Previous: [Lesson 2](02-utxos-name-coins-expiry.md) · Next: [Lesson 4](04-psbt-over-qr-and-signing.md)
+[Deutsch](03-name-registration-psbt.de.md) · App [`apps/lesson03`](../../apps/lesson03) · [Live demo](https://doichain.github.io/names-on-chain/lesson03/) · Previous: [Lesson 2](02-utxos-name-coins-expiry.md) · Next: [Lesson 4](04-psbt-over-qr-and-signing.md)
 
 For a free name and an address with coins, the app builds the transaction that registers the name, as an unsigned PSBT. A box on the right shows what it costs. The PSBT itself appears on screen in lesson 4.
 
@@ -15,9 +15,7 @@ For a free name and an address with coins, the app builds the transaction that r
 ## Start
 
 ```bash
-git switch lesson03
-pnpm install --frozen-lockfile
-pnpm dev
+pnpm --filter @names-on-chain/lesson03 dev
 ```
 
 ## Checkpoint
@@ -34,7 +32,7 @@ pnpm dev
 
 ### 2. Coins you can trust
 
-`buildNameRegistrationPsbt` in `src/lib/doichain/buildNameRegistrationPsbt.js` does not take amounts from the server's JSON. `verifiedOutput` in `transactionChecks.js` reads each coin from the raw transaction that created it, after checking that the hash of that transaction is the txid the input spends. A coin that already holds a name is refused: spending it without a name operation would make the transaction invalid.
+`buildNameRegistrationPsbt` in `apps/lesson03/src/lib/doichain/buildNameRegistrationPsbt.js` does not take amounts from the server's JSON. `verifiedOutput` in `transactionChecks.js` reads each coin from the raw transaction that created it, after checking that the hash of that transaction is the txid the input spends. A coin that already holds a name is refused: spending it without a name operation would make the transaction invalid.
 
 ### 3. Choosing coins and the fee
 
@@ -52,7 +50,7 @@ pnpm dev
 ## Exercise
 
 - Print the PSBT in the browser console and decode it with `Psbt.fromBase64(...)` from `@doichain/doichainjs-lib`. Find the one output whose script starts with `5a`.
-- Run `pnpm exec vitest run src/lib/doichain/nameScript.test.js`. It rebuilds name outputs recorded on Doichain mainnet byte for byte.
+- Run `pnpm --filter @names-on-chain/doichain test:unit nameScript`. It rebuilds name outputs recorded on Doichain mainnet byte for byte.
 
 <details>
 <summary><strong>Under the hood</strong></summary>

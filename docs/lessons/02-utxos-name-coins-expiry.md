@@ -1,6 +1,6 @@
 # Lesson 2: Coins, name coins and expiry
 
-[Deutsch](02-utxos-name-coins-expiry.de.md) · Branch [`lesson02`](https://github.com/Doichain/names-on-chain/tree/lesson02) · [Live demo](https://doichain.github.io/names-on-chain/lesson02/) · Previous: [Lesson 1](01-electrumx-name-lookup.md) · Next: [Lesson 3](03-name-registration-psbt.md)
+[Deutsch](02-utxos-name-coins-expiry.de.md) · App [`apps/lesson02`](../../apps/lesson02) · [Live demo](https://doichain.github.io/names-on-chain/lesson02/) · Previous: [Lesson 1](01-electrumx-name-lookup.md) · Next: [Lesson 3](03-name-registration-psbt.md)
 
 Below the name, the app gets an address field. For an address it shows the balance and the names the address holds, each with the block at which it expires.
 
@@ -15,9 +15,7 @@ Below the name, the app gets an address field. For an address it shows the balan
 ## Start
 
 ```bash
-git switch lesson02
-pnpm install --frozen-lockfile
-pnpm dev
+pnpm --filter @names-on-chain/lesson02 dev
 ```
 
 ## Checkpoint
@@ -31,7 +29,7 @@ pnpm dev
 
 ### 1. An address is an output script
 
-`isAddressOf` in `src/lib/doichain/addressValidation.js` turns the text into the output script it stands for, with `address.toOutputScript` from doichainjs-lib. That checks the checksum, the prefix of the network and the address type in one go. `cleanAddressInput` strips spaces and a `doichain:` payment link.
+`isAddressOf` in `apps/lesson02/src/lib/doichain/addressValidation.js` turns the text into the output script it stands for, with `address.toOutputScript` from doichainjs-lib. That checks the checksum, the prefix of the network and the address type in one go. `cleanAddressInput` strips spaces and a `doichain:` payment link.
 
 ### 2. The coins of an address
 

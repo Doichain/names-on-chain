@@ -1,6 +1,6 @@
 # Lektion 1: Mit der Kette reden
 
-[English](01-electrumx-name-lookup.md) · Branch [`lesson01`](https://github.com/Doichain/names-on-chain/tree/lesson01) · [Live-Demo](https://doichain.github.io/names-on-chain/lesson01/) · Weiter: [Lektion 2](02-utxos-name-coins-expiry.de.md)
+[English](01-electrumx-name-lookup.md) · App [`apps/lesson01`](../../apps/lesson01) · [Live-Demo](https://doichain.github.io/names-on-chain/lesson01/) · Weiter: [Lektion 2](02-utxos-name-coins-expiry.de.md)
 
 Die App verbindet sich mit einem Doichain-Server und schlägt Namen nach: wem ein Name gehört und bis zu welchem Block.
 
@@ -15,13 +15,13 @@ Die App verbindet sich mit einem Doichain-Server und schlägt Namen nach: wem ei
 ## Start
 
 ```bash
-git clone -b lesson01 https://github.com/Doichain/names-on-chain.git
+git clone https://github.com/Doichain/names-on-chain.git
 cd names-on-chain
 corepack enable && pnpm install --frozen-lockfile
-pnpm dev
+pnpm --filter @names-on-chain/lesson01 dev
 ```
 
-Sie brauchen Node 22 (siehe `.nvmrc`). Öffnen Sie die Adresse, die `pnpm dev` ausgibt, meist http://localhost:5173.
+Sie brauchen Node 22 (siehe `.nvmrc`). Öffnen Sie die Adresse, die der Befehl ausgibt, meist http://localhost:5173.
 
 ## Checkpoint
 
@@ -34,7 +34,7 @@ Sie brauchen Node 22 (siehe `.nvmrc`). Öffnen Sie die Adresse, die `pnpm dev` a
 
 ### 1. Verbindung zu einem Server
 
-`src/routes/+layout.js` startet die Verbindung, sobald die Seite lädt. `src/lib/doichain/connectElectrum.js` wählt zufällig einen der Server aus `doichain-store.js` und öffnet mit `electrum.ElectrumClient` aus `@doichain/doichainjs-lib` einen WebSocket zu ihm. Anfragen und Antworten sind JSON-RPC-Nachrichten; der Client gibt eine unbeantwortete Anfrage auf, hält eine stille Verbindung mit einem Ping offen und meldet über `onclose`, wenn sie weg ist. Welchen Server die App als Nächstes nimmt, entscheidet sie selbst.
+`src/routes/+layout.js` startet die Verbindung, sobald die Seite lädt. `packages/doichain/src/connectElectrum.js` wählt zufällig einen der Server aus `doichain-store.js` und öffnet mit `electrum.ElectrumClient` aus `@doichain/doichainjs-lib` einen WebSocket zu ihm. Anfragen und Antworten sind JSON-RPC-Nachrichten; der Client gibt eine unbeantwortete Anfrage auf, hält eine stille Verbindung mit einem Ping offen und meldet über `onclose`, wenn sie weg ist. Welchen Server die App als Nächstes nimmt, entscheidet sie selbst.
 
 Ein Server antwortet mit der Kette, der sein Knoten folgt, und schickt keinen Beweis mit. Bevor die App einer Antwort traut, fragt sie deshalb nach Block 431.018 und vergleicht dessen Hash mit dem, den sie kennt (`electrum.verifyChain`, mit dem Prüfpunkt aus der Bibliothek). Ein Server auf der alten Kette zählt als Fehlversuch, und die App versucht einen anderen. `ConnectionStatus.svelte` zeigt jeden Schritt an.
 
@@ -42,7 +42,7 @@ Warum 431.018 und nicht 431.017, der Block, mit dem die neuen Regeln griffen? We
 
 ### 2. Einen Namen prüfen
 
-`src/lib/components/pricing.svelte` gibt den Namen an `checkName` in `nameValidation.js` weiter, sobald Sie auf **Name prüfen** klicken oder Enter drücken – nie beim Tippen, denn jede Prüfung reicht den Namen an einen Server weiter. `debounce.js` sitzt weiter davor, damit ein zweiter Klick innerhalb von 300 Millisekunden nur einmal fragt. Dann:
+`apps/lesson01/src/lib/components/pricing.svelte` gibt den Namen an `checkName` in `nameValidation.js` weiter, sobald Sie auf **Name prüfen** klicken oder Enter drücken – nie beim Tippen, denn jede Prüfung reicht den Namen an einen Server weiter. `debounce.js` sitzt weiter davor, damit ein zweiter Klick innerhalb von 300 Millisekunden nur einmal fragt. Dann:
 
 1. lehnt sie Namen mit Leerzeichen, mit weniger als 4 Zeichen oder mit mehr als 255 Bytes ab,
 2. fragt sie den Server nach der Geschichte des Namens (`nameShow.js`),

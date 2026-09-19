@@ -3,7 +3,7 @@ const config = {
 	webServer: {
 		// A port of its own, and never an already running server: a preview of
 		// another project or branch on the default port must not answer these tests.
-		command: 'npm run build && npx vite preview --port 4183 --strictPort',
+		command: 'pnpm run build && pnpm exec vite preview --port 4183 --strictPort',
 		port: 4183,
 		reuseExistingServer: false
 	},
