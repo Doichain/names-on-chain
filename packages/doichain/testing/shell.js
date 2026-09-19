@@ -28,3 +28,17 @@ export async function expectSharedStylesCompiled(page, expect) {
 		'the heading carries text-3xl (30px) from the shared component'
 	).toBeGreaterThanOrEqual(28);
 }
+
+/**
+ * The footer says what is deployed. `buildInfo()` falls back to 'dev' when git is
+ * not there, and a deployed page that says 'dev' tells nobody anything — so the
+ * stamp has to be a real commit with a real date.
+ */
+export async function expectBuildStamp(page, expect) {
+	const footer = page.locator('footer');
+	await expect(footer).toContainText(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/);
+	const link = footer.locator('a[href*="/commit/"]');
+	await expect(link).toHaveCount(1);
+	const sha = (await link.innerText()).trim();
+	expect(sha, 'the footer shows the commit, not the "dev" fallback').toMatch(/^[0-9a-f]{7,}$/);
+}

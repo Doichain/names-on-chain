@@ -15,7 +15,8 @@ export default [
 				...globals.browser,
 				...globals.node,
 				// the version from package.json, set in vite.config.js
-				__APP_VERSION__: 'readonly'
+				__BUILD_COMMIT__: 'readonly',
+				__BUILD_DATE__: 'readonly'
 			}
 		}
 	},
