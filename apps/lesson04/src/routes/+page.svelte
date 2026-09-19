@@ -8,8 +8,7 @@
 </script>
 
 <svelte:head>
-	<!-- svelte-ignore missing-declaration -->
-	<title>{title} {__APP_VERSION__}</title>
+	<title>{title} · {$_('app.lesson', { values: { n: 4 } })}</title>
 </svelte:head>
 <div class="bg-white">
 	<section id="pricing"><Pricing /></section>

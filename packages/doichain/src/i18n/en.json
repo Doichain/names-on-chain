@@ -2,7 +2,8 @@
 	"app": {
 		"title": "Names-On-Chain",
 		"subtitle": "A Doichain name registration transaction generator",
-		"description": "Register and trade Doichain names with PSBTs, without a private key in the browser"
+		"description": "Register and trade Doichain names with PSBTs, without a private key in the browser",
+		"lesson": "Lesson {n}"
 	},
 	"language": {
 		"de": "Deutsch",
@@ -20,8 +21,12 @@
 		"appStore": "App Store (iPhone)",
 		"source": "Source code"
 	},
+	"build": {
+		"state": "Built"
+	},
 	"credit": {
-		"madeBy": "Made with ❤️ by"
+		"before": "Made with",
+		"markAlt": "Le Space, its first node as a heart"
 	},
 	"status": {
 		"connecting": "Connecting to a Doichain server …",
