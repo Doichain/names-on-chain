@@ -7,6 +7,39 @@ settings:
 importers:
 
   .:
+    devDependencies:
+      '@eslint/js':
+        specifier: ^8.57.1
+        version: 8.57.1
+      '@types/eslint':
+        specifier: ^8.56.12
+        version: 8.56.12
+      '@types/node':
+        specifier: ^22.20.4
+        version: 22.20.4
+      eslint:
+        specifier: ^8.57.1
+        version: 8.57.1
+      eslint-config-prettier:
+        specifier: ^9.1.2
+        version: 9.1.2(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.46.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)
+      globals:
+        specifier: ^15.15.0
+        version: 15.15.0
+      prettier:
+        specifier: ^3.9.8
+        version: 3.9.8
+      prettier-plugin-svelte:
+        specifier: ^3.5.2
+        version: 3.5.2(prettier@3.9.8)(svelte@4.2.20)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  apps/lesson01:
     dependencies:
       '@doichain/doichainjs-lib':
         specifier: ^6.4.0
@@ -14,15 +47,15 @@ importers:
       '@keystonehq/bc-ur-registry':
         specifier: ^0.6.4
         version: 0.6.4
+      '@names-on-chain/doichain':
+        specifier: workspace:*
+        version: link:../../packages/doichain
       '@ngraveio/bc-ur':
         specifier: ^1.1.13
         version: 1.1.13
       '@vkontakte/vk-qr':
         specifier: ^2.1.1
         version: 2.1.1
-      events:
-        specifier: ^3.3.0
-        version: 3.3.0
       jsqr:
         specifier: ^1.4.0
         version: 1.4.0
@@ -36,9 +69,6 @@ importers:
       '@axe-core/playwright':
         specifier: 4.13.0
         version: 4.13.0(playwright-core@1.63.0)
-      '@eslint/js':
-        specifier: ^8.57.1
-        version: 8.57.1
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.63.0
@@ -51,36 +81,15 @@ importers:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^3.1.2
         version: 3.1.2(svelte@4.2.20)(vite@5.4.21(@types/node@22.20.4))
-      '@types/eslint':
-        specifier: ^8.56.12
-        version: 8.56.12
       '@types/node':
         specifier: ^22.20.4
         version: 22.20.4
       autoprefixer:
         specifier: ^10.6.1
         version: 10.6.1(postcss@8.5.28)
-      eslint:
-        specifier: ^8.57.1
-        version: 8.57.1
-      eslint-config-prettier:
-        specifier: ^9.1.2
-        version: 9.1.2(eslint@8.57.1)
-      eslint-plugin-svelte:
-        specifier: ^2.46.1
-        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)
-      globals:
-        specifier: ^15.15.0
-        version: 15.15.0
       postcss:
         specifier: ^8.5.28
         version: 8.5.28
-      prettier:
-        specifier: ^3.9.8
-        version: 3.9.8
-      prettier-plugin-svelte:
-        specifier: ^3.5.2
-        version: 3.5.2(prettier@3.9.8)(svelte@4.2.20)
       svelte:
         specifier: ^4.2.20
         version: 4.2.20
@@ -90,15 +99,317 @@ importers:
       tailwindcss:
         specifier: ^3.4.19
         version: 3.4.19(yaml@2.5.0)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
       vite:
         specifier: ^5.4.21
         version: 5.4.21(@types/node@22.20.4)
       vite-plugin-node-polyfills:
         specifier: ^0.22.0
         version: 0.22.0(rollup@4.63.4)(vite@5.4.21(@types/node@22.20.4))
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/node@22.20.4)
+
+  apps/lesson02:
+    dependencies:
+      '@doichain/doichainjs-lib':
+        specifier: ^6.4.0
+        version: 6.4.0
+      '@keystonehq/bc-ur-registry':
+        specifier: ^0.6.4
+        version: 0.6.4
+      '@names-on-chain/doichain':
+        specifier: workspace:*
+        version: link:../../packages/doichain
+      '@ngraveio/bc-ur':
+        specifier: ^1.1.13
+        version: 1.1.13
+      '@vkontakte/vk-qr':
+        specifier: ^2.1.1
+        version: 2.1.1
+      jsqr:
+        specifier: ^1.4.0
+        version: 1.4.0
+      satoshi-bitcoin:
+        specifier: ^1.0.7
+        version: 1.0.7
+      svelte-i18n:
+        specifier: ^4.0.1
+        version: 4.0.1(svelte@4.2.20)
+    devDependencies:
+      '@axe-core/playwright':
+        specifier: 4.13.0
+        version: 4.13.0(playwright-core@1.63.0)
+      '@playwright/test':
+        specifier: ^1.63.0
+        version: 1.63.0
+      '@sveltejs/adapter-static':
+        specifier: ^3.0.10
+        version: 3.0.10(@sveltejs/kit@2.70.3(@sveltejs/vite-plugin-svelte@3.1.2(svelte@4.2.20)(vite@5.4.21(@types/node@22.20.4)))(svelte@4.2.20)(typescript@5.9.3)(vite@5.4.21(@types/node@22.20.4)))
+      '@sveltejs/kit':
+        specifier: ^2.70.3
+        version: 2.70.3(@sveltejs/vite-plugin-svelte@3.1.2(svelte@4.2.20)(vite@5.4.21(@types/node@22.20.4)))(svelte@4.2.20)(typescript@5.9.3)(vite@5.4.21(@types/node@22.20.4))
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^3.1.2
+        version: 3.1.2(svelte@4.2.20)(vite@5.4.21(@types/node@22.20.4))
+      '@types/node':
+        specifier: ^22.20.4
+        version: 22.20.4
+      autoprefixer:
+        specifier: ^10.6.1
+        version: 10.6.1(postcss@8.5.28)
+      postcss:
+        specifier: ^8.5.28
+        version: 8.5.28
+      svelte:
+        specifier: ^4.2.20
+        version: 4.2.20
+      svelte-check:
+        specifier: ^3.8.6
+        version: 3.8.6(postcss-load-config@4.0.2(postcss@8.5.28))(postcss@8.5.28)(svelte@4.2.20)
+      tailwindcss:
+        specifier: ^3.4.19
+        version: 3.4.19(yaml@2.5.0)
+      vite:
+        specifier: ^5.4.21
+        version: 5.4.21(@types/node@22.20.4)
+      vite-plugin-node-polyfills:
+        specifier: ^0.22.0
+        version: 0.22.0(rollup@4.63.4)(vite@5.4.21(@types/node@22.20.4))
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/node@22.20.4)
+
+  apps/lesson03:
+    dependencies:
+      '@doichain/doichainjs-lib':
+        specifier: ^6.4.0
+        version: 6.4.0
+      '@keystonehq/bc-ur-registry':
+        specifier: ^0.6.4
+        version: 0.6.4
+      '@names-on-chain/doichain':
+        specifier: workspace:*
+        version: link:../../packages/doichain
+      '@ngraveio/bc-ur':
+        specifier: ^1.1.13
+        version: 1.1.13
+      '@vkontakte/vk-qr':
+        specifier: ^2.1.1
+        version: 2.1.1
+      jsqr:
+        specifier: ^1.4.0
+        version: 1.4.0
+      satoshi-bitcoin:
+        specifier: ^1.0.7
+        version: 1.0.7
+      svelte-i18n:
+        specifier: ^4.0.1
+        version: 4.0.1(svelte@4.2.20)
+    devDependencies:
+      '@axe-core/playwright':
+        specifier: 4.13.0
+        version: 4.13.0(playwright-core@1.63.0)
+      '@playwright/test':
+        specifier: ^1.63.0
+        version: 1.63.0
+      '@sveltejs/adapter-static':
+        specifier: ^3.0.10
+        version: 3.0.10(@sveltejs/kit@2.70.3(@sveltejs/vite-plugin-svelte@3.1.2(svelte@4.2.20)(vite@5.4.21(@types/node@22.20.4)))(svelte@4.2.20)(typescript@5.9.3)(vite@5.4.21(@types/node@22.20.4)))
+      '@sveltejs/kit':
+        specifier: ^2.70.3
+        version: 2.70.3(@sveltejs/vite-plugin-svelte@3.1.2(svelte@4.2.20)(vite@5.4.21(@types/node@22.20.4)))(svelte@4.2.20)(typescript@5.9.3)(vite@5.4.21(@types/node@22.20.4))
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^3.1.2
+        version: 3.1.2(svelte@4.2.20)(vite@5.4.21(@types/node@22.20.4))
+      '@types/node':
+        specifier: ^22.20.4
+        version: 22.20.4
+      autoprefixer:
+        specifier: ^10.6.1
+        version: 10.6.1(postcss@8.5.28)
+      postcss:
+        specifier: ^8.5.28
+        version: 8.5.28
+      svelte:
+        specifier: ^4.2.20
+        version: 4.2.20
+      svelte-check:
+        specifier: ^3.8.6
+        version: 3.8.6(postcss-load-config@4.0.2(postcss@8.5.28))(postcss@8.5.28)(svelte@4.2.20)
+      tailwindcss:
+        specifier: ^3.4.19
+        version: 3.4.19(yaml@2.5.0)
+      vite:
+        specifier: ^5.4.21
+        version: 5.4.21(@types/node@22.20.4)
+      vite-plugin-node-polyfills:
+        specifier: ^0.22.0
+        version: 0.22.0(rollup@4.63.4)(vite@5.4.21(@types/node@22.20.4))
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/node@22.20.4)
+
+  apps/lesson04:
+    dependencies:
+      '@doichain/doichainjs-lib':
+        specifier: ^6.4.0
+        version: 6.4.0
+      '@keystonehq/bc-ur-registry':
+        specifier: ^0.6.4
+        version: 0.6.4
+      '@names-on-chain/doichain':
+        specifier: workspace:*
+        version: link:../../packages/doichain
+      '@ngraveio/bc-ur':
+        specifier: ^1.1.13
+        version: 1.1.13
+      '@vkontakte/vk-qr':
+        specifier: ^2.1.1
+        version: 2.1.1
+      jsqr:
+        specifier: ^1.4.0
+        version: 1.4.0
+      satoshi-bitcoin:
+        specifier: ^1.0.7
+        version: 1.0.7
+      svelte-i18n:
+        specifier: ^4.0.1
+        version: 4.0.1(svelte@4.2.20)
+    devDependencies:
+      '@axe-core/playwright':
+        specifier: 4.13.0
+        version: 4.13.0(playwright-core@1.63.0)
+      '@playwright/test':
+        specifier: ^1.63.0
+        version: 1.63.0
+      '@sveltejs/adapter-static':
+        specifier: ^3.0.10
+        version: 3.0.10(@sveltejs/kit@2.70.3(@sveltejs/vite-plugin-svelte@3.1.2(svelte@4.2.20)(vite@5.4.21(@types/node@22.20.4)))(svelte@4.2.20)(typescript@5.9.3)(vite@5.4.21(@types/node@22.20.4)))
+      '@sveltejs/kit':
+        specifier: ^2.70.3
+        version: 2.70.3(@sveltejs/vite-plugin-svelte@3.1.2(svelte@4.2.20)(vite@5.4.21(@types/node@22.20.4)))(svelte@4.2.20)(typescript@5.9.3)(vite@5.4.21(@types/node@22.20.4))
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^3.1.2
+        version: 3.1.2(svelte@4.2.20)(vite@5.4.21(@types/node@22.20.4))
+      '@types/node':
+        specifier: ^22.20.4
+        version: 22.20.4
+      autoprefixer:
+        specifier: ^10.6.1
+        version: 10.6.1(postcss@8.5.28)
+      postcss:
+        specifier: ^8.5.28
+        version: 8.5.28
+      svelte:
+        specifier: ^4.2.20
+        version: 4.2.20
+      svelte-check:
+        specifier: ^3.8.6
+        version: 3.8.6(postcss-load-config@4.0.2(postcss@8.5.28))(postcss@8.5.28)(svelte@4.2.20)
+      tailwindcss:
+        specifier: ^3.4.19
+        version: 3.4.19(yaml@2.5.0)
+      vite:
+        specifier: ^5.4.21
+        version: 5.4.21(@types/node@22.20.4)
+      vite-plugin-node-polyfills:
+        specifier: ^0.22.0
+        version: 0.22.0(rollup@4.63.4)(vite@5.4.21(@types/node@22.20.4))
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/node@22.20.4)
+
+  apps/lesson05:
+    dependencies:
+      '@doichain/doichainjs-lib':
+        specifier: ^6.4.0
+        version: 6.4.0
+      '@keystonehq/bc-ur-registry':
+        specifier: ^0.6.4
+        version: 0.6.4
+      '@names-on-chain/doichain':
+        specifier: workspace:*
+        version: link:../../packages/doichain
+      '@ngraveio/bc-ur':
+        specifier: ^1.1.13
+        version: 1.1.13
+      '@vkontakte/vk-qr':
+        specifier: ^2.1.1
+        version: 2.1.1
+      jsqr:
+        specifier: ^1.4.0
+        version: 1.4.0
+      satoshi-bitcoin:
+        specifier: ^1.0.7
+        version: 1.0.7
+      svelte-i18n:
+        specifier: ^4.0.1
+        version: 4.0.1(svelte@4.2.20)
+    devDependencies:
+      '@axe-core/playwright':
+        specifier: 4.13.0
+        version: 4.13.0(playwright-core@1.63.0)
+      '@playwright/test':
+        specifier: ^1.63.0
+        version: 1.63.0
+      '@sveltejs/adapter-static':
+        specifier: ^3.0.10
+        version: 3.0.10(@sveltejs/kit@2.70.3(@sveltejs/vite-plugin-svelte@3.1.2(svelte@4.2.20)(vite@5.4.21(@types/node@22.20.4)))(svelte@4.2.20)(typescript@5.9.3)(vite@5.4.21(@types/node@22.20.4)))
+      '@sveltejs/kit':
+        specifier: ^2.70.3
+        version: 2.70.3(@sveltejs/vite-plugin-svelte@3.1.2(svelte@4.2.20)(vite@5.4.21(@types/node@22.20.4)))(svelte@4.2.20)(typescript@5.9.3)(vite@5.4.21(@types/node@22.20.4))
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^3.1.2
+        version: 3.1.2(svelte@4.2.20)(vite@5.4.21(@types/node@22.20.4))
+      '@types/node':
+        specifier: ^22.20.4
+        version: 22.20.4
+      autoprefixer:
+        specifier: ^10.6.1
+        version: 10.6.1(postcss@8.5.28)
+      postcss:
+        specifier: ^8.5.28
+        version: 8.5.28
+      svelte:
+        specifier: ^4.2.20
+        version: 4.2.20
+      svelte-check:
+        specifier: ^3.8.6
+        version: 3.8.6(postcss-load-config@4.0.2(postcss@8.5.28))(postcss@8.5.28)(svelte@4.2.20)
+      tailwindcss:
+        specifier: ^3.4.19
+        version: 3.4.19(yaml@2.5.0)
+      vite:
+        specifier: ^5.4.21
+        version: 5.4.21(@types/node@22.20.4)
+      vite-plugin-node-polyfills:
+        specifier: ^0.22.0
+        version: 0.22.0(rollup@4.63.4)(vite@5.4.21(@types/node@22.20.4))
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/node@22.20.4)
+
+  packages/doichain:
+    dependencies:
+      '@doichain/doichainjs-lib':
+        specifier: ^6.4.0
+        version: 6.4.0
+      jsqr:
+        specifier: ^1.4.0
+        version: 1.4.0
+      svelte:
+        specifier: ^4.2.20
+        version: 4.2.20
+      svelte-i18n:
+        specifier: ^4.0.1
+        version: 4.0.1(svelte@4.2.20)
+      vite-plugin-node-polyfills:
+        specifier: ^0.22.0
+        version: 0.22.0(rollup@4.63.4)(vite@5.4.21(@types/node@22.20.4))
+    devDependencies:
+      '@playwright/test':
+        specifier: ^1.63.0
+        version: 1.63.0
       vitest:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@22.20.4)

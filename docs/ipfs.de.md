@@ -59,8 +59,8 @@ Dieses Repository pinnt die Lektionen über Aleph, siehe
 
 `.github/workflows/pages.yml` läuft bei jedem Push auf `main`:
 
-1. **Build:** Der Workflow baut lesson01 bis lesson05 aus dem neuesten Stand
-   ihrer Branches, ergänzt die Übersichtsseite und veröffentlicht den Ordner auf
+1. **Build:** Der Workflow baut die fünf Lektions-Apps des Workspace, ergänzt
+   die Übersichtsseite und veröffentlicht den Ordner auf
    [GitHub Pages](https://doichain.github.io/names-on-chain/).
 2. **IPFS:** Der Job `ipfs` pinnt denselben Ordner über
    [Aleph](https://aleph.cloud), mit der Action `aleph-site-publish` aus

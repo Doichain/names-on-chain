@@ -1,6 +1,6 @@
 # Lektion 5: Atomarer Namenshandel
 
-[English](05-atomic-name-trading.md) · Branch [`lesson05`](https://github.com/Doichain/names-on-chain/tree/lesson05) · [Live-Demo](https://doichain.github.io/names-on-chain/lesson05/) · Zurück: [Lektion 4](04-psbt-over-qr-and-signing.de.md)
+[English](05-atomic-name-trading.md) · App [`apps/lesson05`](../../apps/lesson05) · [Live-Demo](https://doichain.github.io/names-on-chain/lesson05/) · Zurück: [Lektion 4](04-psbt-over-qr-and-signing.de.md)
 
 Ein Name kann zwischen Menschen den Besitzer wechseln, die einander nicht vertrauen. Eine einzige Transaktion bezahlt den Halter und überträgt den Namen an den Käufer, also geschieht beides oder nichts. Namecoin nennt das [atomic name trading](https://www.namecoin.org/docs/name-owners/atomic-name-trading/). Die App baut einen solchen Kauf als PSBT.
 
@@ -15,9 +15,7 @@ Ein Name kann zwischen Menschen den Besitzer wechseln, die einander nicht vertra
 ## Start
 
 ```bash
-git switch lesson05
-pnpm install --frozen-lockfile
-pnpm dev
+pnpm --filter @names-on-chain/lesson05 dev
 ```
 
 ## Checkpoint
@@ -36,7 +34,7 @@ pnpm dev
 3. Sie signieren Ihre Inputs in DoiWallet und geben das PSBT an den Halter weiter.
 4. Der Halter prüft die Outputs, signiert den Namens-Input und sendet die Transaktion.
 
-Nichts, was bestimmt, wohin Geld fließt, stammt vom ElectrumX-Server: Ihre Adresse ist die, die Sie getippt haben, die Adresse des Halters wird aus dem Namens-Skript gelesen, und jeder Betrag stammt aus Roh-Transaktionen, deren Hashes zu ihren txids passen. Der Builder ist `buildNameTradePsbt` in `src/lib/doichain/buildNameTradePsbt.js`; `parseDoiAmount` in `doiAmount.js` liest den Preis.
+Nichts, was bestimmt, wohin Geld fließt, stammt vom ElectrumX-Server: Ihre Adresse ist die, die Sie getippt haben, die Adresse des Halters wird aus dem Namens-Skript gelesen, und jeder Betrag stammt aus Roh-Transaktionen, deren Hashes zu ihren txids passen. Der Builder ist `buildNameTradePsbt` in `apps/lesson05/src/lib/doichain/buildNameTradePsbt.js`; `parseDoiAmount` in `doiAmount.js` liest den Preis.
 
 Lektion 5 braucht ein Adressfeld zweimal, für den Namen und für die Coins, die
 ihn bezahlen. Deshalb wurde daraus `AddressField.svelte`: Label, Eingabe,

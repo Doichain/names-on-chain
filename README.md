@@ -10,9 +10,10 @@ A hands-on PSBT and NameOp workshop on Doichain: register and trade names withou
 > DoiWallet signs every transaction, so check each output there before you sign.
 > Read [Wallet and safety](docs/wallet-and-safety.md) first.
 
-**This branch: `main`, lesson 5 plus the site.** For a taken name, the app builds one transaction that
-pays the holder and moves the name to the buyer, so either both happen or nothing does. The workflows on this branch
-publish all five lessons and check their links.
+**One repository, five apps.** Every lesson is an app of its own under `apps/`, and what more
+than one lesson uses lives in `packages/doichain` – the connection, the stores, the name
+helpers, the shared components and the recorded server answers the tests speak to. A lesson
+app therefore holds exactly what that lesson adds.
 
 Live demos of all lessons: https://doichain.github.io/names-on-chain/
 
@@ -22,30 +23,30 @@ Live demos of all lessons: https://doichain.github.io/names-on-chain/
 git clone https://github.com/Doichain/names-on-chain.git
 cd names-on-chain
 corepack enable && pnpm install --frozen-lockfile
-pnpm dev
+pnpm --filter @names-on-chain/lesson01 dev     # or lesson02 … lesson05
 ```
 
-You need Node 22 (see `.nvmrc`). To publish a build from your own IPFS node, see [IPFS](docs/ipfs.md).
+You need Node 22 (see `.nvmrc`). `pnpm run build` builds all five apps, `pnpm -r test:unit`
+runs every unit test, `pnpm run test:integration` every browser test. To publish a build from
+your own IPFS node, see [IPFS](docs/ipfs.md).
 
-## In this lesson
+## The layout
 
-- How one transaction holds both halves of a trade.
-- Who signs what, and in which order.
-- What a seller checks before signing the last input.
-
-Step by step: [Lesson 5](docs/lessons/05-atomic-name-trading.md) ·
-[Deutsch](docs/lessons/05-atomic-name-trading.de.md) ·
-Previous: [lesson04](https://github.com/Doichain/names-on-chain/tree/lesson04)
+```
+apps/lesson01 … lesson05   one SvelteKit app per lesson, each with its own tests
+packages/doichain          what more than one lesson uses, including the test simulator
+docs/                      the lesson texts, in English and German
+```
 
 ## All lessons
 
 | Lesson | The app can | Demo |
 | --- | --- | --- |
-| [1 Talking to the chain](https://github.com/Doichain/names-on-chain/tree/lesson01) | look up who holds a name and until which block | [open](https://doichain.github.io/names-on-chain/lesson01/) |
-| [2 Coins, name coins and expiry](https://github.com/Doichain/names-on-chain/tree/lesson02) | show the balance and the names of an address | [open](https://doichain.github.io/names-on-chain/lesson02/) |
-| [3 A registration as a PSBT](https://github.com/Doichain/names-on-chain/tree/lesson03) | build the PSBT that registers a name, with coin selection and fee | [open](https://doichain.github.io/names-on-chain/lesson03/) |
-| [4 The PSBT over QR](https://github.com/Doichain/names-on-chain/tree/lesson04) | hand the PSBT to DoiWallet as an animated QR code | [open](https://doichain.github.io/names-on-chain/lesson04/) |
-| [5 Atomic name trading](https://github.com/Doichain/names-on-chain/tree/lesson05) | build a purchase that pays the holder and moves the name | [open](https://doichain.github.io/names-on-chain/lesson05/) |
+| [1 Talking to the chain](apps/lesson01) | look up who holds a name and until which block | [open](https://doichain.github.io/names-on-chain/lesson01/) |
+| [2 Coins, name coins and expiry](apps/lesson02) | show the balance and the names of an address | [open](https://doichain.github.io/names-on-chain/lesson02/) |
+| [3 A registration as a PSBT](apps/lesson03) | build the PSBT that registers a name, with coin selection and fee | [open](https://doichain.github.io/names-on-chain/lesson03/) |
+| [4 The PSBT over QR](apps/lesson04) | hand the PSBT to DoiWallet as an animated QR code | [open](https://doichain.github.io/names-on-chain/lesson04/) |
+| [5 Atomic name trading](apps/lesson05) | build a purchase that pays the holder and moves the name | [open](https://doichain.github.io/names-on-chain/lesson05/) |
 
 ## More
 

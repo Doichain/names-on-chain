@@ -6,52 +6,26 @@
 	"engines": {
 		"node": ">=20"
 	},
+	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
-		"test": "npm run test:integration && npm run test:unit",
+		"build": "pnpm -r --filter \"./apps/*\" build",
+		"check": "pnpm -r check",
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
-		"test:integration": "playwright test",
-		"test:unit": "vitest"
+		"test": "pnpm run test:unit && pnpm run test:integration",
+		"test:unit": "pnpm -r test:unit",
+		"test:integration": "pnpm -r --filter \"./apps/*\" --workspace-concurrency=1 test:integration"
 	},
 	"devDependencies": {
-		"@axe-core/playwright": "4.13.0",
 		"@eslint/js": "^8.57.1",
-		"@playwright/test": "^1.63.0",
-		"@sveltejs/adapter-static": "^3.0.10",
-		"@sveltejs/kit": "^2.70.3",
-		"@sveltejs/vite-plugin-svelte": "^3.1.2",
 		"@types/eslint": "^8.56.12",
 		"@types/node": "^22.20.4",
-		"autoprefixer": "^10.6.1",
 		"eslint": "^8.57.1",
 		"eslint-config-prettier": "^9.1.2",
 		"eslint-plugin-svelte": "^2.46.1",
 		"globals": "^15.15.0",
-		"postcss": "^8.5.28",
 		"prettier": "^3.9.8",
 		"prettier-plugin-svelte": "^3.5.2",
-		"svelte": "^4.2.20",
-		"svelte-check": "^3.8.6",
-		"tailwindcss": "^3.4.19",
-		"typescript": "^5.9.3",
-		"vite": "^5.4.21",
-		"vite-plugin-node-polyfills": "^0.22.0",
-		"vitest": "^3.2.7"
-	},
-	"type": "module",
-	"dependencies": {
-		"@doichain/doichainjs-lib": "^6.4.0",
-		"@keystonehq/bc-ur-registry": "^0.6.4",
-		"@ngraveio/bc-ur": "^1.1.13",
-		"@vkontakte/vk-qr": "^2.1.1",
-		"events": "^3.3.0",
-		"jsqr": "^1.4.0",
-		"satoshi-bitcoin": "^1.0.7",
-		"svelte-i18n": "^4.0.1"
+		"typescript": "^5.9.3"
 	}
 }

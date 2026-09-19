@@ -1,6 +1,6 @@
 # Lektion 2: Coins, Namens-Coins und Ablauf
 
-[English](02-utxos-name-coins-expiry.md) · Branch [`lesson02`](https://github.com/Doichain/names-on-chain/tree/lesson02) · [Live-Demo](https://doichain.github.io/names-on-chain/lesson02/) · Zurück: [Lektion 1](01-electrumx-name-lookup.de.md) · Weiter: [Lektion 3](03-name-registration-psbt.de.md)
+[English](02-utxos-name-coins-expiry.md) · App [`apps/lesson02`](../../apps/lesson02) · [Live-Demo](https://doichain.github.io/names-on-chain/lesson02/) · Zurück: [Lektion 1](01-electrumx-name-lookup.de.md) · Weiter: [Lektion 3](03-name-registration-psbt.de.md)
 
 Unter dem Namen bekommt die App ein Adressfeld. Zu einer Adresse zeigt sie das Guthaben und die Namen, die sie hält, jeweils mit dem Block, bei dem der Name abläuft.
 
@@ -15,9 +15,7 @@ Unter dem Namen bekommt die App ein Adressfeld. Zu einer Adresse zeigt sie das G
 ## Start
 
 ```bash
-git switch lesson02
-pnpm install --frozen-lockfile
-pnpm dev
+pnpm --filter @names-on-chain/lesson02 dev
 ```
 
 ## Checkpoint
@@ -31,7 +29,7 @@ pnpm dev
 
 ### 1. Eine Adresse ist ein Output-Skript
 
-`isAddressOf` in `src/lib/doichain/addressValidation.js` verwandelt den Text mit `address.toOutputScript` aus doichainjs-lib in das Output-Skript, für das er steht. Das prüft Prüfsumme, Netzwerk-Präfix und Adresstyp in einem Schritt. `cleanAddressInput` entfernt Leerzeichen und einen `doichain:`-Zahlungslink.
+`isAddressOf` in `apps/lesson02/src/lib/doichain/addressValidation.js` verwandelt den Text mit `address.toOutputScript` aus doichainjs-lib in das Output-Skript, für das er steht. Das prüft Prüfsumme, Netzwerk-Präfix und Adresstyp in einem Schritt. `cleanAddressInput` entfernt Leerzeichen und einen `doichain:`-Zahlungslink.
 
 ### 2. Die Coins einer Adresse
 

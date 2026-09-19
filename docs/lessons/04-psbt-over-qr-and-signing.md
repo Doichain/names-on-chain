@@ -1,6 +1,6 @@
 # Lesson 4: The PSBT over QR, signed in the wallet
 
-[Deutsch](04-psbt-over-qr-and-signing.de.md) · Branch [`lesson04`](https://github.com/Doichain/names-on-chain/tree/lesson04) · [Live demo](https://doichain.github.io/names-on-chain/lesson04/) · Previous: [Lesson 3](03-name-registration-psbt.md) · Next: [Lesson 5](05-atomic-name-trading.md)
+[Deutsch](04-psbt-over-qr-and-signing.de.md) · App [`apps/lesson04`](../../apps/lesson04) · [Live demo](https://doichain.github.io/names-on-chain/lesson04/) · Previous: [Lesson 3](03-name-registration-psbt.md) · Next: [Lesson 5](05-atomic-name-trading.md)
 
 The registration PSBT from lesson 3 leaves the browser: as an animated QR code that DoiWallet scans, as text to copy, or as a `.psbt` file. DoiWallet signs and sends it. The app never signs and never sends.
 
@@ -15,9 +15,7 @@ The registration PSBT from lesson 3 leaves the browser: as an animated QR code t
 ## Start
 
 ```bash
-git switch lesson04
-pnpm install --frozen-lockfile
-pnpm dev
+pnpm --filter @names-on-chain/lesson04 dev
 ```
 
 ## Checkpoint
@@ -31,7 +29,7 @@ pnpm dev
 
 ### 1. From PSBT to QR codes
 
-`renderBCUR` in `src/lib/doichain/renderQR.js` wraps the PSBT bytes as a `crypto-psbt` Uniform Resource (`@keystonehq/bc-ur-registry`) and cuts it into fragments of 120 bytes. Each fragment becomes one QR code (`@vkontakte/vk-qr`). A registration from one coin fits into a few frames; every further coin adds its whole previous transaction.
+`renderBCUR` in `apps/lesson04/src/lib/doichain/renderQR.js` wraps the PSBT bytes as a `crypto-psbt` Uniform Resource (`@keystonehq/bc-ur-registry`) and cuts it into fragments of 120 bytes. Each fragment becomes one QR code (`@vkontakte/vk-qr`). A registration from one coin fits into a few frames; every further coin adds its whole previous transaction.
 
 ### 2. The animation
 

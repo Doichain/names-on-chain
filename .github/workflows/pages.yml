@@ -1,9 +1,9 @@
 name: GitHub Pages
 
-# Builds every lesson branch and publishes each one under its own path:
-#   https://doichain.github.io/names-on-chain/lesson01/ ... /lesson05/
-# Fixes reach main through the forward merges (lesson01 -> ... -> main), so a
-# push to main rebuilds all lessons from the current heads of their branches.
+# Builds every lesson app of the workspace and publishes each one under its own
+# path: https://doichain.github.io/names-on-chain/lesson01/ ... /lesson05/
+# The apps live in apps/ and share packages/doichain, so one push to main
+# rebuilds all five from the same tree.
 #
 # The same folder is pinned on IPFS through Aleph (job ipfs) once the
 # repository secret ALEPH_PRIVATE_KEY is set, and a custom domain follows the
@@ -43,22 +43,19 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Build every lesson from its branch
+      - name: Build every lesson app from the workspace
         run: |
           mkdir -p pages
           touch pages/.nojekyll
+          pnpm install --frozen-lockfile
+          pnpm run build
           for lesson in lesson01 lesson02 lesson03 lesson04 lesson05; do
-            git fetch --depth 1 origin "$lesson"
-            mkdir -p "build/$lesson"
-            git archive FETCH_HEAD | tar -x -C "build/$lesson"
-            pnpm --dir "build/$lesson" install --frozen-lockfile
-            pnpm --dir "build/$lesson" run build
-            cp -R "build/$lesson/public" "pages/$lesson"
+            cp -R "apps/$lesson/public" "pages/$lesson"
           done
 
       - name: Copy the picture a shared link shows
-        # The lessons ship it in static/; the overview page points at the root copy.
-        run: cp build/lesson05/public/og-image.png pages/og-image.png
+        # The apps ship it in static/; the overview page points at the root copy.
+        run: cp apps/lesson05/public/og-image.png pages/og-image.png
 
       - name: Write the lesson overview
         run: |
@@ -130,7 +127,7 @@ jobs:
                     <button type="button" data-lang="en" lang="en" aria-label="English" title="English" aria-pressed="true">🇬🇧</button>
                   </div>
                 </div>
-                <p data-i18n="intro">A hands-on PSBT and NameOp workshop on Doichain: look up, register and trade names without a private key in the browser. Each lesson is a branch of the repository, built and published here.</p>
+                <p data-i18n="intro">A hands-on PSBT and NameOp workshop on Doichain: look up, register and trade names without a private key in the browser. Each lesson is an app in this repository, built and published here.</p>
                 <p class="note" data-i18n="note">The apps talk to Doichain mainnet. A PSBT you sign in your wallet spends real DOI, so check every output before you sign.</p>
                 <ol>
                   <li><a class="lesson" href="./lesson01/"><strong data-i18n="l1">Lesson 1 – Talk to the chain</strong><span data-i18n="l1d">Connect to ElectrumX and look up a Doichain name.</span></a></li>
@@ -150,7 +147,7 @@ jobs:
                 const KEY = 'namesOnChain.locale';
                 const de = {
                   title: 'Names-On-Chain – Lektionen',
-                  intro: 'Ein praktischer Workshop zu PSBTs und NameOps auf Doichain: Namen nachschlagen, registrieren und handeln – ohne privaten Schlüssel im Browser. Jede Lektion ist ein Branch des Repositorys und wird hier gebaut und veröffentlicht.',
+                  intro: 'Ein praktischer Workshop zu PSBTs und NameOps auf Doichain: Namen nachschlagen, registrieren und handeln – ohne privaten Schlüssel im Browser. Jede Lektion ist eine eigene App in diesem Repository und wird hier gebaut und veröffentlicht.',
                   note: 'Die Apps arbeiten mit dem Doichain-Mainnet. Ein PSBT, das Sie in Ihrer Wallet signieren, gibt echte DOI aus – prüfen Sie deshalb jede Ausgabe, bevor Sie signieren.',
                   l1: 'Lektion 1 – Mit der Kette sprechen', l1d: 'Mit ElectrumX verbinden und einen Doichain-Namen nachschlagen.',
                   l2: 'Lektion 2 – UTXOs, Namens-Coins und Ablauf', l2d: 'Coins und Namen einer Adresse lesen, den QR-Code einer Adresse scannen.',

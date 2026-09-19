@@ -1,6 +1,6 @@
 # Lektion 3: Eine Registrierung als PSBT, ohne Schlüssel
 
-[English](03-name-registration-psbt.md) · Branch [`lesson03`](https://github.com/Doichain/names-on-chain/tree/lesson03) · [Live-Demo](https://doichain.github.io/names-on-chain/lesson03/) · Zurück: [Lektion 2](02-utxos-name-coins-expiry.de.md) · Weiter: [Lektion 4](04-psbt-over-qr-and-signing.de.md)
+[English](03-name-registration-psbt.md) · App [`apps/lesson03`](../../apps/lesson03) · [Live-Demo](https://doichain.github.io/names-on-chain/lesson03/) · Zurück: [Lektion 2](02-utxos-name-coins-expiry.de.md) · Weiter: [Lektion 4](04-psbt-over-qr-and-signing.de.md)
 
 Für einen freien Namen und eine Adresse mit Coins baut die App die Transaktion, die den Namen registriert, als unsigniertes PSBT. Ein Kasten rechts zeigt, was sie kostet. Das PSBT selbst erscheint in Lektion 4 auf dem Bildschirm.
 
@@ -15,9 +15,7 @@ Für einen freien Namen und eine Adresse mit Coins baut die App die Transaktion,
 ## Start
 
 ```bash
-git switch lesson03
-pnpm install --frozen-lockfile
-pnpm dev
+pnpm --filter @names-on-chain/lesson03 dev
 ```
 
 ## Checkpoint
@@ -34,7 +32,7 @@ pnpm dev
 
 ### 2. Coins, denen man trauen kann
 
-`buildNameRegistrationPsbt` in `src/lib/doichain/buildNameRegistrationPsbt.js` übernimmt keine Beträge aus dem JSON des Servers. `verifiedOutput` in `transactionChecks.js` liest jeden Coin aus der Roh-Transaktion, die ihn erzeugt hat, nachdem es geprüft hat, dass deren Hash die txid ist, die der Input ausgibt. Ein Coin, der schon einen Namen hält, wird abgelehnt: Ihn ohne Namensoperation auszugeben, würde die Transaktion ungültig machen.
+`buildNameRegistrationPsbt` in `apps/lesson03/src/lib/doichain/buildNameRegistrationPsbt.js` übernimmt keine Beträge aus dem JSON des Servers. `verifiedOutput` in `transactionChecks.js` liest jeden Coin aus der Roh-Transaktion, die ihn erzeugt hat, nachdem es geprüft hat, dass deren Hash die txid ist, die der Input ausgibt. Ein Coin, der schon einen Namen hält, wird abgelehnt: Ihn ohne Namensoperation auszugeben, würde die Transaktion ungültig machen.
 
 ### 3. Coins und Gebühr wählen
 
@@ -52,7 +50,7 @@ pnpm dev
 ## Übung
 
 - Geben Sie das PSBT in der Browser-Konsole aus und dekodieren Sie es mit `Psbt.fromBase64(...)` aus `@doichain/doichainjs-lib`. Finden Sie den einen Output, dessen Skript mit `5a` beginnt.
-- Starten Sie `pnpm exec vitest run src/lib/doichain/nameScript.test.js`. Der Test baut auf dem Doichain-Mainnet aufgezeichnete Namens-Outputs Byte für Byte nach.
+- Starten Sie `pnpm --filter @names-on-chain/doichain test:unit nameScript`. Der Test baut auf dem Doichain-Mainnet aufgezeichnete Namens-Outputs Byte für Byte nach.
 
 <details>
 <summary><strong>Unter der Haube</strong></summary>

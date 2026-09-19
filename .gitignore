@@ -3,10 +3,10 @@
 public
 node_modules
 # Playwright output
-/test-results
-/playwright-report
-/.svelte-kit
-/package
+test-results
+playwright-report
+.svelte-kit
+package
 .env
 .env.*
 !.env.example
