@@ -11,7 +11,10 @@ register or trade a name.
   0.01 DOI in the name output and pays a transaction fee; a purchase moves the
   price to the seller.
 - Doichain split on 11 September 2026. The valid chain is the one of Doichain
-  Core v31.1.5, from block 431,017 on, and the app's servers follow it.
+  Core v31: its rules took effect at block 431,017, and at block 431,018 it
+  parted from the chain the old nodes kept mining – there it has
+  `71d50ff1…4b67`, the old one `bab49c13…2d34`. The app's servers follow it, and
+  the app asks each of them for that block before it believes anything.
 - Look up transactions and names on
   [doi-explorer.le-space.de](https://doi-explorer.le-space.de). The old explorer
   at explorer.doichain.org still shows the other chain, with different blocks,
