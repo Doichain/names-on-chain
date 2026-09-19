@@ -31,9 +31,12 @@ Korrigieren Sie es einmal – in der App, die das Problem hat, oder im Paket, mi
 einem Test, wenn sich Code ändert. Es gibt keine Vorwärts-Merges mehr: eine
 Datei, eine Korrektur, ein CI-Lauf.
 
-Die fünf Lektions-Branches sind eingefroren. Sie bleiben für alte Links und für
-`git log` erreichbar und bekommen ein Tag `lessonNN-branch-final` (siehe Issue
-#14); geändert wird dort nichts mehr.
+Die fünf Lektions-Branches sind eingefroren, ebenso `step1`, die erste Fassung des
+Workshops. Jeder Head trägt ein Tag – `lesson01-branch-final` … `lesson05-branch-final`
+und `step1-branch-final` –, und ein Repository-Ruleset weist jeden Push, Force-Push
+und jedes Löschen darauf zurück. Gelöscht sind sie nicht: Links der Form
+`…/tree/lesson03` funktionieren weiter, und `git log` behält die Historie. Wer sehen
+will, wie eine Lektion vor dem Workspace aussah, checkt das Tag aus.
 
 ## Texte und Übersetzungen
 

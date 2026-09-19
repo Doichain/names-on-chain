@@ -30,9 +30,12 @@ Fix it once, in the app that has the problem or in the package, with a test if
 code changes. There is no forward merging any more: one file, one fix, one CI
 run.
 
-The five lesson branches are frozen. They stay reachable for old links and for
-`git log`, and they will get a `lessonNN-branch-final` tag (see issue #14); they
-are no longer the place to change anything.
+The five lesson branches are frozen, and so is `step1`, the first version of the
+workshop. Each head carries a tag — `lesson01-branch-final` … `lesson05-branch-final`
+and `step1-branch-final` — and a repository ruleset refuses every push, force-push
+and deletion on them. They are not deleted: links of the form `…/tree/lesson03`
+keep resolving, and `git log` keeps the history. The tags are what to check out
+when you want to see how a lesson looked before the workspace.
 
 ## Texts and translations
 
