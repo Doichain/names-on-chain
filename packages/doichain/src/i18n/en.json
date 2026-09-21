@@ -209,5 +209,10 @@
 	"theme": {
 		"toDark": "Switch to dark mode",
 		"toLight": "Switch to light mode"
+	},
+	"qr": {
+		"open": "This page as a QR code",
+		"dialog": "QR code of this page",
+		"hint": "Scan with your phone — opens exactly this page."
 	}
 }

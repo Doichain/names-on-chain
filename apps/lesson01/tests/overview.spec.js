@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import { localStamp, utcStamp } from '@names-on-chain/doichain/build-stamp.js';
 
 // The overview at doichain.github.io/names-on-chain/ is site/index.html, copied by
 // pages.yml. It is not an app, so it has no suite of its own; it lives next to the
@@ -42,3 +45,47 @@ for (const system of /** @type {const} */ (['light', 'dark'])) {
 		await context.close();
 	});
 }
+
+test("the overview has the lessons' footer: the wallet, who made it, and no stamp without a commit", async ({
+	page
+}) => {
+	await page.goto(OVERVIEW);
+	const footer = page.locator('footer');
+	await expect(footer).toContainText('DoiWallet');
+	await expect(footer.locator('a[href="https://le-space.de"]')).toContainText('Le Space');
+	// straight from the repository the placeholders are still there: no invented date
+	await expect(page.locator('#stamp')).toBeHidden();
+});
+
+test("the overview stamp shows the commit's instant in the reader's clock, UTC on hover", async ({
+	browser
+}, testInfo) => {
+	// what pages.yml does when it copies the page
+	const commit = '1d9d6e0';
+	const date = '2026-09-20T00:48:25+02:00';
+	const stamped = testInfo.outputPath('overview-stamped.html');
+	writeFileSync(
+		stamped,
+		readFileSync(new URL(OVERVIEW), 'utf8')
+			.replaceAll('__BUILD_COMMIT__', commit)
+			.replaceAll('__BUILD_DATE__', date)
+	);
+
+	const reader = { locale: 'de-DE', timeZone: 'Europe/Berlin' };
+	const context = await browser.newContext({ locale: reader.locale, timezoneId: reader.timeZone });
+	const page = await context.newPage();
+	await page.goto(pathToFileURL(stamped).href);
+
+	const time = page.locator('#stamp time');
+	await expect(page.locator('#stamp')).toBeVisible();
+	const plain = (text) => text.replace(/[\s\u202f\u00a0]+/g, ' ').trim();
+	expect(plain(await time.innerText())).toBe(
+		plain(localStamp(new Date(date), reader.locale, reader.timeZone))
+	);
+	await expect(time).toHaveAttribute('title', utcStamp(new Date(date)));
+	await expect(page.locator('#stamp a')).toHaveAttribute(
+		'href',
+		`https://github.com/Doichain/names-on-chain/commit/${commit}`
+	);
+	await context.close();
+});

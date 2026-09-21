@@ -1,9 +1,8 @@
 <script>
 	import '../app.css';
 	import { _ } from '@names-on-chain/doichain/i18n';
-	import LanguageSwitcher from '@names-on-chain/doichain/components/LanguageSwitcher.svelte';
 	import Footer from '@names-on-chain/doichain/components/Footer.svelte';
-	import ThemeToggle from '@names-on-chain/doichain/components/ThemeToggle.svelte';
+	import Controls from '@names-on-chain/doichain/components/Controls.svelte';
 </script>
 
 <!-- This app talks to Doichain mainnet. Say so before anyone scans a PSBT. -->
@@ -14,10 +13,7 @@
 		{$_('banner.before')} <strong>{$_('banner.network')}</strong>{$_('banner.after')}
 		<a class="underline" href="https://github.com/Doichain/names-on-chain">{$_('banner.link')}</a>
 	</p>
-	<div class="flex items-center gap-1">
-		<LanguageSwitcher />
-		<ThemeToggle />
-	</div>
+	<Controls />
 </div>
 
 <slot />

@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { simulateElectrumX } from '@names-on-chain/doichain/testing';
 import {
 	expectBuildStamp,
+	expectPageQr,
 	expectSharedStylesCompiled
 } from '@names-on-chain/doichain/testing/shell';
 
@@ -44,5 +45,16 @@ test('the theme toggle switches, and the choice survives a reload', async ({ bro
 	// a stored choice beats the system setting on the next visit
 	await page.reload();
 	await expect(html).toHaveClass(/\bdark\b/);
+	await context.close();
+});
+
+test('the page QR encodes exactly this page, hash included, on white in the dark too', async ({
+	browser
+}) => {
+	const context = await browser.newContext({ colorScheme: 'dark' });
+	const page = await context.newPage();
+	await simulateElectrumX(page);
+	await page.goto('/#qr-check');
+	await expectPageQr(page, expect);
 	await context.close();
 });

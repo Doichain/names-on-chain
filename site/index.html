@@ -148,6 +148,38 @@
 				color: #4b5b66;
 			}
 			/* dark: a stored choice, else the system's, set on <html> before paint */
+			footer {
+				margin-top: 40px;
+				padding: 18px 16px 28px;
+				border-top: 1px solid #cdd6db;
+				text-align: center;
+				font-size: 0.9rem;
+				color: #4b5b66;
+			}
+			footer p {
+				margin: 6px auto;
+				max-width: none;
+			}
+			footer .credit {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				justify-content: center;
+				gap: 4px 6px;
+				font-size: 0.8rem;
+			}
+			footer .brand {
+				display: inline-flex;
+				align-items: center;
+				gap: 4px;
+			}
+			footer .dot {
+				color: #9fb0ba;
+			}
+			html.dark footer {
+				border-top-color: #26333c;
+				color: #a3b1bb;
+			}
 			html.dark {
 				color-scheme: dark;
 				background: #0e1419;
@@ -261,6 +293,15 @@
 				</li>
 			</ol>
 			<p>
+				<a href="https://github.com/Doichain/names-on-chain" data-i18n="source"
+					>Source code, lesson texts and known issues</a
+				>
+			</p>
+		</main>
+		<!-- The same footer as under every lesson. pages.yml fills in the commit and its
+		     instant when it copies this file; left as placeholders, the stamp stays hidden. -->
+		<footer>
+			<p>
 				<span data-i18n="wallet">Sign the PSBTs with DoiWallet:</span>
 				<a href="https://play.google.com/store/apps/details?id=org.doichain.doiwallet"
 					>Google Play (Android)</a
@@ -268,12 +309,64 @@
 				· <a href="https://apps.apple.com/app/doiwallet/id1579900361">App Store (iPhone)</a> ·
 				<a href="https://github.com/Doichain/DoiWallet" data-i18n="walletSource">Source code</a>
 			</p>
-			<p>
-				<a href="https://github.com/Doichain/names-on-chain" data-i18n="source"
-					>Source code, lesson texts and known issues</a
-				>
+			<p class="credit">
+				<span data-i18n="madeWith">Made with</span>
+				<a class="brand" href="https://le-space.de" rel="noopener">
+					<svg
+						class="mark"
+						viewBox="0 0 96 96"
+						width="22"
+						height="22"
+						role="img"
+						aria-label="Le Space"
+					>
+						<line
+							x1="42.7"
+							y1="49.96"
+							x2="58.56"
+							y2="34.94"
+							stroke="#0E86C4"
+							stroke-width="4"
+							stroke-linecap="round"
+						/>
+						<line
+							x1="47.43"
+							y1="63.58"
+							x2="62.8"
+							y2="64.98"
+							stroke="#0E86C4"
+							stroke-width="4"
+							stroke-linecap="round"
+							stroke-dasharray="0.1 8"
+						/>
+						<line
+							x1="69.85"
+							y1="38.36"
+							x2="72.41"
+							y2="55.37"
+							stroke="#0E86C4"
+							stroke-width="2.5"
+							stroke-linecap="round"
+							stroke-dasharray="0.1 6"
+							opacity="0.65"
+						/>
+						<path
+							d="M 0.5 0.96 C 0.19 0.74 0 0.55 0 0.36 A 0.25 0.25 0 0 1 0.5 0.26 A 0.25 0.25 0 0 1 1 0.36 C 1 0.55 0.81 0.74 0.5 0.96 Z"
+							fill="#E8503F"
+							transform="translate(15,47) scale(30)"
+						/>
+						<circle cx="68" cy="26" r="8" fill="none" stroke="#0E86C4" stroke-width="5" />
+						<circle cx="74" cy="66" r="6.5" fill="none" stroke="#0E86C4" stroke-width="4.5" />
+						<circle cx="17" cy="21" r="2.6" fill="#0E86C4" opacity="0.55" />
+					</svg>
+					<span>Le Space</span>
+				</a>
+				<span id="stamp" data-commit="__BUILD_COMMIT__" data-date="__BUILD_DATE__" hidden>
+					<span class="dot" aria-hidden="true">·</span>
+					<span data-i18n="built">Built</span> <time></time> <a rel="noopener"></a>
+				</span>
 			</p>
-		</main>
+		</footer>
 		<script>
 			// Same storage key as the lesson apps, so a choice made here carries over.
 			const KEY = 'namesOnChain.locale';
@@ -331,8 +424,33 @@
 				l5d: 'Ein PSBT bauen, das einen Namen in einer einzigen Transaktion gegen DOI tauscht.',
 				wallet: 'Die PSBTs signieren Sie mit DoiWallet:',
 				walletSource: 'Quellcode',
-				source: 'Quellcode, Lektionstexte und bekannte Probleme'
+				source: 'Quellcode, Lektionstexte und bekannte Probleme',
+				madeWith: 'Gebaut mit',
+				built: 'Stand'
 			};
+			// The build stamp, as under every lesson: the commit's instant in the reader's
+			// locale, clock and zone, UTC on hover. Same format as
+			// packages/doichain/src/build-stamp.js.
+			const stamp = document.getElementById('stamp');
+			const commit = stamp.dataset.commit;
+			const when = new Date(stamp.dataset.date);
+			if (/^[0-9a-f]{7,}$/.test(commit) && !Number.isNaN(when.getTime())) {
+				const time = stamp.querySelector('time');
+				time.dateTime = when.toISOString();
+				time.textContent = new Intl.DateTimeFormat(undefined, {
+					year: 'numeric',
+					month: '2-digit',
+					day: '2-digit',
+					hour: '2-digit',
+					minute: '2-digit',
+					timeZoneName: 'short'
+				}).format(when);
+				time.title = `${when.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
+				const link = stamp.querySelector('a');
+				link.href = `https://github.com/Doichain/names-on-chain/commit/${commit}`;
+				link.textContent = commit;
+				stamp.hidden = false;
+			}
 			const en = { title: document.title };
 			document.querySelectorAll('[data-i18n]').forEach((el) => {
 				en[el.dataset.i18n] = el.textContent;

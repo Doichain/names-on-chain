@@ -68,3 +68,49 @@ export async function expectBuildStamp(page, expect, { locale, timeZone }) {
 	const sha = (await link.innerText()).trim();
 	expect(sha, 'the footer shows the commit, not the "dev" fallback').toMatch(/^[0-9a-f]{7,}$/);
 }
+
+/**
+ * The page QR (Le-Space page-QR convention): it must encode exactly the address
+ * bar — hash included — and sit on white even in the dark theme, because a
+ * camera reads it, not the theme. The test does not trust the text under the
+ * code: it decodes the code itself with jsQR, the library the scan dialog uses.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {typeof import('@playwright/test').expect} expect
+ */
+export async function expectPageQr(page, expect) {
+	const { createRequire } = await import('node:module');
+	const jsqr = createRequire(import.meta.url).resolve('jsqr/dist/jsQR.js');
+
+	await page.getByTestId('page-qr').click();
+	const dialog = page.getByTestId('page-qr-dialog');
+	await expect(dialog).toBeVisible();
+	await expect(page.getByTestId('page-qr-url')).toHaveText(page.url());
+
+	const plaque = page.getByTestId('page-qr-plaque');
+	expect(
+		await plaque.evaluate((el) => getComputedStyle(el).backgroundColor),
+		'white in every theme'
+	).toBe('rgb(255, 255, 255)');
+
+	await page.addScriptTag({ path: jsqr });
+	const decoded = await plaque.evaluate(async (el) => {
+		// XMLSerializer, not outerHTML: an inline SVG's outerHTML carries no xmlns,
+		// and without it the markup is not a valid image on its own
+		const svg = new XMLSerializer().serializeToString(el.querySelector('svg'));
+		const img = new Image();
+		img.src = `data:image/svg+xml;base64,${btoa(svg)}`;
+		await img.decode();
+		const canvas = document.createElement('canvas');
+		canvas.width = canvas.height = 600;
+		const ctx = canvas.getContext('2d');
+		ctx.drawImage(img, 0, 0, 600, 600);
+		const data = ctx.getImageData(0, 0, 600, 600);
+		// @ts-ignore — injected above
+		return window.jsQR(data.data, 600, 600)?.data ?? null;
+	});
+	expect(decoded, 'the code itself says this address').toBe(page.url());
+
+	await page.keyboard.press('Escape');
+	await expect(dialog).toBeHidden();
+}
