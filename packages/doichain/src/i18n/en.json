@@ -205,5 +205,9 @@
 			"missing": "No camera found. Paste the address below instead.",
 			"unavailable": "The camera cannot be used here; browsers allow it only on HTTPS pages. Paste the address below instead."
 		}
+	},
+	"theme": {
+		"toDark": "Switch to dark mode",
+		"toLight": "Switch to light mode"
 	}
 }

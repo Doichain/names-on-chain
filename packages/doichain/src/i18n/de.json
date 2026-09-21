@@ -205,5 +205,9 @@
 			"missing": "Keine Kamera gefunden. Fügen Sie die Adresse stattdessen unten ein.",
 			"unavailable": "Die Kamera lässt sich hier nicht benutzen; Browser erlauben sie nur auf HTTPS-Seiten. Fügen Sie die Adresse stattdessen unten ein."
 		}
+	},
+	"theme": {
+		"toDark": "Dunkles Design einschalten",
+		"toLight": "Helles Design einschalten"
 	}
 }
