@@ -2,12 +2,17 @@
 	// The same footer under every lesson: the app never signs, so it points at the
 	// wallet that does — and it says who wrote the workshop and what is deployed.
 	import { _ } from '../i18n/index.js';
+	import { localStamp, utcStamp } from '../build-stamp.js';
 
 	// The commit, not the clock: rebuilding a commit must give the same bytes, or
 	// every build would publish a new IPFS CID for an unchanged site.
 	const commit = typeof __BUILD_COMMIT__ === 'string' ? __BUILD_COMMIT__ : 'dev';
 	const iso = typeof __BUILD_DATE__ === 'string' ? __BUILD_DATE__ : '';
-	const stamp = iso ? `${iso.slice(0, 10)} ${iso.slice(11, 16)}` : '';
+	const when = iso ? new Date(iso) : null;
+
+	// the reader's locale, clock and zone on the page; UTC when hovering
+	const local = when ? localStamp(when) : '';
+	const utc = when ? utcStamp(when) : '';
 </script>
 
 <footer class="border-t border-gray-200 bg-gray-50 px-4 py-4 text-center text-sm text-gray-700">
@@ -80,11 +85,11 @@
 			</svg>
 			<span class="underline">Le Space</span>
 		</a>
-		{#if commit !== 'dev'}
+		{#if commit !== 'dev' && when}
 			<span class="text-gray-400">·</span>
 			<span
 				>{$_('build.state')}
-				{stamp}
+				<time datetime={when?.toISOString()} title={utc}>{local}</time>
 				<a
 					class="underline"
 					href="https://github.com/Doichain/names-on-chain/commit/{commit}"
