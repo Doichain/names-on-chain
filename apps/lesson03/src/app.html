@@ -8,6 +8,14 @@
 		<link rel="icon" href="%sveltekit.assets%/le-space-favicon.svg" type="image/svg+xml" />
 		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!-- The theme before the first paint: a stored choice, else the system's. -->
+		<script>
+			try {
+				const t = localStorage.getItem('namesOnChain.theme');
+				if (t === 'dark' || (t === null && matchMedia('(prefers-color-scheme: dark)').matches))
+					document.documentElement.classList.add('dark');
+			} catch {}
+		</script>
 		<title>Names-on-Chain</title>
 		<meta
 			name="description"

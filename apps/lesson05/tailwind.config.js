@@ -1,5 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+	// the palette as CSS variables, light and dark — see scripts/build-theme.mjs
+	presets: [require('@names-on-chain/doichain/tailwind-preset')],
 	// Tailwind only keeps the classes it can see. The shared components live in
 	// packages/doichain, and a later lesson uses components of an earlier one, so
 	// those paths belong here too — otherwise their classes are silently dropped.
