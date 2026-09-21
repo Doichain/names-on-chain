@@ -12,9 +12,11 @@ export default [
 	{
 		languageOptions: {
 			globals: {
+				// the language's own objects (Intl, …), which browser and node do not list
+				...globals.builtin,
 				...globals.browser,
 				...globals.node,
-				// the version from package.json, set in vite.config.js
+				// the commit the build came from, set in vite.config.js from git
 				__BUILD_COMMIT__: 'readonly',
 				__BUILD_DATE__: 'readonly'
 			}
