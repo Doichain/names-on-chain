@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { simulateElectrumX } from '@names-on-chain/doichain/testing';
 import {
 	expectBuildStamp,
+	expectFooterSource,
 	expectPageQr,
 	expectSharedStylesCompiled
 } from '@names-on-chain/doichain/testing/shell';
@@ -27,6 +28,12 @@ for (const reader of [
 		});
 	});
 }
+
+test("the footer's source code is this workshop's, not the wallet's", async ({ page }) => {
+	await simulateElectrumX(page);
+	await page.goto('/');
+	await expectFooterSource(page, expect);
+});
 
 test('the theme toggle switches, and the choice survives a reload', async ({ browser }) => {
 	const context = await browser.newContext({ colorScheme: 'light' });
