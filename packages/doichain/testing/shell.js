@@ -29,14 +29,40 @@ export async function expectSharedStylesCompiled(page, expect) {
 	).toBeGreaterThanOrEqual(28);
 }
 
+import { localStamp, utcStamp } from '../src/build-stamp.js';
+
+/** whitespace as the reader sees it: ICU may use narrow no-break spaces */
+const plain = (text) => text.replace(/[\s\u202f\u00a0]+/g, ' ').trim();
+
 /**
  * The footer says what is deployed. `buildInfo()` falls back to 'dev' when git is
  * not there, and a deployed page that says 'dev' tells nobody anything — so the
- * stamp has to be a real commit with a real date.
+ * stamp has to be a real commit with a real instant.
+ *
+ * The instant is shown in the reader's locale and zone, and in UTC on hover. The
+ * browser context decides locale and zone, so the test states both and expects
+ * exactly what the shared formatter makes of them.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {typeof import('@playwright/test').expect} expect
+ * @param {{locale: string, timeZone: string}} reader
  */
-export async function expectBuildStamp(page, expect) {
+export async function expectBuildStamp(page, expect, { locale, timeZone }) {
 	const footer = page.locator('footer');
-	await expect(footer).toContainText(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/);
+	const time = footer.locator('time[datetime]');
+	await expect(time).toHaveCount(1);
+
+	const datetime = await time.getAttribute('datetime');
+	expect(datetime, 'machine-readable instant, in UTC').toMatch(
+		/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+	);
+	const instant = new Date(datetime);
+
+	expect(await time.getAttribute('title'), 'hovering shows UTC').toBe(utcStamp(instant));
+	expect(plain(await time.innerText()), `the reader's clock in ${locale}, ${timeZone}`).toBe(
+		plain(localStamp(instant, locale, timeZone))
+	);
+
 	const link = footer.locator('a[href*="/commit/"]');
 	await expect(link).toHaveCount(1);
 	const sha = (await link.innerText()).trim();
