@@ -209,5 +209,10 @@
 	"theme": {
 		"toDark": "Dunkles Design einschalten",
 		"toLight": "Helles Design einschalten"
+	},
+	"qr": {
+		"open": "Diese Seite als QR-Code",
+		"dialog": "QR-Code dieser Seite",
+		"hint": "Mit dem Telefon scannen — öffnet genau diese Seite."
 	}
 }

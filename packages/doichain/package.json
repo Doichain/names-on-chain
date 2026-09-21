@@ -22,7 +22,8 @@
 	"dependencies": {
 		"@doichain/doichainjs-lib": "^6.4.0",
 		"jsqr": "^1.4.0",
-		"svelte-i18n": "^4.0.1"
+		"svelte-i18n": "^4.0.1",
+		"uqr": "^0.1.3"
 	},
 	"peerDependencies": {
 		"svelte": "^4.2.20",

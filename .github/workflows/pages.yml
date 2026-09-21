@@ -60,7 +60,12 @@ jobs:
       - name: Write the lesson overview
         # site/index.html is a real file now, so it can be linted and tested
         # (apps/lesson01/tests/overview.spec.js) instead of living in this heredoc.
-        run: cp site/index.html pages/index.html
+        # The footer's build stamp: the commit and its instant, never the clock, so a
+        # rebuild of the same commit gives the same bytes.
+        run: |
+          sed -e "s/__BUILD_COMMIT__/$(git log -1 --format=%h)/g" \
+              -e "s|__BUILD_DATE__|$(git log -1 --format=%cI)|g" \
+              site/index.html > pages/index.html
 
       - uses: actions/upload-pages-artifact@v5
         with:
