@@ -70,6 +70,23 @@ export async function expectBuildStamp(page, expect, { locale, timeZone }) {
 }
 
 /**
+ * The footer's "Source code" leads to this workshop's repository: that is what
+ * a reader looks for in a footer. The wallet sentence names the stores only, so
+ * no footer link leads to the DoiWallet repository.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {typeof import('@playwright/test').expect} expect
+ */
+export async function expectFooterSource(page, expect) {
+	const footer = page.locator('footer');
+	await expect(footer.getByRole('link', { name: /^(Source code|Quellcode)$/ })).toHaveAttribute(
+		'href',
+		'https://github.com/Doichain/names-on-chain'
+	);
+	await expect(footer.locator('a[href^="https://github.com/Doichain/DoiWallet"]')).toHaveCount(0);
+}
+
+/**
  * The page QR (Le-Space page-QR convention): it must encode exactly the address
  * bar — hash included — and sit on white even in the dark theme, because a
  * camera reads it, not the theme. The test does not trust the text under the

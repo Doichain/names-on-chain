@@ -18,15 +18,15 @@
 	"wallet": {
 		"intro": "Sign the PSBTs with DoiWallet:",
 		"googlePlay": "Google Play (Android)",
-		"appStore": "App Store (iPhone)",
-		"source": "Source code"
+		"appStore": "App Store (iPhone)"
 	},
 	"build": {
 		"state": "Built"
 	},
 	"credit": {
 		"before": "Made with",
-		"markAlt": "Le Space, its first node as a heart"
+		"markAlt": "Le Space, its first node as a heart",
+		"source": "Source code"
 	},
 	"status": {
 		"connecting": "Connecting to a Doichain server …",

@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { localStamp, utcStamp } from '@names-on-chain/doichain/build-stamp.js';
+import { expectFooterSource } from '@names-on-chain/doichain/testing/shell';
 
 // The overview at doichain.github.io/names-on-chain/ is site/index.html, copied by
 // pages.yml. It is not an app, so it has no suite of its own; it lives next to the
@@ -53,6 +54,7 @@ test("the overview has the lessons' footer: the wallet, who made it, and no stam
 	const footer = page.locator('footer');
 	await expect(footer).toContainText('DoiWallet');
 	await expect(footer.locator('a[href="https://le-space.de"]')).toContainText('Le Space');
+	await expectFooterSource(page, expect);
 	// straight from the repository the placeholders are still there: no invented date
 	await expect(page.locator('#stamp')).toBeHidden();
 });

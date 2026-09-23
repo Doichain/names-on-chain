@@ -18,15 +18,15 @@
 	"wallet": {
 		"intro": "Die PSBTs signieren Sie mit DoiWallet:",
 		"googlePlay": "Google Play (Android)",
-		"appStore": "App Store (iPhone)",
-		"source": "Quellcode"
+		"appStore": "App Store (iPhone)"
 	},
 	"build": {
 		"state": "Stand"
 	},
 	"credit": {
 		"before": "Gebaut mit",
-		"markAlt": "Le Space, der erste Knoten als Herz"
+		"markAlt": "Le Space, der erste Knoten als Herz",
+		"source": "Quellcode"
 	},
 	"status": {
 		"connecting": "Verbinde mit einem Doichain-Server …",

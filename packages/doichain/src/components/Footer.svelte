@@ -1,6 +1,8 @@
 <script>
 	// The same footer under every lesson: the app never signs, so it points at the
-	// wallet that does — and it says who wrote the workshop and what is deployed.
+	// wallet that does — and it says who wrote the workshop, where its source is and
+	// what is deployed. "Source code" stands in the credit line, away from the wallet
+	// sentence, so it reads as this workshop's and not as DoiWallet's.
 	import { _ } from '../i18n/index.js';
 	import { localStamp, utcStamp } from '../build-stamp.js';
 
@@ -25,8 +27,6 @@
 		<a class="underline" href="https://apps.apple.com/app/doiwallet/id1579900361"
 			>{$_('wallet.appStore')}</a
 		>
-		·
-		<a class="underline" href="https://github.com/Doichain/DoiWallet">{$_('wallet.source')}</a>
 	</p>
 	<p class="mt-1 flex flex-wrap items-center justify-center gap-x-1.5 text-xs text-gray-600">
 		<span>{$_('credit.before')}</span>
@@ -85,6 +85,10 @@
 			</svg>
 			<span class="underline">Le Space</span>
 		</a>
+		<span class="text-gray-400">·</span>
+		<a class="underline" href="https://github.com/Doichain/names-on-chain" rel="noopener"
+			>{$_('credit.source')}</a
+		>
 		{#if commit !== 'dev' && when}
 			<span class="text-gray-400">·</span>
 			<span
